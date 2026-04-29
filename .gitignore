@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+
+# next
+.next/
+out/
+
+# env
+.env
+.env.local
+.env.production
+
+# logs
+*.log
+
+# mac
+.DS_Store
+
+# vscode
+.vscode/
+
+# build
+dist/
+build/
+
+# go
+bin/
+
+# coverage
+coverage/
+
+# temp
+tmp/
+temp/
