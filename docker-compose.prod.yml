@@ -1,0 +1,100 @@
+services:
+
+  # ── Go backend API ───────────────────────────────────────────────────────────
+  backend:
+    image: ${BACKEND_IMAGE}:${IMAGE_TAG:-latest}
+    environment:
+      - PORT=8080
+      - ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://revendaclick.app}
+    volumes:
+      - backend_logs:/app/logs
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - revendaclick
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+        reservations:
+          memory: 64m
+
+  # ── Next.js frontend ─────────────────────────────────────────────────────────
+  frontend:
+    image: ${FRONTEND_IMAGE}:${IMAGE_TAG:-latest}
+    environment:
+      - NODE_ENV=production
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - revendaclick
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+        reservations:
+          memory: 128m
+
+  # ── Nginx reverse proxy ──────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - revendaclick
+      - coolify-proxy
+    labels:
+      - traefik.enable=true
+      # HTTPS router
+      - traefik.http.routers.revendaclick.rule=Host(`revendaclick.app`) || Host(`www.revendaclick.app`)
+      - traefik.http.routers.revendaclick.entrypoints=https
+      - traefik.http.routers.revendaclick.tls=true
+      - traefik.http.routers.revendaclick.tls.certresolver=letsencrypt
+      - traefik.http.services.revendaclick.loadbalancer.server.port=80
+      # HTTP → HTTPS redirect
+      - traefik.http.routers.revendaclick-http.rule=Host(`revendaclick.app`) || Host(`www.revendaclick.app`)
+      - traefik.http.routers.revendaclick-http.entrypoints=http
+      - traefik.http.routers.revendaclick-http.middlewares=revendaclick-https-redirect
+      - traefik.http.middlewares.revendaclick-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.revendaclick-https-redirect.redirectscheme.permanent=true
+
+# ── Named volumes ─────────────────────────────────────────────────────────────
+volumes:
+  nginx_logs:
+  backend_logs:
+
+# ── Networks ──────────────────────────────────────────────────────────────────
+networks:
+  revendaclick:
+    driver: bridge
+  coolify-proxy:
+    external: true
+    name: coolify
