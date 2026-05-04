@@ -491,35 +491,39 @@ Before finishing any task validate:
 # CURRENT OFFICIAL STATUS
 
 Operational:
-- full-stack runtime
-- Next.js SSR
-- Go backend
-- PostgreSQL Supabase
-- PgBouncer
-- Docker Compose V2
-- nginx reverse proxy
-- WSL networking
-- healthchecks
-- standalone runtime
-- multi-tenant foundation
-- production-ready local infrastructure
+- full-stack runtime — Next.js 15 SSR + Go backend
+- PostgreSQL Supabase + PgBouncer
+- Docker Compose V2 (dev + prod)
+- nginx reverse proxy com gzip, rate limiting, security headers
+- standalone frontend runtime (outputFileTracingRoot configurado)
+- multi-tenant RLS completo
+- CI/CD GitHub Actions → GHCR → Coolify webhook
+- Evolution API integrada (webhook receiver + lead sync por WhatsApp)
+- OpenRouter AI integrado (classify lead, suggest reply)
+- Módulos: leads, CRM, Kanban, vehicles, customers, financial, sales, analytics
+- Register flow de 2 etapas (Supabase Auth + setupTenant)
+- Página pública de veículo com schema.org + Open Graph + SEO
+- Settings (loja, equipe, plano)
+- Vendors (gestão de equipe)
+- Onboarding completo
+- Domínios: revendaclick.com.br / api.revendaclick.com.br / evolution.revendaclick.com.br
 
 ---
 
 # OFFICIAL NEXT PHASES
 
-1. GitHub clean repository
-2. VPS Hostinger
-3. Production Docker
-4. Coolify
-5. Domain
-6. SSL
-7. CI/CD
-8. Evolution API
-9. Multi-tenant authentication
-10. SaaS onboarding
-11. Billing
-12. Observability
+1. ~~GitHub clean repository~~ (CI/CD pronto)
+2. ~~VPS Hostinger~~ (contratada)
+3. ~~Production Docker~~ (docker-compose.prod.yml pronto)
+4. ~~Coolify~~ (instalado, labels configuradas)
+5. ~~Domain~~ (DNS apontado)
+6. SSL via Coolify (automático com Let's Encrypt)
+7. ~~CI/CD~~ (GitHub Actions configurado)
+8. ~~Evolution API~~ (integrada)
+9. ~~Multi-tenant authentication~~ (Supabase SSR completo)
+10. ~~SaaS onboarding~~ (implementado)
+11. Asaas billing (webhook receiver + subscription gate)
+12. Observability (logs, Sentry, métricas)
 13. Performance optimization
 14. Security hardening
 15. Production launch

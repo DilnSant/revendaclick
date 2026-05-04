@@ -1,8 +1,10 @@
 package onboarding
 
 import (
+	"context"
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,12 +31,146 @@ type UpdateRequest struct {
 	AddedSeller        *bool `json:"added_seller"`
 }
 
+// SetupRequest — creates tenant + owner user in a single transaction (first-time onboarding)
+type SetupRequest struct {
+	TenantSlug    string `json:"tenant_slug"`
+	TenantName    string `json:"tenant_name"`
+	TenantEmail   string `json:"tenant_email"`
+	PhoneWhatsApp string `json:"phone_whatsapp"`
+	UserName      string `json:"user_name"`
+}
+
+func (r *SetupRequest) validate() error {
+	switch {
+	case strings.TrimSpace(r.TenantSlug) == "":
+		return errors.New("tenant_slug is required")
+	case strings.TrimSpace(r.TenantName) == "":
+		return errors.New("tenant_name is required")
+	case strings.TrimSpace(r.TenantEmail) == "":
+		return errors.New("tenant_email is required")
+	case strings.TrimSpace(r.PhoneWhatsApp) == "":
+		return errors.New("phone_whatsapp is required")
+	case strings.TrimSpace(r.UserName) == "":
+		return errors.New("user_name is required")
+	}
+	return nil
+}
+
+type SetupResult struct {
+	TenantID   string `json:"tenant_id"`
+	TenantSlug string `json:"tenant_slug"`
+	TenantName string `json:"tenant_name"`
+}
+
 type Handler struct {
 	pool *pgxpool.Pool
 }
 
 func NewHandler(pool *pgxpool.Pool) *Handler {
 	return &Handler{pool: pool}
+}
+
+// POST /api/onboarding/setup  (JWT auth only — no tenant resolution required)
+func (h *Handler) Setup(c *gin.Context) {
+	userID := middleware.UserIDFromGin(c)
+	if userID == "" {
+		response.Unauthorized(c)
+		return
+	}
+
+	var req SetupRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "invalid request body")
+		return
+	}
+	if err := req.validate(); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+
+	// Idempotency check: user already provisioned
+	var existingTenantID string
+	_ = h.pool.QueryRow(c.Request.Context(),
+		`SELECT tenant_id::text FROM users WHERE id = $1 AND is_active = TRUE`, userID,
+	).Scan(&existingTenantID)
+	if existingTenantID != "" {
+		response.BadRequest(c, "usuário já possui uma loja cadastrada")
+		return
+	}
+
+	result, err := h.setupTenantTx(c.Request.Context(), userID, &req)
+	if err != nil {
+		msg := err.Error()
+		switch {
+		case strings.Contains(msg, "tenants_slug") || (strings.Contains(msg, "unique") && strings.Contains(msg, "slug")):
+			response.BadRequest(c, "este slug já está em uso, escolha outro")
+		case strings.Contains(msg, "tenants_email") || (strings.Contains(msg, "unique") && strings.Contains(msg, "email")):
+			response.BadRequest(c, "este email já está cadastrado")
+		case strings.Contains(msg, "tenants_slug_format"):
+			response.BadRequest(c, "slug inválido: use apenas letras minúsculas, números e hífens (mínimo 3 caracteres)")
+		default:
+			response.InternalError(c)
+		}
+		return
+	}
+
+	response.JSON(c, http.StatusCreated, result)
+}
+
+func (h *Handler) setupTenantTx(ctx context.Context, userID string, req *SetupRequest) (*SetupResult, error) {
+	tx, err := h.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx) //nolint:errcheck
+
+	// 1. Create tenant (trigger auto-creates onboarding_checklist)
+	var tenantID string
+	if err = tx.QueryRow(ctx, `
+		INSERT INTO tenants (slug, name, email, phone_whatsapp)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id::text`,
+		strings.TrimSpace(req.TenantSlug),
+		strings.TrimSpace(req.TenantName),
+		strings.TrimSpace(req.TenantEmail),
+		strings.TrimSpace(req.PhoneWhatsApp),
+	).Scan(&tenantID); err != nil {
+		return nil, err
+	}
+
+	// 2. Subscribe to starter plan — 14-day trial
+	var planID string
+	_ = tx.QueryRow(ctx, `SELECT id::text FROM plans WHERE name = 'starter'`).Scan(&planID)
+	if planID != "" {
+		if _, err = tx.Exec(ctx, `
+			INSERT INTO subscriptions (tenant_id, plan_id, status, current_period_end)
+			VALUES ($1, $2, 'trialing', NOW() + INTERVAL '14 days')`,
+			tenantID, planID,
+		); err != nil {
+			return nil, err
+		}
+	}
+
+	// 3. Create owner user record (links auth.users → tenant)
+	if _, err = tx.Exec(ctx, `
+		INSERT INTO users (id, tenant_id, role, name, email)
+		VALUES ($1, $2, 'owner', $3, $4)`,
+		userID, tenantID,
+		strings.TrimSpace(req.UserName),
+		strings.TrimSpace(req.TenantEmail),
+	); err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	return &SetupResult{
+		TenantID:   tenantID,
+		TenantSlug: strings.TrimSpace(req.TenantSlug),
+		TenantName: strings.TrimSpace(req.TenantName),
+	}, nil
 }
 
 // GET /api/onboarding

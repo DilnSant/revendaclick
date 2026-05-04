@@ -74,8 +74,8 @@ jobs:
           build-args: |
             NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
             NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-            NEXT_PUBLIC_API_URL=https://revendaclick.app
-            NEXT_PUBLIC_APP_URL=https://revendaclick.app
+            NEXT_PUBLIC_API_URL=https://api.revendaclick.com.br
+            NEXT_PUBLIC_APP_URL=https://revendaclick.com.br
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,scope=frontend,mode=max
 

@@ -46,7 +46,7 @@ export default function LeadModal({ sellers, onClose, onCreated }: Props) {
         email: form.email.trim() || undefined,
         message: form.message.trim() || undefined,
         seller_id: form.seller_id || undefined,
-        source: 'crm',
+        source: 'direct',
       })
 
       if (result.error) {

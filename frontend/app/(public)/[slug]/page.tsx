@@ -17,7 +17,7 @@ export default async function StorePage({ params, searchParams }: Props) {
 
   const [tenant, vehiclesRes] = await Promise.all([
     getTenantById(ctx.id),
-    fetchVehicles(ctx.id, query),
+    fetchVehicles(ctx.slug, query),
   ])
 
   if (!tenant) notFound()
@@ -139,7 +139,7 @@ function VehicleCard({
 // ─── Data fetching ─────────────────────────────────────────────────────────────
 
 async function fetchVehicles(
-  tenantId: string,
+  tenantSlug: string,
   q: Record<string, string | undefined>
 ) {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
@@ -151,7 +151,7 @@ async function fetchVehicles(
   if (q.pagina) params.set('offset', String((Number(q.pagina) - 1) * 12))
 
   try {
-    const res = await fetch(`${apiUrl}/api/public/${tenantId}/vehicles?${params}`, {
+    const res = await fetch(`${apiUrl}/api/public/${tenantSlug}/vehicles?${params}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return { vehicles: [], total: 0 }

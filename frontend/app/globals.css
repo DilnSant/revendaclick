@@ -47,4 +47,19 @@
   .label {
     @apply mb-1 block text-xs font-medium text-gray-600;
   }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5
+           text-sm font-semibold text-gray-600 transition-colors
+           hover:bg-gray-100 hover:text-gray-900
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .th {
+    @apply px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500;
+  }
+
+  .td {
+    @apply px-4 py-3 text-sm;
+  }
 }

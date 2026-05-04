@@ -97,7 +97,7 @@ export async function createLead(payload: {
 }): Promise<ApiResult<Lead>> {
   const result = await apiCall<Lead>('POST', '/api/leads', {
     ...payload,
-    source: payload.source ?? 'crm',
+    source: payload.source ?? 'direct',
   })
   if (!result.error) revalidatePath('/leads')
   return result

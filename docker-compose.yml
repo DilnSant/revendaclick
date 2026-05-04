@@ -26,7 +26,9 @@ services:
     env_file: ./backend/.env
     environment:
       - ENV=production
-      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost,https://revendaclick.app
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost,https://revendaclick.com.br
+      - EVOLUTION_API_URL=http://evolution:8080
+      - EVOLUTION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
     ports:
       - "8080:8080"
     volumes:
@@ -49,13 +51,14 @@ services:
       args:
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://revendaclick.app}
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://revendaclick.app}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost}
     environment:
       - NODE_ENV=production
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       # Server-side calls go directly to the backend over the Docker network
       - NEXT_PUBLIC_API_URL=http://backend:8080
+      - NEXT_PUBLIC_APP_URL=http://localhost
     ports:
       - "3000:3000"
     healthcheck:
@@ -71,10 +74,44 @@ services:
     networks:
       - revendaclick
 
+  # ── Evolution API (WhatsApp) ────────────────────────────────────────────────
+  evolution:
+    image: atendai/evolution-api:latest
+    environment:
+      - SERVER_URL=http://localhost:8081
+      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=${EVOLUTION_DATABASE_URL:-postgresql://postgres:postgres@host.docker.internal:5432/evolution}
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - WEBHOOK_GLOBAL_ENABLED=true
+      - WEBHOOK_GLOBAL_URL=http://backend:8080/api/webhooks/evolution
+      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false
+      - LOG_LEVEL=ERROR
+    ports:
+      - "8081:8080"
+    volumes:
+      - evolution_instances:/evolution/instances
+      - evolution_store:/evolution/store
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - revendaclick
+
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
   nginx_logs:
   backend_logs:
+  evolution_instances:
+  evolution_store:
 
 # ── Network ───────────────────────────────────────────────────────────────────
 networks:

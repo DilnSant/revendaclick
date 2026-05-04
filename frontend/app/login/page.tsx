@@ -71,6 +71,13 @@ function LoginForm() {
 
         {error && <p className="text-xs font-medium text-red-600">{error}</p>}
 
+        <div className="flex items-center justify-between">
+          <span />
+          <a href="/forgot-password" className="text-xs text-red-600 hover:text-red-700">
+            Esqueci minha senha
+          </a>
+        </div>
+
         <button
           type="submit"
           disabled={isPending}
@@ -79,6 +86,13 @@ function LoginForm() {
           {isPending ? 'Entrando…' : 'Entrar'}
         </button>
       </form>
+
+      <p className="mt-6 text-center text-sm text-gray-500">
+        Não tem conta?{' '}
+        <a href="/register" className="font-medium text-red-600 hover:text-red-700">
+          Criar gratuitamente
+        </a>
+      </p>
     </div>
   )
 }

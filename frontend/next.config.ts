@@ -1,11 +1,14 @@
 import type { NextConfig } from 'next'
+import path from 'path'
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  outputFileTracingRoot: path.join(__dirname),
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
-      { protocol: 'https', hostname: 'revendaclick.app' },
+      { protocol: 'https', hostname: 'revendaclick.com.br' },
+      { protocol: 'https', hostname: 'www.revendaclick.com.br' },
     ],
   },
   async headers() {
