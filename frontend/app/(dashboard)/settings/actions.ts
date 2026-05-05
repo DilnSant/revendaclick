@@ -44,3 +44,33 @@ export async function updateTenantProfile(payload: TenantUpdatePayload): Promise
   if (!result.error) revalidatePath('/settings')
   return result
 }
+
+// ── Billing ───────────────────────────────────────────────────────────────────
+
+export interface SubscriptionData {
+  id: string
+  plan_name: string
+  plan_display: string
+  status: string
+  billing_cycle: string
+  current_period_end: string
+  trial_ends_at: string | null
+  grace_until: string | null
+  asaas_subscription_id: string
+  asaas_payment_link: string
+  price_monthly: number
+  price_yearly: number
+}
+
+export async function getSubscription(): Promise<ApiResult<SubscriptionData>> {
+  return apiCall<SubscriptionData>('GET', '/api/billing/subscription')
+}
+
+export async function subscribePlan(planName: string, billingCycle: string): Promise<ApiResult<SubscriptionData>> {
+  const result = await apiCall<SubscriptionData>('POST', '/api/billing/subscribe', {
+    plan_name: planName,
+    billing_cycle: billingCycle,
+  })
+  if (!result.error) revalidatePath('/settings')
+  return result
+}

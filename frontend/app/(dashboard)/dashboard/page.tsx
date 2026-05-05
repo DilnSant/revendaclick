@@ -73,7 +73,7 @@ export default async function DashboardPage() {
           rel="noopener noreferrer"
           className="mt-1 block text-primary hover:underline"
         >
-          revendaclick.app/{tenant.slug}
+          revendaclick.com.br/{tenant.slug}
         </a>
       </div>
     </div>

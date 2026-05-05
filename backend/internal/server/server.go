@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 
 	"revendaclick/backend/internal/ai"
+	"revendaclick/backend/internal/billing"
 	"revendaclick/backend/internal/config"
 	"revendaclick/backend/internal/customers"
 	"revendaclick/backend/internal/evolution"
@@ -55,10 +56,15 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		cfg.EvolutionAPIKey,
 		logger,
 	)
-	aiH := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
+	aiH      := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
+	billingH := billing.NewHandler(
+		billing.NewService(billing.NewRepository(pool), cfg.AsaasAPIKey, cfg.AsaasEnv),
+		cfg.AsaasAPIKey,
+	)
 
 	jwtAuth       := appMiddleware.JWTAuth(cfg.SupabaseJWTSecret)
 	resolveTenant := appMiddleware.TenantResolver(pool)
+	subGate       := appMiddleware.SubscriptionGate(pool)
 	ownerAdmin    := appMiddleware.RequireRole("owner", "admin")
 
 	// ── Health ───────────────────────────────────────────────────────────────
@@ -82,8 +88,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	// Plans are public (pricing page)
 	r.GET("/api/plans", planH.ListPlans)
 
-	// ── Webhooks (Evolution API — validated by apikey header) ─────────────────
+	// ── Webhooks (public — validated by token headers) ───────────────────────
 	r.POST("/api/webhooks/evolution", evolutionH.Webhook)
+	r.POST("/api/webhooks/asaas", billingH.Webhook)
 
 	// ── Onboarding setup — JWT auth only, no tenant required ─────────────────
 	setup := r.Group("/api")
@@ -94,7 +101,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 
 	// ── Protected routes ──────────────────────────────────────────────────────
 	api := r.Group("/api")
-	api.Use(jwtAuth, resolveTenant)
+	api.Use(jwtAuth, resolveTenant, subGate)
 	{
 		// Tenant
 		api.GET("/tenants/me", tenantH.GetMe)
@@ -156,6 +163,10 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		// AI (OpenRouter)
 		api.POST("/ai/suggest-reply", aiH.SuggestReply)
 		api.POST("/ai/classify-lead", aiH.ClassifyLead)
+
+		// Billing
+		api.GET("/billing/subscription", billingH.GetSubscription)
+		api.POST("/billing/subscribe", ownerAdmin, billingH.Subscribe)
 	}
 
 	return r
