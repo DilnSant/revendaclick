@@ -9,6 +9,8 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') ?? '/dashboard'
+  const registered = searchParams.get('registered') === '1'
+  const authError = searchParams.get('error')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -37,6 +39,17 @@ function LoginForm() {
     <div className="card w-full max-w-sm p-8">
       <h1 className="text-xl font-bold text-gray-900">Entrar no RevendaClick</h1>
       <p className="mt-1 text-sm text-gray-500">Acesse seu painel de vendas</p>
+
+      {registered && (
+        <div className="mt-4 rounded-lg bg-green-50 border border-green-200 px-3 py-2.5 text-sm text-green-700">
+          Conta criada! Confirme seu email para entrar.
+        </div>
+      )}
+      {authError === 'auth_callback_failed' && (
+        <div className="mt-4 rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-sm text-red-700">
+          Link inválido ou expirado. Solicite um novo.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>

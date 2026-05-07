@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"crypto/ecdsa"
 	"net/http"
 	"strings"
 
@@ -10,9 +11,10 @@ import (
 
 // Context keys stored in gin.Context
 const (
-	CtxUserID   = "user_id"
-	CtxTenantID = "tenant_id"
-	CtxUserRole = "user_role"
+	CtxUserID     = "user_id"
+	CtxTenantID   = "tenant_id"
+	CtxTenantSlug = "tenant_slug"
+	CtxUserRole   = "user_role"
 )
 
 // SupabaseClaims mirrors the JWT structure Supabase signs.
@@ -32,13 +34,25 @@ func (c *SupabaseClaims) AppMetaString(key string) string {
 	return v
 }
 
-// JWTAuth validates the Supabase-signed Bearer token and injects claims into gin context.
-func JWTAuth(secret string) gin.HandlerFunc {
+// JWTAuth validates a Supabase-signed Bearer token.
+// Supports both HS256 (hmacSecret non-empty) and ES256 (ecKey non-nil).
+// When the Supabase project uses ES256, ecKey is populated at startup via JWKS.
+func JWTAuth(hmacSecret string, ecKey *ecdsa.PublicKey) gin.HandlerFunc {
 	keyFunc := func(t *jwt.Token) (any, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+		switch t.Method.(type) {
+		case *jwt.SigningMethodECDSA:
+			if ecKey == nil {
+				return nil, jwt.ErrSignatureInvalid
+			}
+			return ecKey, nil
+		case *jwt.SigningMethodHMAC:
+			if hmacSecret == "" {
+				return nil, jwt.ErrSignatureInvalid
+			}
+			return []byte(hmacSecret), nil
+		default:
 			return nil, jwt.ErrSignatureInvalid
 		}
-		return []byte(secret), nil
 	}
 
 	return func(c *gin.Context) {

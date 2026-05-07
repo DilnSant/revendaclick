@@ -17,6 +17,7 @@ const RESERVED = new Set([
   'crm',
   'financial',
   'sales',
+  'whatsapp',
   'settings',
   'onboarding',
   'login',
@@ -44,6 +45,7 @@ const DASHBOARD_PREFIXES = [
   '/crm',
   '/financial',
   '/sales',
+  '/whatsapp',
   '/settings',
   '/onboarding',
 ]

@@ -76,6 +76,114 @@ func (s *Service) HandleWebhook(ctx context.Context, payload *WebhookPayload) er
 	return nil
 }
 
+// GetInstanceStatus returns the connection status of a tenant's WhatsApp instance.
+func (s *Service) GetInstanceStatus(ctx context.Context, tenantSlug string) (*InstanceStatus, error) {
+	url := fmt.Sprintf("%s/instance/fetchInstances", s.apiURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("apikey", s.apiKey)
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var list []struct {
+		Instance struct {
+			InstanceName string `json:"instanceName"`
+			Status       string `json:"connectionStatus"`
+		} `json:"instance"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
+		return nil, err
+	}
+
+	for _, item := range list {
+		if item.Instance.InstanceName == tenantSlug {
+			return &InstanceStatus{
+				InstanceName: item.Instance.InstanceName,
+				Status:       item.Instance.Status,
+			}, nil
+		}
+	}
+	return &InstanceStatus{InstanceName: tenantSlug, Status: "disconnected"}, nil
+}
+
+// GetQRCode fetches the QR code for a tenant's WhatsApp instance.
+func (s *Service) GetQRCode(ctx context.Context, tenantSlug string) (*QRCodeResponse, error) {
+	url := fmt.Sprintf("%s/instance/connect/%s", s.apiURL, tenantSlug)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("apikey", s.apiKey)
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var qr QRCodeResponse
+	if err := json.NewDecoder(resp.Body).Decode(&qr); err != nil {
+		return nil, err
+	}
+	return &qr, nil
+}
+
+// CreateInstance creates a new Evolution instance for a tenant.
+func (s *Service) CreateInstance(ctx context.Context, tenantSlug string) error {
+	body := map[string]any{
+		"instanceName": tenantSlug,
+		"integration":  "WHATSAPP-BAILEYS",
+		"qrcode":       true,
+	}
+	b, _ := json.Marshal(body)
+	url := fmt.Sprintf("%s/instance/create", s.apiURL)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(b))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("apikey", s.apiKey)
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("evolution: create instance returned %d", resp.StatusCode)
+	}
+	return nil
+}
+
+// DisconnectInstance logs out a tenant's WhatsApp instance.
+func (s *Service) DisconnectInstance(ctx context.Context, tenantSlug string) error {
+	url := fmt.Sprintf("%s/instance/logout/%s", s.apiURL, tenantSlug)
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("apikey", s.apiKey)
+
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("evolution: disconnect returned %d", resp.StatusCode)
+	}
+	return nil
+}
+
 // SendMessage sends a WhatsApp message via Evolution API.
 func (s *Service) SendMessage(ctx context.Context, instance, number, text string) error {
 	body := map[string]any{

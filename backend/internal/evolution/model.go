@@ -42,6 +42,19 @@ type Instance struct {
 	Status       string `json:"status"`
 }
 
+// InstanceStatus is the connection status returned to the frontend.
+type InstanceStatus struct {
+	InstanceName string `json:"instance_name"`
+	Status       string `json:"status"` // open | connecting | disconnected
+}
+
+// QRCodeResponse wraps the QR code response from Evolution API.
+type QRCodeResponse struct {
+	Code  string `json:"code,omitempty"`
+	Base64 string `json:"base64,omitempty"`
+	Count int    `json:"count,omitempty"`
+}
+
 func parseMessageData(data map[string]any) *MessageData {
 	md := &MessageData{}
 

@@ -109,6 +109,7 @@ func (h *Handler) Setup(c *gin.Context) {
 		case strings.Contains(msg, "tenants_slug_format"):
 			response.BadRequest(c, "slug inválido: use apenas letras minúsculas, números e hífens (mínimo 3 caracteres)")
 		default:
+			_ = c.Error(err)
 			response.InternalError(c)
 		}
 		return
@@ -124,7 +125,7 @@ func (h *Handler) setupTenantTx(ctx context.Context, userID string, req *SetupRe
 	}
 	defer tx.Rollback(ctx) //nolint:errcheck
 
-	// 1. Create tenant (trigger auto-creates onboarding_checklist)
+	// 1. Create tenant — DB triggers auto-create onboarding_checklist + trial subscription
 	var tenantID string
 	if err = tx.QueryRow(ctx, `
 		INSERT INTO tenants (slug, name, email, phone_whatsapp)
@@ -138,20 +139,7 @@ func (h *Handler) setupTenantTx(ctx context.Context, userID string, req *SetupRe
 		return nil, err
 	}
 
-	// 2. Subscribe to starter plan — 14-day trial
-	var planID string
-	_ = tx.QueryRow(ctx, `SELECT id::text FROM plans WHERE name = 'starter'`).Scan(&planID)
-	if planID != "" {
-		if _, err = tx.Exec(ctx, `
-			INSERT INTO subscriptions (tenant_id, plan_id, status, current_period_end)
-			VALUES ($1, $2, 'trialing', NOW() + INTERVAL '14 days')`,
-			tenantID, planID,
-		); err != nil {
-			return nil, err
-		}
-	}
-
-	// 3. Create owner user record (links auth.users → tenant)
+	// 2. Create owner user record (links auth.users → tenant)
 	if _, err = tx.Exec(ctx, `
 		INSERT INTO users (id, tenant_id, role, name, email)
 		VALUES ($1, $2, 'owner', $3, $4)`,

@@ -34,6 +34,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	// ── Global middleware ─────────────────────────────────────────────────────
 	r.Use(gin.Recovery())
 	r.Use(appMiddleware.ZapLogger(logger))
+	r.Use(appMiddleware.RateLimit(20, 60)) // 20 rps sustained, 60 burst per IP
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -62,7 +63,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		cfg.AsaasAPIKey,
 	)
 
-	jwtAuth       := appMiddleware.JWTAuth(cfg.SupabaseJWTSecret)
+	jwtAuth       := appMiddleware.JWTAuth(cfg.SupabaseJWTSecret, cfg.SupabaseECKey)
 	resolveTenant := appMiddleware.TenantResolver(pool)
 	subGate       := appMiddleware.SubscriptionGate(pool)
 	ownerAdmin    := appMiddleware.RequireRole("owner", "admin")
@@ -167,6 +168,12 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		// Billing
 		api.GET("/billing/subscription", billingH.GetSubscription)
 		api.POST("/billing/subscribe", ownerAdmin, billingH.Subscribe)
+
+		// Evolution WhatsApp management
+		api.GET("/evolution/status", evolutionH.GetStatus)
+		api.GET("/evolution/qr", evolutionH.GetQR)
+		api.POST("/evolution/connect", ownerAdmin, evolutionH.Connect)
+		api.DELETE("/evolution/disconnect", ownerAdmin, evolutionH.Disconnect)
 	}
 
 	return r
