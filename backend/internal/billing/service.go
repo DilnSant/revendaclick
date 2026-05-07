@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"unicode"
 )
 
 type Service struct {
-	repo   *Repository
-	asaas  *asaasClient
+	repo  *Repository
+	asaas *asaasClient
 }
 
 func NewService(repo *Repository, asaasKey, asaasEnv string) *Service {
@@ -20,10 +21,15 @@ func NewService(repo *Repository, asaasKey, asaasEnv string) *Service {
 }
 
 func (s *Service) GetSubscription(ctx context.Context, tenantID string) (*Subscription, error) {
-	return s.repo.GetSubscription(ctx, tenantID)
+	sub, err := s.repo.GetSubscription(ctx, tenantID)
+	if err != nil || sub == nil {
+		return sub, err
+	}
+	sub.ComputeFlags()
+	return sub, nil
 }
 
-// Subscribe creates/updates an Asaas subscription for a tenant.
+// Subscribe creates or updates an Asaas subscription for a tenant.
 func (s *Service) Subscribe(ctx context.Context, tenantID string, req *SubscribeRequest) (*Subscription, error) {
 	req.PlanName = strings.ToLower(strings.TrimSpace(req.PlanName))
 	req.BillingCycle = strings.ToLower(strings.TrimSpace(req.BillingCycle))
@@ -31,10 +37,14 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 		req.BillingCycle = "monthly"
 	}
 
-	// Resolve plan
+	billingType := strings.ToUpper(strings.TrimSpace(req.BillingType))
+	if billingType == "" || (billingType != "PIX" && billingType != "CREDIT_CARD" && billingType != "BOLETO") {
+		billingType = "BOLETO"
+	}
+
 	planID, priceMonthly, priceYearly, err := s.repo.GetPlanByName(ctx, req.PlanName)
 	if err != nil || planID == "" {
-		return nil, fmt.Errorf("plan not found: %s", req.PlanName)
+		return nil, fmt.Errorf("plano não encontrado: %s", req.PlanName)
 	}
 	value := priceMonthly
 	cycle := "MONTHLY"
@@ -43,11 +53,11 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 		cycle = "YEARLY"
 	}
 
-	// Get or create Asaas customer
 	name, email, asaasCustomerID, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
 	if err != nil {
-		return nil, fmt.Errorf("tenant not found: %w", err)
+		return nil, fmt.Errorf("tenant não encontrado: %w", err)
 	}
+
 	if asaasCustomerID == "" {
 		customer, cerr := s.asaas.createCustomer(name, email, "", req.CPFOrCNPJ, tenantID)
 		if cerr != nil {
@@ -57,22 +67,21 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 		if err = s.repo.SaveAsaasCustomerID(ctx, tenantID, asaasCustomerID); err != nil {
 			return nil, fmt.Errorf("save customer id: %w", err)
 		}
+		// Persist to billing_customers
+		_ = s.repo.UpsertBillingCustomer(ctx, tenantID, customer.ID, name, email, req.CPFOrCNPJ, "")
 	}
 
-	// Create Asaas subscription
-	desc := fmt.Sprintf("RevendaClick — Plano %s (%s)", strings.Title(req.PlanName), strings.Title(req.BillingCycle))
-	sub, err := s.asaas.createSubscription(asaasCustomerID, value, cycle, desc, tenantID)
+	desc := fmt.Sprintf("RevendaClick — Plano %s (%s)", capitalize(req.PlanName), capitalize(req.BillingCycle))
+	sub, err := s.asaas.createSubscription(asaasCustomerID, value, cycle, billingType, desc, tenantID)
 	if err != nil {
 		return nil, fmt.Errorf("asaas create subscription: %w", err)
 	}
 
-	// Get payment link
 	paymentLink := sub.PaymentLink
 	if paymentLink == "" {
 		paymentLink, _ = s.asaas.getSubscriptionPayments(sub.ID)
 	}
 
-	// Persist
 	if err = s.repo.UpdateSubscriptionAsaas(ctx, tenantID, sub.ID, paymentLink, req.BillingCycle, planID); err != nil {
 		return nil, fmt.Errorf("update subscription: %w", err)
 	}
@@ -80,32 +89,126 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 	_ = priceMonthly
 	_ = priceYearly
 
-	return s.repo.GetSubscription(ctx, tenantID)
+	return s.GetSubscription(ctx, tenantID)
 }
 
-// HandleWebhook processes an Asaas webhook event.
-func (s *Service) HandleWebhook(ctx context.Context, wh *AsaasWebhook) error {
-	if wh.Payment == nil || wh.Payment.Subscription == "" {
-		return nil // not subscription-related, ignore
+// CancelSubscription cancels a tenant's active subscription in Asaas and DB.
+func (s *Service) CancelSubscription(ctx context.Context, tenantID string) error {
+	sub, err := s.repo.GetSubscription(ctx, tenantID)
+	if err != nil {
+		return fmt.Errorf("get subscription: %w", err)
 	}
-	subID := wh.Payment.Subscription
+	if sub == nil {
+		return fmt.Errorf("assinatura não encontrada")
+	}
+	if sub.AsaasSubscriptionID != "" {
+		_ = s.asaas.cancelSubscription(sub.AsaasSubscriptionID) // best-effort
+	}
+	return s.repo.CancelByTenantID(ctx, tenantID)
+}
 
+// ReactivateSubscription restores a canceled subscription with a new trial period.
+func (s *Service) ReactivateSubscription(ctx context.Context, tenantID string) error {
+	return s.repo.ReactivateByTenantID(ctx, tenantID)
+}
+
+// ListInvoices returns the billing invoice history for a tenant.
+func (s *Service) ListInvoices(ctx context.Context, tenantID string) ([]*Invoice, error) {
+	return s.repo.ListInvoices(ctx, tenantID, 30)
+}
+
+// HandleWebhook processes an Asaas webhook event with idempotency.
+func (s *Service) HandleWebhook(ctx context.Context, wh *AsaasWebhook, rawPayload []byte) error {
+	asaasID := webhookAsaasID(wh)
+	if asaasID == "" {
+		return nil // nothing to key on, ignore
+	}
+
+	eventKey := fmt.Sprintf("%s:%s", wh.Event, asaasID)
+
+	tenantID := ""
+	if wh.Payment != nil && wh.Payment.Subscription != "" {
+		tenantID, _ = s.repo.FindTenantByAsaasSubID(ctx, wh.Payment.Subscription)
+	}
+
+	// Idempotency check — insert event_key; skip if already processed
+	locked, err := s.repo.TryLockEvent(ctx, eventKey, wh.Event, tenantID, rawPayload)
+	if err != nil {
+		return fmt.Errorf("event lock: %w", err)
+	}
+	if !locked {
+		return nil // duplicate event, already handled
+	}
+
+	// Persist invoice record for payment events
+	if wh.Payment != nil {
+		_ = s.repo.UpsertInvoice(ctx, tenantID, wh.Payment)
+	}
+
+	return s.dispatchWebhookEvent(ctx, wh)
+}
+
+func (s *Service) dispatchWebhookEvent(ctx context.Context, wh *AsaasWebhook) error {
 	switch wh.Event {
 	case EventPaymentReceived, EventPaymentConfirmed:
-		// Calculate next period end based on the payment due date
-		periodEnd := time.Now().AddDate(0, 1, 0) // default: +1 month
-		if wh.Payment.DueDate != "" {
-			if d, err := time.Parse("2006-01-02", wh.Payment.DueDate); err == nil {
-				periodEnd = d.AddDate(0, 1, 0)
-			}
+		if wh.Payment == nil || wh.Payment.Subscription == "" {
+			return nil
 		}
-		return s.repo.ActivateByAsaasSubID(ctx, subID, periodEnd)
+		periodEnd := nextPeriodEnd(wh.Payment.DueDate, 1)
+		return s.repo.ActivateByAsaasSubID(ctx, wh.Payment.Subscription, periodEnd)
 
 	case EventPaymentOverdue:
-		return s.repo.MarkPastDueByAsaasSubID(ctx, subID)
+		if wh.Payment == nil || wh.Payment.Subscription == "" {
+			return nil
+		}
+		return s.repo.MarkPastDueByAsaasSubID(ctx, wh.Payment.Subscription)
 
-	case EventSubCanceled:
+	case EventSubCanceled, EventSubDeleted:
+		subID := ""
+		if wh.Subscription != nil {
+			subID = wh.Subscription.ID
+		} else if wh.Payment != nil {
+			subID = wh.Payment.Subscription
+		}
+		if subID == "" {
+			return nil
+		}
 		return s.repo.CancelByAsaasSubID(ctx, subID)
+
+	case EventSubCreated, EventSubUpdated, EventPaymentDeleted:
+		// Informational — already logged in billing_events
+		return nil
 	}
 	return nil
 }
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+func webhookAsaasID(wh *AsaasWebhook) string {
+	if wh.Payment != nil && wh.Payment.ID != "" {
+		return wh.Payment.ID
+	}
+	if wh.Subscription != nil && wh.Subscription.ID != "" {
+		return wh.Subscription.ID
+	}
+	return ""
+}
+
+func nextPeriodEnd(dueDate string, months int) time.Time {
+	if dueDate != "" {
+		if d, err := time.Parse("2006-01-02", dueDate); err == nil {
+			return d.AddDate(0, months, 0)
+		}
+	}
+	return time.Now().AddDate(0, months, 0)
+}
+
+func capitalize(s string) string {
+	if s == "" {
+		return s
+	}
+	r := []rune(s)
+	r[0] = unicode.ToUpper(r[0])
+	return string(r)
+}
+

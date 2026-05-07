@@ -100,80 +100,88 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		setup.POST("/onboarding/setup", onboardingH.Setup)
 	}
 
-	// ── Protected routes ──────────────────────────────────────────────────────
-	api := r.Group("/api")
-	api.Use(jwtAuth, resolveTenant, subGate)
+	// ── Protected routes — billing/tenant/usage always accessible ────────────
+	free := r.Group("/api")
+	free.Use(jwtAuth, resolveTenant)
 	{
-		// Tenant
-		api.GET("/tenants/me", tenantH.GetMe)
-		api.PUT("/tenants/me", ownerAdmin, tenantH.UpdateMe)
+		// Tenant info (needed to render dashboard header)
+		free.GET("/tenants/me", tenantH.GetMe)
+		free.PUT("/tenants/me", ownerAdmin, tenantH.UpdateMe)
 
+		// Usage always readable (powers dashboard KPIs + PlanAlertBanner)
+		free.GET("/usage", planH.GetUsage)
+
+		// Onboarding checklist always readable/writable
+		free.GET("/onboarding", onboardingH.Get)
+		free.PUT("/onboarding", onboardingH.Update)
+
+		// Billing routes always accessible so tenant can pay
+		free.GET("/billing/subscription", billingH.GetSubscription)
+		free.POST("/billing/subscribe", ownerAdmin, billingH.Subscribe)
+		free.DELETE("/billing/subscription", ownerAdmin, billingH.Cancel)
+		free.POST("/billing/reactivate", ownerAdmin, billingH.Reactivate)
+		free.GET("/billing/invoices", billingH.ListInvoices)
+	}
+
+	// ── Gated routes — blocked when subscription past_due/canceled ───────────
+	gated := r.Group("/api")
+	gated.Use(jwtAuth, resolveTenant, subGate)
+	{
 		// Vehicles
-		api.GET("/vehicles", vehicleH.List)
-		api.POST("/vehicles", vehicleH.Create)
-		api.GET("/vehicles/:id", vehicleH.Get)
-		api.PUT("/vehicles/:id", vehicleH.Update)
-		api.DELETE("/vehicles/:id", ownerAdmin, vehicleH.Delete)
+		gated.GET("/vehicles", vehicleH.List)
+		gated.POST("/vehicles", vehicleH.Create)
+		gated.GET("/vehicles/:id", vehicleH.Get)
+		gated.PUT("/vehicles/:id", vehicleH.Update)
+		gated.DELETE("/vehicles/:id", ownerAdmin, vehicleH.Delete)
 
 		// Leads
-		api.GET("/leads", leadH.List)
-		api.POST("/leads", leadH.Create)
-		api.GET("/leads/:id", leadH.Get)
-		api.PUT("/leads/:id", leadH.Update)
-		api.DELETE("/leads/:id", ownerAdmin, leadH.Delete)
-		api.GET("/leads/:id/activities", leadH.ListActivities)
-		api.POST("/leads/:id/activities", leadH.AddActivity)
+		gated.GET("/leads", leadH.List)
+		gated.POST("/leads", leadH.Create)
+		gated.GET("/leads/:id", leadH.Get)
+		gated.PUT("/leads/:id", leadH.Update)
+		gated.DELETE("/leads/:id", ownerAdmin, leadH.Delete)
+		gated.GET("/leads/:id/activities", leadH.ListActivities)
+		gated.POST("/leads/:id/activities", leadH.AddActivity)
 
 		// Users
-		api.GET("/users/sellers", userH.ListSellers)
-		api.GET("/users", ownerAdmin, userH.List)
-		api.POST("/users", ownerAdmin, userH.Create)
-		api.GET("/users/:id", userH.Get)
-		api.PUT("/users/:id", userH.Update)
-		api.DELETE("/users/:id", ownerAdmin, userH.Delete)
-
-		// Usage / Plans
-		api.GET("/usage", planH.GetUsage)
+		gated.GET("/users/sellers", userH.ListSellers)
+		gated.GET("/users", ownerAdmin, userH.List)
+		gated.POST("/users", ownerAdmin, userH.Create)
+		gated.GET("/users/:id", userH.Get)
+		gated.PUT("/users/:id", userH.Update)
+		gated.DELETE("/users/:id", ownerAdmin, userH.Delete)
 
 		// Customers
-		api.GET("/customers", customerH.List)
-		api.POST("/customers", customerH.Create)
-		api.GET("/customers/:id", customerH.Get)
-		api.PUT("/customers/:id", customerH.Update)
-		api.DELETE("/customers/:id", ownerAdmin, customerH.Delete)
-
-		// Onboarding
-		api.GET("/onboarding", onboardingH.Get)
-		api.PUT("/onboarding", onboardingH.Update)
+		gated.GET("/customers", customerH.List)
+		gated.POST("/customers", customerH.Create)
+		gated.GET("/customers/:id", customerH.Get)
+		gated.PUT("/customers/:id", customerH.Update)
+		gated.DELETE("/customers/:id", ownerAdmin, customerH.Delete)
 
 		// Financial entries
-		api.GET("/financial/entries", financialH.ListEntries)
-		api.POST("/financial/entries", financialH.CreateEntry)
-		api.GET("/financial/cash-flow", financialH.GetCashFlow)
+		gated.GET("/financial/entries", financialH.ListEntries)
+		gated.POST("/financial/entries", financialH.CreateEntry)
+		gated.GET("/financial/cash-flow", financialH.GetCashFlow)
 
-		// Sales
-		api.GET("/sales", financialH.ListSales)
-		api.POST("/sales", financialH.CreateSale)
-		api.GET("/sales/:id", financialH.GetSale)
-		api.POST("/sales/:id/complete", ownerAdmin, financialH.CompleteSale)
-		api.POST("/sales/:id/cancel", ownerAdmin, financialH.CancelSale)
+		// Sales (blocked when past_due/canceled — protects revenue)
+		gated.GET("/sales", financialH.ListSales)
+		gated.POST("/sales", financialH.CreateSale)
+		gated.GET("/sales/:id", financialH.GetSale)
+		gated.POST("/sales/:id/complete", ownerAdmin, financialH.CompleteSale)
+		gated.POST("/sales/:id/cancel", ownerAdmin, financialH.CancelSale)
 
 		// Commissions
-		api.GET("/commissions", financialH.ListCommissions)
+		gated.GET("/commissions", financialH.ListCommissions)
 
 		// AI (OpenRouter)
-		api.POST("/ai/suggest-reply", aiH.SuggestReply)
-		api.POST("/ai/classify-lead", aiH.ClassifyLead)
+		gated.POST("/ai/suggest-reply", aiH.SuggestReply)
+		gated.POST("/ai/classify-lead", aiH.ClassifyLead)
 
-		// Billing
-		api.GET("/billing/subscription", billingH.GetSubscription)
-		api.POST("/billing/subscribe", ownerAdmin, billingH.Subscribe)
-
-		// Evolution WhatsApp management
-		api.GET("/evolution/status", evolutionH.GetStatus)
-		api.GET("/evolution/qr", evolutionH.GetQR)
-		api.POST("/evolution/connect", ownerAdmin, evolutionH.Connect)
-		api.DELETE("/evolution/disconnect", ownerAdmin, evolutionH.Disconnect)
+		// Evolution WhatsApp (blocked when subscription inactive)
+		gated.GET("/evolution/status", evolutionH.GetStatus)
+		gated.GET("/evolution/qr", evolutionH.GetQR)
+		gated.POST("/evolution/connect", ownerAdmin, evolutionH.Connect)
+		gated.DELETE("/evolution/disconnect", ownerAdmin, evolutionH.Disconnect)
 	}
 
 	return r

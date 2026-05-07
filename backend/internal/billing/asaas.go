@@ -28,7 +28,7 @@ func newAsaasClient(apiKey, env string) *asaasClient {
 	return &asaasClient{
 		baseURL: base,
 		apiKey:  apiKey,
-		http:    &http.Client{Timeout: 15 * time.Second},
+		http:    &http.Client{Timeout: 20 * time.Second},
 	}
 }
 
@@ -65,7 +65,6 @@ func (c *asaasClient) do(method, path string, body any, out any) error {
 	return nil
 }
 
-// createCustomer creates or finds an Asaas customer.
 func (c *asaasClient) createCustomer(name, email, phone, cpfCnpj, externalRef string) (*asaasCustomerResp, error) {
 	req := asaasCustomerReq{
 		Name:        name,
@@ -81,13 +80,14 @@ func (c *asaasClient) createCustomer(name, email, phone, cpfCnpj, externalRef st
 	return &resp, nil
 }
 
-// createSubscription creates an Asaas recurring subscription.
-func (c *asaasClient) createSubscription(customerID string, value float64, cycle, description, externalRef string) (*asaasSubscriptionResp, error) {
+func (c *asaasClient) createSubscription(customerID string, value float64, cycle, billingType, description, externalRef string) (*asaasSubscriptionResp, error) {
+	// First payment due tomorrow (trial-first flow)
+	nextDue := time.Now().AddDate(0, 0, 1).Format("2006-01-02")
 	req := asaasSubscriptionReq{
 		Customer:    customerID,
-		BillingType: "BOLETO",
+		BillingType: billingType,
 		Value:       value,
-		NextDueDate: time.Now().AddDate(0, 0, 1).Format("2006-01-02"),
+		NextDueDate: nextDue,
 		Cycle:       cycle,
 		Description: description,
 		ExternalRef: externalRef,
@@ -99,7 +99,10 @@ func (c *asaasClient) createSubscription(customerID string, value float64, cycle
 	return &resp, nil
 }
 
-// getPaymentLink gets the payment link for an Asaas subscription's current charge.
+func (c *asaasClient) cancelSubscription(subscriptionID string) error {
+	return c.do("DELETE", "/subscriptions/"+subscriptionID, nil, nil)
+}
+
 func (c *asaasClient) getSubscriptionPayments(subscriptionID string) (string, error) {
 	type paymentResp struct {
 		Data []struct {
