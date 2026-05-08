@@ -8,15 +8,15 @@ services:
     env_file: ./backend/.env
     environment:
       - ENV=production
-      - ALLOWED_ORIGINS=http://${VPS_IP},http://${VPS_IP}:3000,http://${VPS_IP}:8090
+      - ALLOWED_ORIGINS=https://app.revendaclick.com.br,https://api.revendaclick.com.br,http://${VPS_IP},http://${VPS_IP}:3000
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4o-mini}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4.1-mini}
       - ASAAS_API_KEY=${ASAAS_API_KEY}
       - ASAAS_ENV=${ASAAS_ENV:-production}
     ports:
-      - "8085:8080"
+      - "8085:8080"   # direct access for debug
     volumes:
       - backend_logs:/app/logs
     healthcheck:
@@ -28,6 +28,21 @@ services:
     restart: unless-stopped
     networks:
       - revendaclick
+      - coolify-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=coolify
+      # ── api.revendaclick.com.br ─────────────────────────────────────────────
+      - traefik.http.routers.rc-api-stg.rule=Host(`api.revendaclick.com.br`)
+      - traefik.http.routers.rc-api-stg.entrypoints=https
+      - traefik.http.routers.rc-api-stg.tls=true
+      - traefik.http.routers.rc-api-stg.tls.certresolver=letsencrypt
+      - traefik.http.routers.rc-api-stg.service=rc-api-stg-svc
+      - traefik.http.services.rc-api-stg-svc.loadbalancer.server.port=8080
+      # HTTP → HTTPS redirect
+      - traefik.http.routers.rc-api-stg-http.rule=Host(`api.revendaclick.com.br`)
+      - traefik.http.routers.rc-api-stg-http.entrypoints=http
+      - traefik.http.routers.rc-api-stg-http.middlewares=rc-https-redirect@docker
 
   # ── Next.js frontend ─────────────────────────────────────────────────────────
   frontend:
@@ -35,19 +50,20 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # Baked into client-side JS at build time
+        # Baked into client-side JS bundle at build time
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-        NEXT_PUBLIC_API_URL: http://${VPS_IP}:8085
-        NEXT_PUBLIC_APP_URL: http://${VPS_IP}
+        NEXT_PUBLIC_API_URL: https://api.revendaclick.com.br
+        NEXT_PUBLIC_APP_URL: https://app.revendaclick.com.br
     environment:
       - NODE_ENV=production
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      # Server-side SSR: use internal Docker network (faster, no egress)
+      # Server-side SSR uses internal Docker network (avoids egress + TLS overhead)
       - NEXT_PUBLIC_API_URL=http://backend:8080
-      - NEXT_PUBLIC_APP_URL=http://${VPS_IP}
+      - NEXT_PUBLIC_APP_URL=https://app.revendaclick.com.br
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
     ports:
-      - "3000:3000"
+      - "3000:3000"   # direct access for debug
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 15s
@@ -65,7 +81,7 @@ services:
   evolution:
     image: atendai/evolution-api:latest
     environment:
-      - SERVER_URL=http://${VPS_IP}:8081
+      - SERVER_URL=https://evolution.revendaclick.com.br
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
       - DATABASE_PROVIDER=postgresql
       - DATABASE_URL=${EVOLUTION_DATABASE_URL}
@@ -84,7 +100,7 @@ services:
       - QRCODE_LIMIT=30
       - LOG_LEVEL=WARN
     ports:
-      - "8081:8080"
+      - "8081:8080"   # direct access for debug
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store
@@ -97,12 +113,27 @@ services:
     restart: unless-stopped
     networks:
       - revendaclick
+      - coolify-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=coolify
+      # ── evolution.revendaclick.com.br ───────────────────────────────────────
+      - traefik.http.routers.rc-evolution-stg.rule=Host(`evolution.revendaclick.com.br`)
+      - traefik.http.routers.rc-evolution-stg.entrypoints=https
+      - traefik.http.routers.rc-evolution-stg.tls=true
+      - traefik.http.routers.rc-evolution-stg.tls.certresolver=letsencrypt
+      - traefik.http.routers.rc-evolution-stg.service=rc-evolution-stg-svc
+      - traefik.http.services.rc-evolution-stg-svc.loadbalancer.server.port=8080
+      # HTTP → HTTPS redirect
+      - traefik.http.routers.rc-evolution-stg-http.rule=Host(`evolution.revendaclick.com.br`)
+      - traefik.http.routers.rc-evolution-stg-http.entrypoints=http
+      - traefik.http.routers.rc-evolution-stg-http.middlewares=rc-https-redirect@docker
 
   # ── Nginx reverse proxy ──────────────────────────────────────────────────────
   nginx:
     image: nginx:1.27-alpine
     ports:
-      - "8090:80"
+      - "8090:80"   # direct access for debug
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
@@ -115,6 +146,24 @@ services:
     restart: unless-stopped
     networks:
       - revendaclick
+      - coolify-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=coolify
+      # ── app.revendaclick.com.br ─────────────────────────────────────────────
+      - traefik.http.routers.rc-app-stg.rule=Host(`app.revendaclick.com.br`)
+      - traefik.http.routers.rc-app-stg.entrypoints=https
+      - traefik.http.routers.rc-app-stg.tls=true
+      - traefik.http.routers.rc-app-stg.tls.certresolver=letsencrypt
+      - traefik.http.routers.rc-app-stg.service=rc-app-stg-svc
+      - traefik.http.services.rc-app-stg-svc.loadbalancer.server.port=80
+      # HTTP → HTTPS redirect
+      - traefik.http.routers.rc-app-stg-http.rule=Host(`app.revendaclick.com.br`)
+      - traefik.http.routers.rc-app-stg-http.entrypoints=http
+      - traefik.http.routers.rc-app-stg-http.middlewares=rc-https-redirect@docker
+      # Shared HTTPS redirect middleware
+      - traefik.http.middlewares.rc-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.rc-https-redirect.redirectscheme.permanent=true
 
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
@@ -123,7 +172,11 @@ volumes:
   evolution_instances:
   evolution_store:
 
-# ── Network ───────────────────────────────────────────────────────────────────
+# ── Networks ──────────────────────────────────────────────────────────────────
 networks:
   revendaclick:
     driver: bridge
+  # Coolify's Traefik proxy network — external, created by Coolify on install
+  coolify-proxy:
+    external: true
+    name: coolify

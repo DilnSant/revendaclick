@@ -10,7 +10,7 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - ALLOWED_ORIGINS=https://revendaclick.com.br,https://www.revendaclick.com.br,https://api.revendaclick.com.br
+      - ALLOWED_ORIGINS=https://app.revendaclick.com.br,https://api.revendaclick.com.br,https://revendaclick.com.br,https://www.revendaclick.com.br
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -60,7 +60,7 @@ services:
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
       # Server-side SSR calls use the internal Docker network
       - NEXT_PUBLIC_API_URL=http://backend:8080
-      - NEXT_PUBLIC_APP_URL=https://revendaclick.com.br
+      - NEXT_PUBLIC_APP_URL=https://app.revendaclick.com.br
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
@@ -161,14 +161,14 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=coolify
-      # ── revendaclick.com.br (frontend + /api/ proxy) ────────────────────────
-      - traefik.http.routers.rc-frontend.rule=Host(`revendaclick.com.br`) || Host(`www.revendaclick.com.br`)
+      # ── app.revendaclick.com.br (frontend + /api/ proxy) ───────────────────
+      - traefik.http.routers.rc-frontend.rule=Host(`app.revendaclick.com.br`) || Host(`revendaclick.com.br`) || Host(`www.revendaclick.com.br`)
       - traefik.http.routers.rc-frontend.entrypoints=https
       - traefik.http.routers.rc-frontend.tls=true
       - traefik.http.routers.rc-frontend.tls.certresolver=letsencrypt
       - traefik.http.services.rc-frontend.loadbalancer.server.port=80
       # HTTP → HTTPS redirect
-      - traefik.http.routers.rc-frontend-http.rule=Host(`revendaclick.com.br`) || Host(`www.revendaclick.com.br`)
+      - traefik.http.routers.rc-frontend-http.rule=Host(`app.revendaclick.com.br`) || Host(`revendaclick.com.br`) || Host(`www.revendaclick.com.br`)
       - traefik.http.routers.rc-frontend-http.entrypoints=http
       - traefik.http.routers.rc-frontend-http.middlewares=rc-https-redirect
 
