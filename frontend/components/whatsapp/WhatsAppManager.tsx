@@ -17,7 +17,7 @@ async function getToken(): Promise<string> {
   return session?.access_token ?? ''
 }
 
-async function apiFetch<T>(method: string, path: string): Promise<{ data?: T; error?: string }> {
+async function apiFetch<T>(method: string, path: string): Promise<{ data?: T; error?: string; unavailable?: boolean }> {
   const token = await getToken()
   try {
     const res = await fetch(`${API}${path}`, {
@@ -25,10 +25,17 @@ async function apiFetch<T>(method: string, path: string): Promise<{ data?: T; er
       headers: { Authorization: `Bearer ${token}` },
     })
     const json = await res.json().catch(() => ({}))
-    if (!res.ok) return { error: json.error?.message ?? 'Erro inesperado' }
+    if (!res.ok) {
+      const errObj = json.error
+      const msg = typeof errObj === 'string'
+        ? errObj
+        : (errObj?.message ?? `Erro ${res.status}`)
+      const unavailable = res.status === 503 || errObj?.code === 'evolution_unavailable'
+      return { error: msg, unavailable }
+    }
     return { data: (json.data ?? json) as T }
   } catch {
-    return { error: 'Falha de conexão' }
+    return { error: 'Falha de conexão com o servidor', unavailable: true }
   }
 }
 
@@ -54,6 +61,7 @@ export default function WhatsAppManager({
   const [status, setStatus] = useState(initialStatus)
   const [qr, setQr] = useState<QRData | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [serviceDown, setServiceDown] = useState(false)
   const [pending, startTransition] = useTransition()
 
   function showToast(msg: string) {
@@ -79,9 +87,13 @@ export default function WhatsAppManager({
   }, [status.status])
 
   function handleConnect() {
+    setServiceDown(false)
     startTransition(async () => {
       const result = await apiFetch<QRData>('POST', '/api/evolution/connect')
-      if (result.error) { showToast(result.error); return }
+      if (result.error) {
+        if (result.unavailable) { setServiceDown(true) } else { showToast(result.error) }
+        return
+      }
       setQr(result.data ?? null)
       setStatus(prev => ({ ...prev, status: 'connecting' }))
       showToast('QR code gerado. Escaneie com seu WhatsApp.')
@@ -89,9 +101,13 @@ export default function WhatsAppManager({
   }
 
   function handleRefreshQR() {
+    setServiceDown(false)
     startTransition(async () => {
       const result = await apiFetch<QRData>('GET', '/api/evolution/qr')
-      if (result.error) { showToast(result.error); return }
+      if (result.error) {
+        if (result.unavailable) { setServiceDown(true) } else { showToast(result.error) }
+        return
+      }
       setQr(result.data ?? null)
     })
   }
@@ -117,6 +133,24 @@ export default function WhatsAppManager({
       {toast && (
         <div className="fixed top-4 right-4 z-50 rounded-lg bg-gray-900 px-4 py-3 text-sm text-white shadow-lg">
           {toast}
+        </div>
+      )}
+
+      {/* Service unavailable banner */}
+      {serviceDown && (
+        <div className="rounded-xl border border-orange-200 bg-orange-50 px-5 py-4">
+          <div className="flex items-start gap-3">
+            <svg className="mt-0.5 h-5 w-5 shrink-0 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-orange-800">Serviço WhatsApp temporariamente indisponível</p>
+              <p className="mt-1 text-xs text-orange-700">
+                O serviço Evolution API está iniciando ou reiniciando. Aguarde 30–60 segundos e tente novamente.
+              </p>
+            </div>
+            <button onClick={() => setServiceDown(false)} className="text-orange-400 hover:text-orange-600">✕</button>
+          </div>
         </div>
       )}
 

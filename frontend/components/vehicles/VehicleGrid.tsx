@@ -3,7 +3,7 @@
 import { useState, useOptimistic, useTransition } from 'react'
 import {
   type Vehicle, type VehicleStatus,
-  STATUS_LABELS, STATUS_BADGE, CONDITION_LABELS, FUEL_LABELS,
+  STATUS_LABELS, STATUS_BADGE, CONDITION_LABELS, FUEL_LABELS, TRANSMISSION_LABELS,
   formatPrice,
 } from '@/lib/vehicles'
 import { deleteVehicle, toggleVehicleStatus, toggleVehicleFeatured } from '@/app/(dashboard)/vehicles/actions'
@@ -209,16 +209,27 @@ function VehicleCard({ vehicle, onEdit, onDelete, onStatusChange, onFeaturedTogg
   return (
     <div className="group relative overflow-hidden rounded-xl border border-gray-100 bg-white shadow-card transition-shadow hover:shadow-card-hover">
       {/* Thumbnail */}
-      <div className="relative h-40 w-full bg-gray-100">
-        {vehicle.thumbnail_url ? (
+      <div className="relative h-44 w-full bg-gray-100">
+        {vehicle.thumbnail_url || vehicle.images?.[0] ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={vehicle.thumbnail_url}
+            src={vehicle.thumbnail_url ?? vehicle.images[0]}
             alt={vehicle.title}
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-3xl text-gray-300">🚗</div>
+          <div className="flex h-full flex-col items-center justify-center gap-1 text-gray-200">
+            <svg className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM7.3 7l1.4-3.6A1 1 0 019.6 3H17a1 1 0 01.9.6L19 7M3 11l1-4h16l1 4v4H3v-4z" />
+            </svg>
+            <span className="text-[10px] text-gray-300">Sem foto</span>
+          </div>
+        )}
+        {/* Photo count badge */}
+        {(vehicle.images?.length ?? 0) > 1 && (
+          <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">
+            {vehicle.images.length} fotos
+          </span>
         )}
 
         {/* Featured badge */}
@@ -240,16 +251,29 @@ function VehicleCard({ vehicle, onEdit, onDelete, onStatusChange, onFeaturedTogg
       {/* Info */}
       <div className="p-3">
         <p className="line-clamp-1 text-sm font-semibold text-gray-900">{vehicle.title}</p>
-        <p className="mt-0.5 text-xs text-gray-500">
-          {vehicle.year_model} · {CONDITION_LABELS[vehicle.condition]} · {FUEL_LABELS[vehicle.fuel]}
-        </p>
-        <p className="mt-1 text-base font-bold text-primary">{formatPrice(vehicle.price)}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-500">
+          <span>{vehicle.year_model}</span>
+          <span className="text-gray-200">·</span>
+          <span>{FUEL_LABELS[vehicle.fuel]}</span>
+          <span className="text-gray-200">·</span>
+          <span>{TRANSMISSION_LABELS[vehicle.transmission]}</span>
+          {vehicle.mileage > 0 && (
+            <>
+              <span className="text-gray-200">·</span>
+              <span>{(vehicle.mileage / 1000).toFixed(0)}k km</span>
+            </>
+          )}
+        </div>
+        <p className="mt-1.5 text-base font-bold text-primary">{formatPrice(vehicle.price)}</p>
+        {vehicle.price_negotiable && (
+          <p className="text-[10px] text-gray-400">Negociável</p>
+        )}
 
         {/* Stats */}
         <div className="mt-2 flex items-center gap-3 text-[10px] text-gray-400">
-          <span>👁 {vehicle.views_count}</span>
-          <span>📋 {vehicle.leads_count}</span>
-          {vehicle.mileage > 0 && <span>{vehicle.mileage.toLocaleString('pt-BR')} km</span>}
+          <span title="Visualizações">👁 {vehicle.views_count}</span>
+          <span title="Leads">📋 {vehicle.leads_count}</span>
+          <span className="ml-auto text-[10px] text-gray-300">{CONDITION_LABELS[vehicle.condition]}</span>
         </div>
       </div>
 

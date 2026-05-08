@@ -11,26 +11,29 @@ interface Props {
 }
 
 export default async function DashboardLayout({ children }: Props) {
-  const userId = await getUserIdFromHeaders()
+  // Middleware injects x-user-id on protected routes; fall back to Supabase
+  // getUser() for any route not yet in the middleware DASHBOARD_PREFIXES list.
+  let uid = await getUserIdFromHeaders()
 
-  if (!userId) {
-    const supabase = await createClient()
+  const supabase = await createClient()
+
+  if (!uid) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) redirect('/login')
+    uid = user.id
   }
 
-  const uid = userId!
-
-  const [tenant, supabase] = await Promise.all([
-    getTenantForUser(uid),
-    createClient(),
-  ])
-
+  const tenant = await getTenantForUser(uid)
   if (!tenant) redirect('/onboarding')
 
-  const { data: { session } } = await supabase.auth.getSession()
-  const token = session?.access_token ?? ''
-  const userEmail = session?.user?.email ?? ''
+  // Resolve access token — non-fatal so a Supabase hiccup won't crash the layout
+  let token = ''
+  let userEmail = ''
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    token     = session?.access_token ?? ''
+    userEmail = session?.user?.email ?? ''
+  } catch { /* degrade gracefully */ }
 
   const [usage, sub] = await Promise.all([
     getUsageFromAPI(token),

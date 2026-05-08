@@ -69,7 +69,10 @@ func (h *Handler) GetQR(c *gin.Context) {
 	qr, err := h.svc.GetQRCode(c.Request.Context(), slug)
 	if err != nil {
 		h.logger.Warn("evolution: get qr", zap.Error(err))
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "QR não disponível. Instância pode não existir."})
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": gin.H{
+			"code":    "evolution_unavailable",
+			"message": "Serviço WhatsApp temporariamente indisponível. Aguarde alguns segundos e tente novamente.",
+		}})
 		return
 	}
 
@@ -90,7 +93,10 @@ func (h *Handler) Connect(c *gin.Context) {
 	qr, err := h.svc.GetQRCode(c.Request.Context(), slug)
 	if err != nil {
 		h.logger.Warn("evolution: connect get qr", zap.Error(err))
-		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Não foi possível obter QR code."})
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": gin.H{
+			"code":    "evolution_unavailable",
+			"message": "Serviço WhatsApp temporariamente indisponível. Aguarde alguns segundos e tente novamente.",
+		}})
 		return
 	}
 
