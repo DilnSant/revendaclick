@@ -10,6 +10,8 @@ import (
 	"go.uber.org/zap"
 
 	"revendaclick/backend/internal/ai"
+	"revendaclick/backend/internal/analytics"
+	"revendaclick/backend/internal/audit"
 	"revendaclick/backend/internal/billing"
 	"revendaclick/backend/internal/config"
 	"revendaclick/backend/internal/customers"
@@ -32,6 +34,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	r := gin.New()
 
 	// ── Global middleware ─────────────────────────────────────────────────────
+	r.Use(appMiddleware.RequestID())
+	r.Use(appMiddleware.SecurityHeaders())
 	r.Use(gin.Recovery())
 	r.Use(appMiddleware.ZapLogger(logger))
 	r.Use(appMiddleware.RateLimit(20, 60)) // 20 rps sustained, 60 burst per IP
@@ -57,8 +61,10 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		cfg.EvolutionAPIKey,
 		logger,
 	)
-	aiH      := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
-	billingH := billing.NewHandler(
+	analyticsH := analytics.NewHandler(analytics.NewService(analytics.NewRepository(pool)))
+	auditH     := audit.NewHandler(audit.NewRepository(pool))
+	aiH        := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
+	billingH   := billing.NewHandler(
 		billing.NewService(billing.NewRepository(pool), cfg.AsaasAPIKey, cfg.AsaasEnv),
 		cfg.AsaasAPIKey,
 	)
@@ -136,6 +142,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 
 		// Leads
 		gated.GET("/leads", leadH.List)
+		gated.GET("/leads/follow-ups", leadH.ListFollowUps)
 		gated.POST("/leads", leadH.Create)
 		gated.GET("/leads/:id", leadH.Get)
 		gated.PUT("/leads/:id", leadH.Update)
@@ -172,6 +179,13 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 
 		// Commissions
 		gated.GET("/commissions", financialH.ListCommissions)
+
+		// Analytics
+		planGate := func(f string) gin.HandlerFunc { return appMiddleware.PlanGate(pool, f) }
+		gated.GET("/analytics/summary", planGate("analytics"), analyticsH.GetSummary)
+
+		// Audit trail (owner/admin only)
+		gated.GET("/audit", ownerAdmin, auditH.List)
 
 		// AI (OpenRouter)
 		gated.POST("/ai/suggest-reply", aiH.SuggestReply)

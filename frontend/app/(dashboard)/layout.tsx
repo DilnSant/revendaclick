@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { getUserIdFromHeaders, getTenantForUser, getTenantUsage } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import { getSubscription } from '@/lib/billing'
 import PlanAlertBanner from '@/components/ui/PlanAlertBanner'
@@ -28,13 +28,14 @@ export default async function DashboardLayout({ children }: Props) {
 
   if (!tenant) redirect('/onboarding')
 
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token ?? ''
+  const userEmail = session?.user?.email ?? ''
+
   const [usage, sub] = await Promise.all([
-    getTenantUsage(tenant.id),
+    getUsageFromAPI(token),
     getSubscription(),
   ])
-
-  const { data: { session } } = await supabase.auth.getSession()
-  const userEmail = session?.user?.email ?? ''
 
   return (
     <DashboardShell
@@ -43,6 +44,7 @@ export default async function DashboardLayout({ children }: Props) {
       userEmail={userEmail}
       planDisplay={usage?.plan_display ?? ''}
       subscriptionStatus={sub?.status}
+      planFeatures={usage ?? undefined}
     >
       <SubscriptionBanner sub={sub} />
       {usage && <PlanAlertBanner usage={usage} />}

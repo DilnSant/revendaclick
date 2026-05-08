@@ -17,26 +17,48 @@ type Plan struct {
 }
 
 type Usage struct {
-	VehiclesCount int     `json:"vehicles_count"`
-	UsersCount    int     `json:"users_count"`
-	LeadsCount    int     `json:"leads_count"`
-	MaxVehicles   int     `json:"max_vehicles"`
-	MaxUsers      int     `json:"max_users"`
-	MaxLeads      int     `json:"max_leads"`
-	VehiclesPct   float64 `json:"vehicles_pct"`
-	UsersPct      float64 `json:"users_pct"`
-	PlanName      string  `json:"plan_name"`
-	PlanDisplay   string  `json:"plan_display"`
-	SubStatus     string  `json:"subscription_status"`
+	VehiclesCount int      `json:"vehicles_count"`
+	UsersCount    int      `json:"users_count"`
+	LeadsCount    int      `json:"leads_count"`
+	MaxVehicles   int      `json:"max_vehicles"`
+	MaxUsers      int      `json:"max_users"`
+	MaxLeads      int      `json:"max_leads"`
+	VehiclesPct   float64  `json:"vehicles_pct"`
+	UsersPct      float64  `json:"users_pct"`
+	PlanName      string   `json:"plan_name"`
+	PlanDisplay   string   `json:"plan_display"`
+	SubStatus     string   `json:"subscription_status"`
+	Features      []string `json:"features"`
 
 	// Alert thresholds (computed)
 	VehiclesAlert string `json:"vehicles_alert"` // "ok", "warning", "critical", "blocked"
 	UsersAlert    string `json:"users_alert"`
+
+	// Feature availability helpers (computed from Features list)
+	HasCRM        bool `json:"has_crm"`
+	HasAnalytics  bool `json:"has_analytics"`
+	HasWhatsApp   bool `json:"has_whatsapp"`
+	HasKanban     bool `json:"has_kanban"`
+	HasAPIAccess  bool `json:"has_api_access"`
+	HasWhiteLabel bool `json:"has_white_label"`
 }
 
 func (u *Usage) ComputeAlerts() {
 	u.VehiclesAlert = alertLevel(u.VehiclesPct, u.MaxVehicles)
-	u.UsersAlert = alertLevel(u.UsersPct, u.MaxUsers)
+	u.UsersAlert    = alertLevel(u.UsersPct, u.MaxUsers)
+}
+
+func (u *Usage) ComputeFeatureFlags() {
+	fm := make(map[string]bool, len(u.Features))
+	for _, f := range u.Features {
+		fm[f] = true
+	}
+	u.HasCRM        = fm["crm"]
+	u.HasAnalytics  = fm["analytics"]
+	u.HasWhatsApp   = fm["whatsapp_button"]
+	u.HasKanban     = fm["kanban"]
+	u.HasAPIAccess  = fm["api_access"]
+	u.HasWhiteLabel = fm["white_label"]
 }
 
 func alertLevel(pct float64, max int) string {

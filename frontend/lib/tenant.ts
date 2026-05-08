@@ -45,6 +45,14 @@ export type PlanUsage = {
   subscription_status: string
   vehicles_alert: 'ok' | 'warning' | 'critical' | 'blocked'
   users_alert: 'ok' | 'warning' | 'critical' | 'blocked'
+  // Feature flags (populated when fetched from backend API)
+  features?: string[]
+  has_crm?: boolean
+  has_analytics?: boolean
+  has_whatsapp?: boolean
+  has_kanban?: boolean
+  has_api_access?: boolean
+  has_white_label?: boolean
 }
 
 // ─── Header extraction (public routes) ───────────────────────────────────────
@@ -166,6 +174,46 @@ export const getTenantUsage = cache(async (tenantId: string): Promise<PlanUsage 
     users_alert:         computeAlert(row.users_pct, row.max_users),
   }
 })
+
+// ─── Backend API usage (includes feature flags) ───────────────────────────────
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+
+export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> {
+  if (!token) return null
+  try {
+    const res = await fetch(`${API}/api/usage`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return {
+      vehicles_count:      data.vehicles_count,
+      users_count:         data.users_count,
+      leads_count:         data.leads_count,
+      max_vehicles:        data.max_vehicles,
+      max_users:           data.max_users,
+      max_leads:           data.max_leads,
+      vehicles_pct:        data.vehicles_pct,
+      users_pct:           data.users_pct,
+      plan_name:           data.plan_name,
+      plan_display:        data.plan_display,
+      subscription_status: data.subscription_status,
+      vehicles_alert:      data.vehicles_alert ?? computeAlert(data.vehicles_pct, data.max_vehicles),
+      users_alert:         data.users_alert ?? computeAlert(data.users_pct, data.max_users),
+      features:            data.features ?? [],
+      has_crm:             data.has_crm ?? false,
+      has_analytics:       data.has_analytics ?? false,
+      has_whatsapp:        data.has_whatsapp ?? false,
+      has_kanban:          data.has_kanban ?? false,
+      has_api_access:      data.has_api_access ?? false,
+      has_white_label:     data.has_white_label ?? false,
+    }
+  } catch {
+    return null
+  }
+}
 
 // ─── WhatsApp helper ─────────────────────────────────────────────────────────
 

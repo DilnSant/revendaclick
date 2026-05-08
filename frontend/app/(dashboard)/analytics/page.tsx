@@ -1,14 +1,29 @@
 import { notFound } from 'next/navigation'
-import { getUserIdFromHeaders, getTenantForUser, getTenantUsage } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
-import type { PlanUsage } from '@/lib/tenant'
 
 export const metadata = { title: 'Analytics' }
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
-interface LeadStats { status: string; count: number }
-interface VehicleStats { status: string; count: number }
+interface AnalyticsSummary {
+  total_leads: number
+  new_leads: number
+  in_progress_leads: number
+  proposal_leads: number
+  won_leads: number
+  lost_leads: number
+  conversion_rate: number
+  leads_by_source: { source: string; count: number }[]
+  total_vehicles: number
+  available_vehicles: number
+  reserved_vehicles: number
+  sold_vehicles: number
+  month_revenue: number
+  month_sales: number
+  avg_sale_value: number
+  revenue_history: { month: string; revenue: number; sales: number }[]
+}
 
 export default async function AnalyticsPage() {
   const userId = await getUserIdFromHeaders()
@@ -21,11 +36,7 @@ export default async function AnalyticsPage() {
   const { data: { session } } = await supabase.auth.getSession()
   const token = session?.access_token ?? ''
 
-  const [usage, leadStats, vehicleStats] = await Promise.all([
-    getTenantUsage(tenant.id),
-    fetchLeadStats(token),
-    fetchVehicleStats(token),
-  ])
+  const summary = await fetchSummary(token)
 
   return (
     <div className="space-y-6">
@@ -34,181 +45,171 @@ export default async function AnalyticsPage() {
         <p className="mt-0.5 text-sm text-gray-500">Métricas da sua loja</p>
       </div>
 
-      {/* KPIs */}
-      {usage && <KPIGrid usage={usage} />}
+      {/* Financial KPIs */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KPICard label="Receita este mês"   value={fmtBRL(summary.month_revenue)} />
+        <KPICard label="Vendas este mês"    value={summary.month_sales} />
+        <KPICard label="Ticket médio"       value={fmtBRL(summary.avg_sale_value)} />
+        <KPICard label="Taxa de conversão"  value={`${summary.conversion_rate.toFixed(1)}%`} isText />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Leads by status */}
-        <StatsCard title="Leads por status" items={leadStats} emptyMessage="Nenhum lead registrado ainda." />
-
-        {/* Vehicles by status */}
-        <StatsCard title="Estoque por status" items={vehicleStats} emptyMessage="Nenhum veículo cadastrado ainda." />
-      </div>
-
-      {/* Usage limits */}
-      {usage && (
-        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
-          <h2 className="text-base font-semibold text-gray-900">Limites do plano — {usage.plan_display}</h2>
-          <div className="space-y-3">
-            <LimitBar label="Veículos" count={usage.vehicles_count} max={usage.max_vehicles} alert={usage.vehicles_alert} />
-            <LimitBar label="Usuários" count={usage.users_count} max={usage.max_users} alert={usage.users_alert} />
-            <LimitBar label="Leads" count={usage.leads_count} max={usage.max_leads} alert="ok" />
+        {/* Lead funnel */}
+        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-base font-semibold text-gray-900">
+            Funil de leads
+            <span className="ml-2 text-sm font-normal text-gray-400">({summary.total_leads} total)</span>
+          </h2>
+          <div className="space-y-2.5">
+            <FunnelBar label="Novos"        count={summary.new_leads}        total={summary.total_leads} color="bg-blue-500" />
+            <FunnelBar label="Em andamento" count={summary.in_progress_leads} total={summary.total_leads} color="bg-yellow-500" />
+            <FunnelBar label="Proposta"     count={summary.proposal_leads}   total={summary.total_leads} color="bg-purple-500" />
+            <FunnelBar label="Ganhos"       count={summary.won_leads}        total={summary.total_leads} color="bg-green-500" />
+            <FunnelBar label="Perdidos"     count={summary.lost_leads}       total={summary.total_leads} color="bg-red-400" />
           </div>
         </div>
-      )}
-    </div>
-  )
-}
 
-function KPIGrid({ usage }: { usage: PlanUsage }) {
-  const cards = [
-    { label: 'Veículos ativos', value: usage.vehicles_count },
-    { label: 'Leads totais',    value: usage.leads_count },
-    { label: 'Usuários',        value: usage.users_count },
-    { label: 'Plano',           value: usage.plan_display, isText: true },
-  ]
-  return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {cards.map(({ label, value, isText }) => (
-        <div key={label} className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
-          <p className={`mt-1 font-bold text-gray-900 ${isText ? 'text-lg' : 'text-3xl'}`}>{value}</p>
+        {/* Leads by source */}
+        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-base font-semibold text-gray-900">Leads por origem</h2>
+          {summary.leads_by_source.length === 0 ? (
+            <p className="text-sm text-gray-400">Nenhum lead ainda.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {summary.leads_by_source.map(({ source, count }) => (
+                <FunnelBar
+                  key={source}
+                  label={SOURCE_LABELS[source] ?? source}
+                  count={count}
+                  total={summary.total_leads}
+                  color="bg-red-500"
+                />
+              ))}
+            </div>
+          )}
         </div>
-      ))}
-    </div>
-  )
-}
+      </div>
 
-const STATUS_LABELS: Record<string, string> = {
-  new:          'Novo',
-  in_progress:  'Em andamento',
-  proposal:     'Proposta',
-  closed_won:   'Ganho',
-  closed_lost:  'Perdido',
-  available:    'Disponível',
-  reserved:     'Reservado',
-  sold:         'Vendido',
-  inactive:     'Inativo',
-}
+      {/* Vehicle stock */}
+      <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-base font-semibold text-gray-900">
+          Estoque
+          <span className="ml-2 text-sm font-normal text-gray-400">({summary.total_vehicles} veículos)</span>
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <StockCard label="Disponíveis" value={summary.available_vehicles} color="text-green-600 bg-green-50" />
+          <StockCard label="Reservados"  value={summary.reserved_vehicles}  color="text-yellow-600 bg-yellow-50" />
+          <StockCard label="Vendidos"    value={summary.sold_vehicles}      color="text-gray-600 bg-gray-100" />
+          <StockCard label="Inativos"    value={summary.total_vehicles - summary.available_vehicles - summary.reserved_vehicles - summary.sold_vehicles}
+                     color="text-red-600 bg-red-50" />
+        </div>
+      </div>
 
-const STATUS_COLORS: Record<string, string> = {
-  new:         'bg-blue-500',
-  in_progress: 'bg-yellow-500',
-  proposal:    'bg-purple-500',
-  closed_won:  'bg-green-500',
-  closed_lost: 'bg-red-400',
-  available:   'bg-green-500',
-  reserved:    'bg-yellow-500',
-  sold:        'bg-gray-400',
-  inactive:    'bg-gray-300',
-}
-
-function StatsCard({ title, items, emptyMessage }: { title: string; items: { status: string; count: number }[]; emptyMessage: string }) {
-  const total = items.reduce((s, i) => s + i.count, 0)
-
-  return (
-    <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
-      <h2 className="text-base font-semibold text-gray-900">{title}</h2>
-      {items.length === 0 ? (
-        <p className="text-sm text-gray-400">{emptyMessage}</p>
-      ) : (
-        <div className="space-y-2.5">
-          {items.map(({ status, count }) => {
-            const pct = total > 0 ? Math.round((count / total) * 100) : 0
-            return (
-              <div key={status}>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="font-medium text-gray-700">{STATUS_LABELS[status] ?? status}</span>
-                  <span className="text-gray-500">{count} ({pct}%)</span>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
-                  <div
-                    className={`h-full rounded-full transition-all ${STATUS_COLORS[status] ?? 'bg-gray-400'}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-              </div>
-            )
-          })}
+      {/* Revenue history */}
+      {summary.revenue_history.length > 0 && (
+        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="mb-4 text-base font-semibold text-gray-900">Receita — últimos 6 meses</h2>
+          <RevenueChart history={summary.revenue_history} />
         </div>
       )}
     </div>
   )
 }
 
-const ALERT_BAR: Record<string, string> = {
-  ok:       'bg-green-500',
-  warning:  'bg-yellow-500',
-  critical: 'bg-orange-500',
-  blocked:  'bg-red-600',
+// ─── Components ───────────────────────────────────────────────────────────────
+
+function KPICard({ label, value, isText }: { label: string; value: string | number; isText?: boolean }) {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
+      <p className={`mt-1 font-bold text-gray-900 ${isText ? 'text-xl' : 'text-3xl'}`}>{value}</p>
+    </div>
+  )
 }
 
-function LimitBar({ label, count, max, alert }: { label: string; count: number; max: number; alert: string }) {
-  const pct    = max === -1 ? 0 : Math.min(100, Math.round((count / max) * 100))
-  const isUnlimited = max === -1
-
+function FunnelBar({ label, count, total, color }: { label: string; count: number; total: number; color: string }) {
+  const pct = total > 0 ? Math.round((count / total) * 100) : 0
   return (
     <div>
-      <div className="flex items-center justify-between text-sm mb-1.5">
+      <div className="flex items-center justify-between text-xs mb-1">
         <span className="font-medium text-gray-700">{label}</span>
-        <span className="text-gray-500">
-          {count} / {isUnlimited ? '∞' : max}
-        </span>
+        <span className="text-gray-500">{count} ({pct}%)</span>
       </div>
-      {!isUnlimited && (
-        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
-          <div
-            className={`h-full rounded-full transition-all ${ALERT_BAR[alert] ?? ALERT_BAR.ok}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      )}
+      <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className={`h-full rounded-full transition-all ${color}`} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   )
 }
 
-async function fetchLeadStats(token: string): Promise<LeadStats[]> {
-  if (!token) return []
-  try {
-    const res = await fetch(`${API}/api/leads?limit=500`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    })
-    if (!res.ok) return []
-    const json = await res.json()
-    const leads = (json.data ?? []) as Array<{ status: string }>
-
-    const counts: Record<string, number> = {}
-    for (const l of leads) {
-      counts[l.status] = (counts[l.status] ?? 0) + 1
-    }
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .map(([status, count]) => ({ status, count }))
-  } catch {
-    return []
-  }
+function StockCard({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className={`rounded-lg px-4 py-3 ${color}`}>
+      <p className="text-xs font-medium opacity-70">{label}</p>
+      <p className="mt-0.5 text-2xl font-bold">{value}</p>
+    </div>
+  )
 }
 
-async function fetchVehicleStats(token: string): Promise<VehicleStats[]> {
-  if (!token) return []
+function RevenueChart({ history }: { history: { month: string; revenue: number; sales: number }[] }) {
+  const max = Math.max(...history.map((h) => h.revenue), 1)
+  return (
+    <div className="flex items-end gap-3 h-32">
+      {history.map((h) => {
+        const pct = Math.round((h.revenue / max) * 100)
+        const [year, month] = h.month.split('-')
+        const label = new Date(parseInt(year), parseInt(month) - 1).toLocaleString('pt-BR', { month: 'short' })
+        return (
+          <div key={h.month} className="flex flex-1 flex-col items-center gap-1">
+            <span className="text-[10px] font-medium text-gray-500">{fmtBRL(h.revenue, true)}</span>
+            <div className="w-full rounded-t bg-red-100 flex flex-col justify-end" style={{ height: '80px' }}>
+              <div
+                className="w-full rounded-t bg-red-500 transition-all"
+                style={{ height: `${pct}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-gray-400 capitalize">{label}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// ─── Utils ────────────────────────────────────────────────────────────────────
+
+const SOURCE_LABELS: Record<string, string> = {
+  marketplace: 'Marketplace',
+  whatsapp:    'WhatsApp',
+  referral:    'Indicação',
+  direct:      'Direto',
+  social:      'Redes Sociais',
+  other:       'Outro',
+}
+
+function fmtBRL(value: number, compact = false): string {
+  if (compact && value >= 1000) {
+    return `R$ ${(value / 1000).toFixed(1)}k`
+  }
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
+async function fetchSummary(token: string): Promise<AnalyticsSummary> {
+  const empty: AnalyticsSummary = {
+    total_leads: 0, new_leads: 0, in_progress_leads: 0, proposal_leads: 0,
+    won_leads: 0, lost_leads: 0, conversion_rate: 0, leads_by_source: [],
+    total_vehicles: 0, available_vehicles: 0, reserved_vehicles: 0, sold_vehicles: 0,
+    month_revenue: 0, month_sales: 0, avg_sale_value: 0, revenue_history: [],
+  }
+  if (!token) return empty
   try {
-    const res = await fetch(`${API}/api/vehicles?limit=500`, {
+    const res = await fetch(`${API}/api/analytics/summary`, {
       headers: { Authorization: `Bearer ${token}` },
       cache: 'no-store',
     })
-    if (!res.ok) return []
-    const json = await res.json()
-    const vehicles = (json.data ?? []) as Array<{ status: string }>
-
-    const counts: Record<string, number> = {}
-    for (const v of vehicles) {
-      counts[v.status] = (counts[v.status] ?? 0) + 1
-    }
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .map(([status, count]) => ({ status, count }))
+    if (!res.ok) return empty
+    return await res.json() as AnalyticsSummary
   } catch {
-    return []
+    return empty
   }
 }

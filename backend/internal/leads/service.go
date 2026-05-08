@@ -55,3 +55,7 @@ func (s *Service) AddActivity(ctx context.Context, tenantID, leadID, userID stri
 func (s *Service) ListActivities(ctx context.Context, tenantID, leadID string) ([]*Activity, error) {
 	return s.repo.ListActivities(ctx, tenantID, leadID)
 }
+
+func (s *Service) ListFollowUps(ctx context.Context, tenantID, sellerID string) ([]*Lead, error) {
+	return s.repo.ListFollowUps(ctx, tenantID, sellerID)
+}

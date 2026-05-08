@@ -1,7 +1,8 @@
-import { getUserIdFromHeaders, getTenantForUser, getTenantUsage } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabaseServer'
 import UsageBar from '@/components/ui/UsageBar'
+import type { Lead } from '@/lib/crm'
 
 export const metadata = { title: 'Dashboard' }
 
@@ -21,10 +22,11 @@ export default async function DashboardPage() {
   const { data: { session } } = await supabase.auth.getSession()
   const token = session?.access_token ?? ''
 
-  const [usage, sales, cashFlow] = await Promise.all([
-    getTenantUsage(tenant.id),
+  const [usage, sales, cashFlow, followUps] = await Promise.all([
+    getUsageFromAPI(token),
     fetchSales(token),
     fetchCashFlow(token),
+    fetchFollowUps(token),
   ])
 
   const completedSales = sales.filter(s => s.status === 'completed')
@@ -131,6 +133,36 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {/* Follow-ups due today / overdue */}
+      {followUps.length > 0 && (
+        <div className="card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-gray-900">Follow-ups pendentes</h2>
+            <a href="/leads" className="text-xs font-medium text-red-600 hover:text-red-700">Ver leads →</a>
+          </div>
+          <div className="space-y-2">
+            {followUps.slice(0, 5).map(lead => {
+              const due = new Date(lead.follow_up_at!)
+              const isOverdue = due < new Date()
+              return (
+                <div key={lead.id} className="flex items-center gap-3 rounded-lg border border-gray-100 px-3 py-2">
+                  <div className={`h-2 w-2 rounded-full shrink-0 ${isOverdue ? 'bg-red-500' : 'bg-blue-400'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{lead.name}</p>
+                    {lead.follow_up_note && (
+                      <p className="text-xs text-gray-400 truncate">{lead.follow_up_note}</p>
+                    )}
+                  </div>
+                  <span className={`text-xs shrink-0 font-medium ${isOverdue ? 'text-red-600' : 'text-blue-600'}`}>
+                    {isOverdue ? 'Atrasado' : due.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Quick links */}
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Plan banner */}
@@ -141,7 +173,7 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-gray-900">Plano atual: {usage.plan_display}</p>
                 <p className="mt-0.5 text-xs text-gray-500">Status: {usage.subscription_status}</p>
               </div>
-              <a href="/settings?tab=plan" className="btn-primary text-xs">Gerenciar</a>
+              <a href="/billing" className="btn-primary text-xs">Gerenciar</a>
             </div>
           </div>
         )}
@@ -150,12 +182,12 @@ export default async function DashboardPage() {
         <div className="card p-6">
           <p className="text-sm font-medium text-gray-900">Sua loja pública:</p>
           <a
-            href={`/${tenant.slug}`}
+            href={`/loja/${tenant.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-1 block text-primary hover:underline text-sm"
           >
-            revendaclick.com.br/{tenant.slug}
+            revendaclick.com.br/loja/{tenant.slug}
           </a>
         </div>
       </div>
@@ -239,5 +271,18 @@ async function fetchCashFlow(token: string): Promise<CashFlowMonth[]> {
     if (!res.ok) return []
     const json = await res.json()
     return (json.data ?? json ?? []) as CashFlowMonth[]
+  } catch { return [] }
+}
+
+async function fetchFollowUps(token: string): Promise<Lead[]> {
+  if (!token) return []
+  try {
+    const res = await fetch(`${API}/api/leads/follow-ups`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return (json.data ?? json ?? []) as Lead[]
   } catch { return [] }
 }

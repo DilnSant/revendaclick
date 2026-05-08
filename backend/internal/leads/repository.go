@@ -21,7 +21,8 @@ func NewRepository(pool *pgxpool.Pool) *Repository {
 const selectCols = `
 	id, tenant_id, vehicle_id, seller_id, name, phone, email, message,
 	status, source, notes, utm_source, utm_medium, utm_campaign,
-	kanban_position, contacted_at, closed_at, created_at, updated_at`
+	kanban_position, contacted_at, closed_at, follow_up_at, follow_up_note,
+	created_at, updated_at`
 
 func (r *Repository) List(ctx context.Context, tenantID string, f ListFilter) ([]*Lead, int, error) {
 	args := []any{tenantID}
@@ -102,11 +103,14 @@ func (r *Repository) Update(ctx context.Context, tenantID, id string, req *Updat
 			status          = COALESCE($4, status),
 			notes           = COALESCE($5, notes),
 			kanban_position = COALESCE($6, kanban_position),
+			follow_up_at    = CASE WHEN $7::timestamptz IS NOT NULL THEN $7 ELSE follow_up_at END,
+			follow_up_note  = CASE WHEN $8::text IS NOT NULL THEN $8 ELSE follow_up_note END,
 			contacted_at    = CASE WHEN $4 = 'in_progress' AND contacted_at IS NULL THEN NOW() ELSE contacted_at END,
 			closed_at       = CASE WHEN $4 IN ('closed_won','closed_lost') AND closed_at IS NULL THEN NOW() ELSE closed_at END
 		WHERE id = $1 AND tenant_id = $2
 		RETURNING `+selectCols,
 		id, tenantID, req.SellerID, req.Status, req.Notes, req.KanbanPosition,
+		req.FollowUpAt, req.FollowUpNote,
 	)
 
 	l, err := scanLead(row)
@@ -126,6 +130,37 @@ func (r *Repository) Delete(ctx context.Context, tenantID, id string) error {
 		return ErrNotFound
 	}
 	return nil
+}
+
+func (r *Repository) ListFollowUps(ctx context.Context, tenantID, sellerID string) ([]*Lead, error) {
+	query := "SELECT " + selectCols + ` FROM leads
+		WHERE tenant_id = $1
+		  AND follow_up_at IS NOT NULL
+		  AND follow_up_at <= NOW() + INTERVAL '24 hours'
+		  AND status NOT IN ('closed_won','closed_lost')`
+	args := []any{tenantID}
+
+	if sellerID != "" {
+		query += " AND seller_id = $2"
+		args = append(args, sellerID)
+	}
+	query += " ORDER BY follow_up_at ASC LIMIT 50"
+
+	rows, err := r.pool.Query(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*Lead
+	for rows.Next() {
+		l, err := scanLead(rows)
+		if err != nil {
+			return nil, err
+		}
+		list = append(list, l)
+	}
+	return list, rows.Err()
 }
 
 func (r *Repository) AddActivity(ctx context.Context, tenantID, leadID, userID string, req *AddActivityRequest) (*Activity, error) {
@@ -171,6 +206,7 @@ func scanLead(row pgx.Row) (*Lead, error) {
 		&l.Status, &l.Source, &l.Notes,
 		&l.UTMSource, &l.UTMMedium, &l.UTMCampaign,
 		&l.KanbanPosition, &l.ContactedAt, &l.ClosedAt,
+		&l.FollowUpAt, &l.FollowUpNote,
 		&l.CreatedAt, &l.UpdatedAt,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {

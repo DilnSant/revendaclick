@@ -45,21 +45,46 @@ func (r *Repository) ListPlans(ctx context.Context) ([]*Plan, error) {
 
 func (r *Repository) GetUsage(ctx context.Context, tenantID string) (*Usage, error) {
 	u := &Usage{}
-	err := r.pool.QueryRow(ctx,
-		`SELECT vehicles_count, users_count, leads_count,
-		        max_vehicles, max_users, max_leads,
-		        vehicles_pct, users_pct,
-		        plan_name, plan_display, sub_status
-		 FROM get_tenant_usage($1)`, tenantID,
+	var featuresJSON []byte
+
+	// Join with plans.features so the usage response includes feature flags
+	err := r.pool.QueryRow(ctx, `
+		SELECT
+			(SELECT COUNT(*) FROM vehicles  v WHERE v.tenant_id = $1 AND v.status != 'inactive'),
+			(SELECT COUNT(*) FROM users     u WHERE u.tenant_id = $1 AND u.is_active = TRUE),
+			(SELECT COUNT(*) FROM leads     l WHERE l.tenant_id = $1),
+			pl.max_vehicles,
+			pl.max_users,
+			pl.max_leads,
+			CASE WHEN pl.max_vehicles = -1 THEN 0::numeric
+			     ELSE ROUND(
+			         (SELECT COUNT(*) FROM vehicles v WHERE v.tenant_id = $1 AND v.status != 'inactive')::numeric
+			         / NULLIF(pl.max_vehicles, 0) * 100, 1)
+			END,
+			CASE WHEN pl.max_users = -1 THEN 0::numeric
+			     ELSE ROUND(
+			         (SELECT COUNT(*) FROM users u WHERE u.tenant_id = $1 AND u.is_active = TRUE)::numeric
+			         / NULLIF(pl.max_users, 0) * 100, 1)
+			END,
+			pl.name::text,
+			pl.display_name,
+			s.status::text,
+			pl.features
+		FROM subscriptions s
+		JOIN plans pl ON pl.id = s.plan_id
+		WHERE s.tenant_id = $1`, tenantID,
 	).Scan(
 		&u.VehiclesCount, &u.UsersCount, &u.LeadsCount,
 		&u.MaxVehicles, &u.MaxUsers, &u.MaxLeads,
 		&u.VehiclesPct, &u.UsersPct,
 		&u.PlanName, &u.PlanDisplay, &u.SubStatus,
+		&featuresJSON,
 	)
 	if err != nil {
 		return nil, err
 	}
+	_ = json.Unmarshal(featuresJSON, &u.Features)
 	u.ComputeAlerts()
+	u.ComputeFeatureFlags()
 	return u, nil
 }

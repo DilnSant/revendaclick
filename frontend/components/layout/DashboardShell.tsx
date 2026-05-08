@@ -1,8 +1,35 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabaseClient'
+import type { PlanUsage } from '@/lib/tenant'
+
+// ─── Plan features context ─────────────────────────────────────────────────────
+
+interface PlanFeatures {
+  has_crm: boolean
+  has_analytics: boolean
+  has_whatsapp: boolean
+  has_kanban: boolean
+  has_api_access: boolean
+  has_white_label: boolean
+}
+
+const DEFAULT_FEATURES: PlanFeatures = {
+  has_crm: true,
+  has_analytics: true,
+  has_whatsapp: true,
+  has_kanban: true,
+  has_api_access: false,
+  has_white_label: false,
+}
+
+const PlanFeaturesCtx = createContext<PlanFeatures>(DEFAULT_FEATURES)
+
+export function usePlanFeatures() {
+  return useContext(PlanFeaturesCtx)
+}
 
 // ─── Nav items ────────────────────────────────────────────────────────────────
 
@@ -132,21 +159,32 @@ interface Props {
   userEmail: string
   planDisplay: string
   subscriptionStatus?: string
+  planFeatures?: Partial<PlanUsage>
   children: React.ReactNode
 }
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
 
 export default function DashboardShell({
-  tenantName, tenantSlug, userEmail, planDisplay, subscriptionStatus, children,
+  tenantName, tenantSlug, userEmail, planDisplay, subscriptionStatus, planFeatures, children,
 }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const features: PlanFeatures = {
+    has_crm:         planFeatures?.has_crm         ?? DEFAULT_FEATURES.has_crm,
+    has_analytics:   planFeatures?.has_analytics   ?? DEFAULT_FEATURES.has_analytics,
+    has_whatsapp:    planFeatures?.has_whatsapp     ?? DEFAULT_FEATURES.has_whatsapp,
+    has_kanban:      planFeatures?.has_kanban       ?? DEFAULT_FEATURES.has_kanban,
+    has_api_access:  planFeatures?.has_api_access   ?? DEFAULT_FEATURES.has_api_access,
+    has_white_label: planFeatures?.has_white_label  ?? DEFAULT_FEATURES.has_white_label,
+  }
 
   // Close mobile sidebar on route change
   const pathname = usePathname()
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
   return (
+    <PlanFeaturesCtx.Provider value={features}>
     <div className="min-h-screen bg-gray-50">
       {/* Mobile overlay backdrop */}
       {mobileOpen && (
@@ -247,6 +285,7 @@ export default function DashboardShell({
         </main>
       </div>
     </div>
+    </PlanFeaturesCtx.Provider>
   )
 }
 

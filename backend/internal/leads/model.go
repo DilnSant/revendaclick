@@ -11,25 +11,27 @@ var (
 )
 
 type Lead struct {
-	ID             string    `json:"id"`
-	TenantID       string    `json:"tenant_id"`
-	VehicleID      *string   `json:"vehicle_id,omitempty"`
-	SellerID       *string   `json:"seller_id,omitempty"`
-	Name           string    `json:"name"`
-	Phone          string    `json:"phone"`
-	Email          *string   `json:"email,omitempty"`
-	Message        *string   `json:"message,omitempty"`
-	Status         string    `json:"status"`
-	Source         string    `json:"source"`
-	Notes          *string   `json:"notes,omitempty"`
-	UTMSource      *string   `json:"utm_source,omitempty"`
-	UTMMedium      *string   `json:"utm_medium,omitempty"`
-	UTMCampaign    *string   `json:"utm_campaign,omitempty"`
-	KanbanPosition int       `json:"kanban_position"`
+	ID             string     `json:"id"`
+	TenantID       string     `json:"tenant_id"`
+	VehicleID      *string    `json:"vehicle_id,omitempty"`
+	SellerID       *string    `json:"seller_id,omitempty"`
+	Name           string     `json:"name"`
+	Phone          string     `json:"phone"`
+	Email          *string    `json:"email,omitempty"`
+	Message        *string    `json:"message,omitempty"`
+	Status         string     `json:"status"`
+	Source         string     `json:"source"`
+	Notes          *string    `json:"notes,omitempty"`
+	UTMSource      *string    `json:"utm_source,omitempty"`
+	UTMMedium      *string    `json:"utm_medium,omitempty"`
+	UTMCampaign    *string    `json:"utm_campaign,omitempty"`
+	KanbanPosition int        `json:"kanban_position"`
 	ContactedAt    *time.Time `json:"contacted_at,omitempty"`
 	ClosedAt       *time.Time `json:"closed_at,omitempty"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	FollowUpAt     *time.Time `json:"follow_up_at,omitempty"`
+	FollowUpNote   *string    `json:"follow_up_note,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
 }
 
 type Activity struct {
@@ -56,10 +58,12 @@ type CreateRequest struct {
 }
 
 type UpdateRequest struct {
-	SellerID       *string `json:"seller_id"`
-	Status         *string `json:"status"`
-	Notes          *string `json:"notes"`
-	KanbanPosition *int    `json:"kanban_position"`
+	SellerID       *string    `json:"seller_id"`
+	Status         *string    `json:"status"`
+	Notes          *string    `json:"notes"`
+	KanbanPosition *int       `json:"kanban_position"`
+	FollowUpAt     *time.Time `json:"follow_up_at"`
+	FollowUpNote   *string    `json:"follow_up_note"`
 }
 
 type AddActivityRequest struct {

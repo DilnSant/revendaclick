@@ -129,3 +129,16 @@ export async function addActivity(
 ): Promise<ApiResult<LeadActivity>> {
   return apiCall<LeadActivity>('POST', `/api/leads/${leadId}/activities`, { type, description })
 }
+
+export async function setFollowUp(
+  leadId: string,
+  followUpAt: string | null,
+  followUpNote?: string,
+): Promise<ApiResult<Lead>> {
+  const result = await apiCall<Lead>('PUT', `/api/leads/${leadId}`, {
+    follow_up_at:   followUpAt,
+    follow_up_note: followUpNote ?? null,
+  })
+  if (!result.error) revalidatePath('/leads')
+  return result
+}

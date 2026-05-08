@@ -5,7 +5,7 @@ import {
   STATUS_CONFIG, KANBAN_COLUMNS, SOURCE_LABELS, whatsAppUrl, sellerInitials,
   type Lead, type Seller, type LeadStatus,
 } from '@/lib/crm'
-import { updateLeadStatus, assignSeller, updateLeadNotes, deleteLead } from '@/app/(dashboard)/leads/actions'
+import { updateLeadStatus, assignSeller, updateLeadNotes, deleteLead, setFollowUp } from '@/app/(dashboard)/leads/actions'
 import ActivityTimeline from './ActivityTimeline'
 import StatusBadge from './StatusBadge'
 
@@ -21,6 +21,11 @@ export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete 
   const [isPending, startTransition] = useTransition()
   const [notes, setNotes] = useState(lead.notes ?? '')
   const [notesDirty, setNotesDirty] = useState(false)
+  const [followUpAt, setFollowUpAt] = useState(
+    lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0, 16) : ''
+  )
+  const [followUpNote, setFollowUpNote] = useState(lead.follow_up_note ?? '')
+  const [followUpDirty, setFollowUpDirty] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -33,11 +38,14 @@ export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete 
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // Sync notes when lead changes
+  // Sync notes and follow-up when lead changes
   useEffect(() => {
     setNotes(lead.notes ?? '')
     setNotesDirty(false)
-  }, [lead.id, lead.notes])
+    setFollowUpAt(lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0, 16) : '')
+    setFollowUpNote(lead.follow_up_note ?? '')
+    setFollowUpDirty(false)
+  }, [lead.id, lead.notes, lead.follow_up_at, lead.follow_up_note])
 
   function handleStatusChange(status: LeadStatus) {
     startTransition(async () => {
@@ -62,6 +70,26 @@ export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete 
       if (result.error) { setError(result.error.message); return }
       setNotesDirty(false)
       onUpdate({ ...lead, notes })
+    })
+  }
+
+  function handleSaveFollowUp() {
+    startTransition(async () => {
+      const result = await setFollowUp(lead.id, followUpAt || null, followUpNote || undefined)
+      if (result.error) { setError(result.error.message); return }
+      setFollowUpDirty(false)
+      onUpdate({ ...lead, follow_up_at: followUpAt || null, follow_up_note: followUpNote || null })
+    })
+  }
+
+  function handleClearFollowUp() {
+    startTransition(async () => {
+      const result = await setFollowUp(lead.id, null)
+      if (result.error) { setError(result.error.message); return }
+      setFollowUpAt('')
+      setFollowUpNote('')
+      setFollowUpDirty(false)
+      onUpdate({ ...lead, follow_up_at: null, follow_up_note: null })
     })
   }
 
@@ -189,6 +217,59 @@ export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete 
               </p>
             </div>
           )}
+
+          {/* Follow-up */}
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-xs font-medium text-gray-600">Follow-up agendado</label>
+              {lead.follow_up_at && (
+                <button
+                  onClick={handleClearFollowUp}
+                  disabled={isPending}
+                  className="text-xs text-red-500 hover:text-red-600 disabled:opacity-50"
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+            {lead.follow_up_at && !followUpDirty && (
+              <div className={`mb-2 rounded-md px-3 py-2 text-xs font-medium ${
+                new Date(lead.follow_up_at) < new Date()
+                  ? 'bg-red-50 text-red-700'
+                  : 'bg-blue-50 text-blue-700'
+              }`}>
+                {new Date(lead.follow_up_at) < new Date() ? '⚠️ Atrasado: ' : '📅 '}
+                {new Date(lead.follow_up_at).toLocaleString('pt-BR')}
+              </div>
+            )}
+            <input
+              type="datetime-local"
+              value={followUpAt}
+              onChange={(e) => { setFollowUpAt(e.target.value); setFollowUpDirty(true) }}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm
+                         text-gray-800 outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+            {followUpDirty && (
+              <>
+                <input
+                  type="text"
+                  value={followUpNote}
+                  onChange={(e) => setFollowUpNote(e.target.value)}
+                  placeholder="Observação sobre o follow-up…"
+                  className="mt-1.5 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm
+                             text-gray-800 placeholder-gray-400 outline-none
+                             focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+                <button
+                  onClick={handleSaveFollowUp}
+                  disabled={isPending || !followUpAt}
+                  className="btn-primary mt-2 w-full text-xs"
+                >
+                  {isPending ? 'Salvando…' : 'Salvar follow-up'}
+                </button>
+              </>
+            )}
+          </div>
 
           {/* Notes */}
           <div>

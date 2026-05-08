@@ -164,6 +164,25 @@ func (h *Handler) AddActivity(c *gin.Context) {
 	response.JSON(c, http.StatusCreated, a)
 }
 
+// GET /api/leads/follow-ups — returns overdue and due-today leads
+func (h *Handler) ListFollowUps(c *gin.Context) {
+	tenantID := middleware.TenantIDFromGin(c)
+	userRole := middleware.UserRoleFromGin(c)
+	userID := middleware.UserIDFromGin(c)
+
+	sellerFilter := ""
+	if userRole == "seller" {
+		sellerFilter = userID
+	}
+
+	list, err := h.svc.ListFollowUps(c.Request.Context(), tenantID, sellerFilter)
+	if err != nil {
+		response.InternalError(c)
+		return
+	}
+	response.JSON(c, http.StatusOK, list)
+}
+
 func queryInt(s string, fallback int) int {
 	if v, err := strconv.Atoi(s); err == nil && v > 0 {
 		return v

@@ -34,6 +34,8 @@ export type Lead = {
   kanban_position: number
   contacted_at: string | null
   closed_at: string | null
+  follow_up_at: string | null
+  follow_up_note: string | null
   created_at: string
   updated_at: string
 }
