@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabaseClient'
 import { setupTenant } from '@/app/onboarding/actions'
 
@@ -111,16 +112,23 @@ export default function RegisterPage() {
 
         {/* Logo */}
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-600 text-xl font-bold text-white">
-            RC
+          <div className="flex justify-center mb-5">
+            <Image
+              src="/logo.png"
+              alt="RevendaClick"
+              width={180}
+              height={48}
+              className="h-11 w-auto object-contain"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {step === 'account' ? 'Crie sua conta' : 'Configure sua loja'}
+          <h1 className="text-2xl font-heading font-bold text-graphite">
+            {step === 'account' ? 'Crie sua conta grátis' : 'Configure sua loja'}
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1.5 text-sm text-gray-500">
             {step === 'account'
-              ? 'Comece grátis — 14 dias de trial.'
-              : 'Última etapa. Sua loja estará no ar em segundos.'}
+              ? 'Teste por 30 dias sem cartão de crédito.'
+              : 'Última etapa — sua loja estará no ar em segundos.'}
           </p>
         </div>
 

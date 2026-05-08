@@ -2,6 +2,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabaseClient'
 import type { PlanUsage } from '@/lib/tenant'
 
@@ -197,15 +198,19 @@ export default function DashboardShell({
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-white border-r border-gray-100 shadow-sm
-        transition-transform duration-200 lg:translate-x-0 lg:shadow-none
+        transition-transform duration-200 ease-in-out lg:translate-x-0 lg:shadow-none
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Logo */}
-        <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-gray-100 px-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-xs font-bold text-white">
-            RC
-          </div>
-          <span className="text-sm font-bold text-gray-900">RevendaClick</span>
+        <div className="flex h-16 shrink-0 items-center border-b border-gray-100 px-4">
+          <Image
+            src="/logo.png"
+            alt="RevendaClick"
+            width={148}
+            height={40}
+            className="h-9 w-auto object-contain"
+            priority
+          />
         </div>
 
         {/* Store name */}
@@ -248,20 +253,20 @@ export default function DashboardShell({
       {/* Main area */}
       <div className="lg:pl-64 flex flex-col min-h-screen">
         {/* Mobile topbar */}
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-gray-100 bg-white/90 backdrop-blur px-4 lg:hidden">
+        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-gray-100 bg-white/95 backdrop-blur px-4 lg:hidden">
           <button
             onClick={() => setMobileOpen(true)}
-            className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100"
+            className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <span className="text-sm font-semibold text-gray-800">{tenantName}</span>
+          <Image src="/logo.png" alt="RevendaClick" width={120} height={32} className="h-7 w-auto object-contain" />
         </header>
 
         {/* Desktop topbar */}
-        <header className="hidden lg:flex h-14 items-center justify-between border-b border-gray-100 bg-white/90 backdrop-blur px-6 sticky top-0 z-10">
+        <header className="hidden lg:flex h-14 items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-6 sticky top-0 z-10">
           <Breadcrumbs pathname={pathname} />
           <div className="flex items-center gap-3">
             <a

@@ -83,7 +83,7 @@ export default async function FinancialPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financeiro</h1>
+          <h1 className="text-2xl font-heading font-bold text-graphite">Financeiro</h1>
           <p className="mt-0.5 text-sm text-gray-500">Entradas, saídas e fluxo de caixa</p>
         </div>
         <div className="flex items-center gap-3">

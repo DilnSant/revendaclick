@@ -41,7 +41,7 @@ export default async function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Analytics</h1>
         <p className="mt-0.5 text-sm text-gray-500">Métricas da sua loja</p>
       </div>
 
@@ -146,7 +146,7 @@ function StockCard({ label, value, color }: { label: string; value: number; colo
   return (
     <div className={`rounded-lg px-4 py-3 ${color}`}>
       <p className="text-xs font-medium opacity-70">{label}</p>
-      <p className="mt-0.5 text-2xl font-bold">{value}</p>
+      <p className="mt-0.5 text-2xl font-heading font-bold">{value}</p>
     </div>
   )
 }

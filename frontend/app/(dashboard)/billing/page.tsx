@@ -19,7 +19,7 @@ export default async function BillingPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Assinatura</h1>
+          <h1 className="text-2xl font-heading font-bold text-graphite">Assinatura</h1>
           <p className="mt-1 text-sm text-gray-500">Gerencie seu plano e pagamentos</p>
         </div>
         <Link

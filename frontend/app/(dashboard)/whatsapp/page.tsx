@@ -28,7 +28,7 @@ export default async function WhatsAppPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">WhatsApp</h1>
+        <h1 className="text-2xl font-heading font-bold text-graphite">WhatsApp</h1>
         <p className="mt-0.5 text-sm text-gray-500">Conecte seu WhatsApp para receber leads automaticamente</p>
       </div>
       <WhatsAppManager initialStatus={status} tenantSlug={tenant.slug} />

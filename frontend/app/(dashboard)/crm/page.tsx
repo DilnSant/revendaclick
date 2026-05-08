@@ -62,7 +62,7 @@ export default async function CRMPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">CRM</h1>
+          <h1 className="text-2xl font-heading font-bold text-graphite">CRM</h1>
           <p className="mt-0.5 text-sm text-gray-500">Visão geral do pipeline de vendas</p>
         </div>
         <a href="/leads" className="btn-primary shrink-0">
@@ -87,7 +87,7 @@ export default async function CRMPage() {
               key={key}
               className={`flex-1 rounded-lg border px-4 py-3 text-center ${color}`}
             >
-              <p className="text-2xl font-bold">{count}</p>
+              <p className="text-2xl font-heading font-bold">{count}</p>
               <p className="mt-0.5 text-xs font-medium">{label}</p>
             </div>
           ))}

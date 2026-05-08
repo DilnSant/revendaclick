@@ -38,7 +38,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">Bem-vindo, {tenant.name}</p>
       </div>
 
@@ -203,9 +203,9 @@ function KPICard({
   label: string; value: string; color?: string; href?: string; isCount?: boolean
 }) {
   const inner = (
-    <div className="card p-5 hover:shadow-md transition-shadow">
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
-      <p className={`mt-1 font-bold text-gray-900 ${isCount ? 'text-3xl' : 'text-2xl'} ${color ?? ''}`}>{value}</p>
+    <div className="card p-5 hover:shadow-card-hover transition-shadow">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{label}</p>
+      <p className={`mt-2 font-heading font-bold text-gray-900 ${isCount ? 'text-3xl' : 'text-2xl'} ${color ?? ''}`}>{value}</p>
     </div>
   )
   return href ? <a href={href}>{inner}</a> : inner
@@ -225,8 +225,8 @@ function MetricCard({
 
   return (
     <div className={`card border p-5 ${alertColors[alert] ?? alertColors.ok}`}>
-      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-gray-900">{count}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{label}</p>
+      <p className="mt-2 text-3xl font-heading font-bold text-graphite">{count}</p>
       {max !== null && <p className="text-xs text-gray-400">de {max === -1 ? '∞' : max}</p>}
       {pct !== null && max !== null && max !== -1 && (
         <UsageBar pct={pct} alert={alert} className="mt-3" />

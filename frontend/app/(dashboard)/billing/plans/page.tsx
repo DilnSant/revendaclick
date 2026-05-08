@@ -19,7 +19,7 @@ export default async function PlansPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Planos</h1>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Planos</h1>
         <p className="mt-1 text-sm text-gray-500">
           Escolha o plano ideal para sua revenda. Cancele quando quiser.
         </p>

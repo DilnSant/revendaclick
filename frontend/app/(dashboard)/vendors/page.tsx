@@ -25,7 +25,7 @@ export default async function VendorsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Vendedores</h1>
+          <h1 className="text-2xl font-heading font-bold text-graphite">Vendedores</h1>
           <p className="mt-0.5 text-sm text-gray-500">
             {users.length} usuário{users.length !== 1 ? 's' : ''} na equipe
           </p>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { setupTenant } from './actions'
 
 function slugify(text: string): string {
@@ -65,12 +66,19 @@ export default function OnboardingPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-600 text-xl font-bold text-white">
-            RC
+          <div className="flex justify-center mb-5">
+            <Image
+              src="/logo.png"
+              alt="RevendaClick"
+              width={180}
+              height={48}
+              className="h-11 w-auto object-contain"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Crie sua loja</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Configure seu perfil e comece a vender em minutos.
+          <h1 className="text-2xl font-heading font-bold text-graphite">Configure sua loja</h1>
+          <p className="mt-1.5 text-sm text-gray-500">
+            Sua vitrine online estará no ar em minutos.
           </p>
         </div>
 

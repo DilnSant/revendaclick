@@ -1,18 +1,23 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Poppins } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-poppins',
+})
 
 export const metadata: Metadata = {
   title: { default: 'RevendaClick', template: '%s | RevendaClick' },
-  description: 'A plataforma de vendas para revendas de veículos',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.app'),
+  description: 'A plataforma que acelera sua revenda. CRM, estoque e leads em um só lugar.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.com.br'),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>
       <body className="font-sans">{children}</body>
     </html>
   )

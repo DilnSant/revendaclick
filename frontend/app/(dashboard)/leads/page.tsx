@@ -39,7 +39,7 @@ export default async function LeadsPage({ searchParams }: Props) {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
+          <h1 className="text-2xl font-heading font-bold text-graphite">Leads</h1>
           <p className="mt-0.5 text-sm text-gray-500">
             {total} lead{total !== 1 ? 's' : ''} no total
           </p>

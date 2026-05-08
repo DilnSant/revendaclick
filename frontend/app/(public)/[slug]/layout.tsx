@@ -58,7 +58,7 @@ export default async function StoreLayout({ children, params }: Props) {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={tenant.logo_url} alt={tenant.name} className="h-8 w-auto object-contain" />
           ) : (
-            <span className="text-lg font-bold text-gray-900">{tenant.name}</span>
+            <span className="text-lg font-heading font-bold text-graphite">{tenant.name}</span>
           )}
 
           <a
