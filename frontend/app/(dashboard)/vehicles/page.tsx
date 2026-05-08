@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getUserIdFromHeaders, getTenantForUser, getTenantUsage, type PlanUsage } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import type { Vehicle } from '@/lib/vehicles'
 import VehicleGrid from '@/components/vehicles/VehicleGrid'
@@ -25,7 +25,7 @@ export default async function VehiclesPage({ searchParams }: Props) {
 
   const [{ vehicles, total }, usage] = await Promise.all([
     fetchVehicles(token, query),
-    getTenantUsage(tenant.id),
+    getUsageFromAPI(token),
   ])
 
   return (

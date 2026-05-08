@@ -7,12 +7,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-// TenantResolver resolves tenant_id + user_role from the users table when they
-// are not already in the JWT app_metadata. Runs after JWTAuth.
+// TenantResolver resolves tenant_id + user_role + slug. When JWT already carries
+// tenant_id and user_role (app_metadata), only the slug lookup is still needed
+// (Evolution handlers require it). Full DB lookup is the fallback.
 func TenantResolver(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Already resolved via JWT custom claims — skip DB lookup
+		// JWT already has tenant_id + role — only need to resolve the slug
 		if c.GetString(CtxTenantID) != "" && c.GetString(CtxUserRole) != "" {
+			var slug string
+			_ = pool.QueryRow(c.Request.Context(),
+				`SELECT slug FROM tenants WHERE id = $1 AND is_active = TRUE`,
+				c.GetString(CtxTenantID),
+			).Scan(&slug)
+			if slug != "" {
+				c.Set(CtxTenantSlug, slug)
+			}
 			c.Next()
 			return
 		}

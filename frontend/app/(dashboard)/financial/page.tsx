@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
+import NewEntryModal from '@/components/financial/NewEntryModal'
 
 export const metadata = { title: 'Financeiro' }
 
@@ -85,7 +86,10 @@ export default async function FinancialPage() {
           <h1 className="text-2xl font-bold text-gray-900">Financeiro</h1>
           <p className="mt-0.5 text-sm text-gray-500">Entradas, saídas e fluxo de caixa</p>
         </div>
-        <a href="/sales" className="btn-primary shrink-0">+ Registrar venda</a>
+        <div className="flex items-center gap-3">
+          <NewEntryModal />
+          <a href="/sales" className="btn-secondary shrink-0">+ Registrar venda</a>
+        </div>
       </div>
 
       {/* KPIs */}
