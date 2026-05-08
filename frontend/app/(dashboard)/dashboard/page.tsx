@@ -6,7 +6,7 @@ import type { Lead } from '@/lib/crm'
 
 export const metadata = { title: 'Dashboard' }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 interface Sale { id: string; sale_price: number; status: string }
 interface CashFlowMonth { month: string; total_income: number; total_expense: number; net_balance: number }

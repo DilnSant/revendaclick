@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabaseServer'
 import type { Customer, CreateCustomerPayload, UpdateCustomerPayload } from '@/lib/customers'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 type ApiOk<T> = { data: T; error: null }
 type ApiErr   = { data: null; error: { code: string; message: string } }

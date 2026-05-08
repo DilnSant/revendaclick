@@ -82,7 +82,7 @@ export default async function LeadsPage({ searchParams }: Props) {
 
 // ─── Server-side data fetchers ─────────────────────────────────────────────────
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 async function fetchLeads(
   token: string,

@@ -7,7 +7,7 @@ import CustomersView from '@/components/customers/CustomersView'
 export const metadata = { title: 'Clientes' }
 
 const PAGE_SIZE = 20
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 interface Props {
   searchParams: Promise<{

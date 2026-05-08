@@ -5,7 +5,7 @@ import type { Lead } from '@/lib/crm'
 
 export const metadata = { title: 'CRM' }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 const PIPELINE_STAGES = [
   { key: 'new',          label: 'Novos',       color: 'bg-blue-100 text-blue-700 border-blue-200' },

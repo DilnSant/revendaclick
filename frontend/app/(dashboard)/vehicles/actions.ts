@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabaseServer'
 import type { Vehicle, CreateVehiclePayload, VehicleStatus } from '@/lib/vehicles'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 async function getToken(): Promise<string> {
   const supabase = await createClient()

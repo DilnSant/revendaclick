@@ -142,7 +142,7 @@ async function fetchVehicles(
   tenantSlug: string,
   q: Record<string, string | undefined>
 ) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+  const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
   const params = new URLSearchParams({ status: 'available', limit: '12' })
   if (q.marca) params.set('brand', q.marca)
   if (q.condicao) params.set('condition', q.condicao)

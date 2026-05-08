@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabaseServer'
 
 export const metadata = { title: 'Analytics' }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 interface AnalyticsSummary {
   total_leads: number

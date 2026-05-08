@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useTransition, useEffect, useCallback } from 'react'
+import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabaseClient'
 import type { InstanceStatus } from '@/app/(dashboard)/whatsapp/page'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+
+const RECONNECT_INTERVAL = 30 * 1000  // 30s auto-reconnect poll
 
 interface QRData {
   code?: string
@@ -62,7 +64,9 @@ export default function WhatsAppManager({
   const [qr, setQr] = useState<QRData | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [serviceDown, setServiceDown] = useState(false)
+  const [retryCountdown, setRetryCountdown] = useState<number | null>(null)
   const [pending, startTransition] = useTransition()
+  const retryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   function showToast(msg: string) {
     setToast(msg)
@@ -71,13 +75,53 @@ export default function WhatsAppManager({
 
   const refreshStatus = useCallback(async () => {
     const result = await apiFetch<InstanceStatus>('GET', '/api/evolution/status')
-    if (result.data) setStatus(result.data)
+    if (result.data) {
+      setStatus(result.data)
+      if (result.data.status === 'open') setServiceDown(false)
+    }
   }, [])
+
+  // When service is down, auto-retry health probe every 30s
+  useEffect(() => {
+    if (!serviceDown) {
+      if (retryTimerRef.current) clearInterval(retryTimerRef.current)
+      setRetryCountdown(null)
+      return
+    }
+    let seconds = 30
+    setRetryCountdown(seconds)
+    const countdown = setInterval(() => {
+      seconds -= 1
+      setRetryCountdown(seconds)
+      if (seconds <= 0) clearInterval(countdown)
+    }, 1000)
+    const retryId = setTimeout(async () => {
+      const result = await apiFetch('GET', '/api/evolution/health')
+      if (!result.error) {
+        setServiceDown(false)
+        showToast('Serviço WhatsApp restaurado.')
+        refreshStatus()
+      }
+    }, 30000)
+    retryTimerRef.current = retryId as unknown as ReturnType<typeof setInterval>
+    return () => {
+      clearInterval(countdown)
+      clearTimeout(retryId)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serviceDown])
 
   // Poll status every 5s when connecting
   useEffect(() => {
     if (status.status !== 'connecting') return
     const id = setInterval(refreshStatus, 5000)
+    return () => clearInterval(id)
+  }, [status.status, refreshStatus])
+
+  // Auto-poll every 30s when disconnected (catches external reconnects)
+  useEffect(() => {
+    if (status.status !== 'disconnected') return
+    const id = setInterval(refreshStatus, RECONNECT_INTERVAL)
     return () => clearInterval(id)
   }, [status.status, refreshStatus])
 
@@ -146,10 +190,18 @@ export default function WhatsAppManager({
             <div className="flex-1">
               <p className="text-sm font-semibold text-orange-800">Serviço WhatsApp temporariamente indisponível</p>
               <p className="mt-1 text-xs text-orange-700">
-                O serviço Evolution API está iniciando ou reiniciando. Aguarde 30–60 segundos e tente novamente.
+                O Evolution API está iniciando ou reiniciando.{' '}
+                {retryCountdown !== null && retryCountdown > 0
+                  ? `Verificando novamente em ${retryCountdown}s…`
+                  : 'Tentando reconectar…'}
               </p>
             </div>
-            <button onClick={() => setServiceDown(false)} className="text-orange-400 hover:text-orange-600">✕</button>
+            <button
+              onClick={() => setServiceDown(false)}
+              className="text-orange-400 hover:text-orange-600 text-lg leading-none"
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}

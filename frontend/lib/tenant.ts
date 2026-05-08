@@ -177,7 +177,7 @@ export const getTenantUsage = cache(async (tenantId: string): Promise<PlanUsage 
 
 // ─── Backend API usage (includes feature flags) ───────────────────────────────
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> {
   if (!token) return null

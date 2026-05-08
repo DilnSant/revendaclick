@@ -192,6 +192,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		gated.POST("/ai/classify-lead", aiH.ClassifyLead)
 
 		// Evolution WhatsApp (blocked when subscription inactive)
+		gated.GET("/evolution/health", evolutionH.GetHealth)
 		gated.GET("/evolution/status", evolutionH.GetStatus)
 		gated.GET("/evolution/qr", evolutionH.GetQR)
 		gated.POST("/evolution/connect", ownerAdmin, evolutionH.Connect)

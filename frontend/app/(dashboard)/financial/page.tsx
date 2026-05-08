@@ -5,7 +5,7 @@ import NewEntryModal from '@/components/financial/NewEntryModal'
 
 export const metadata = { title: 'Financeiro' }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 interface Entry {
   id: string

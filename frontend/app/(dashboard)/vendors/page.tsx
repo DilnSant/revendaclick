@@ -6,7 +6,7 @@ import { ROLE_LABELS, ROLE_COLORS, userInitials } from '@/lib/users'
 
 export const metadata = { title: 'Vendedores' }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 export default async function VendorsPage() {
   const userId = await getUserIdFromHeaders()

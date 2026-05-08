@@ -30,7 +30,7 @@ func NewService(pool *pgxpool.Pool, logger *zap.Logger, apiURL, apiKey string) *
 		logger: logger,
 		apiURL: strings.TrimRight(apiURL, "/"),
 		apiKey: apiKey,
-		client: &http.Client{Timeout: 15 * time.Second},
+		client: &http.Client{Timeout: 30 * time.Second},
 	}
 }
 
@@ -76,6 +76,23 @@ func (s *Service) HandleWebhook(ctx context.Context, payload *WebhookPayload) er
 	return nil
 }
 
+// IsReachable probes whether the Evolution API responds at all.
+func (s *Service) IsReachable(ctx context.Context) bool {
+	probeCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	url := fmt.Sprintf("%s/", s.apiURL)
+	req, err := http.NewRequestWithContext(probeCtx, http.MethodGet, url, nil)
+	if err != nil {
+		return false
+	}
+	resp, err := s.client.Do(req)
+	if err != nil {
+		return false
+	}
+	resp.Body.Close()
+	return resp.StatusCode < 500
+}
+
 // GetInstanceStatus returns the connection status of a tenant's WhatsApp instance.
 func (s *Service) GetInstanceStatus(ctx context.Context, tenantSlug string) (*InstanceStatus, error) {
 	url := fmt.Sprintf("%s/instance/fetchInstances", s.apiURL)
@@ -113,29 +130,54 @@ func (s *Service) GetInstanceStatus(ctx context.Context, tenantSlug string) (*In
 }
 
 // GetQRCode fetches the QR code for a tenant's WhatsApp instance.
+// Retries up to 3 times with a short delay to handle Evolution startup latency.
 func (s *Service) GetQRCode(ctx context.Context, tenantSlug string) (*QRCodeResponse, error) {
 	url := fmt.Sprintf("%s/instance/connect/%s", s.apiURL, tenantSlug)
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("apikey", s.apiKey)
 
-	resp, err := s.client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
+	var lastErr error
+	for attempt := 0; attempt < 3; attempt++ {
+		if attempt > 0 {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(time.Duration(attempt*2) * time.Second):
+			}
+		}
 
-	var qr QRCodeResponse
-	if err := json.NewDecoder(resp.Body).Decode(&qr); err != nil {
-		return nil, err
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("apikey", s.apiKey)
+
+		resp, err := s.client.Do(req)
+		if err != nil {
+			lastErr = err
+			s.logger.Warn("evolution: qr retry", zap.Int("attempt", attempt+1), zap.Error(err))
+			continue
+		}
+
+		var qr QRCodeResponse
+		decodeErr := json.NewDecoder(resp.Body).Decode(&qr)
+		resp.Body.Close()
+
+		if decodeErr != nil {
+			lastErr = decodeErr
+			continue
+		}
+		if resp.StatusCode >= 500 {
+			lastErr = fmt.Errorf("evolution: qr returned %d", resp.StatusCode)
+			s.logger.Warn("evolution: qr server error", zap.Int("status", resp.StatusCode), zap.Int("attempt", attempt+1))
+			continue
+		}
+		return &qr, nil
 	}
-	return &qr, nil
+	return nil, fmt.Errorf("evolution: qr unavailable after retries: %w", lastErr)
 }
 
 // CreateInstance creates a new Evolution instance for a tenant.
-func (s *Service) CreateInstance(ctx context.Context, tenantSlug string) error {
+// Returns (created=true) if newly created, (created=false) if already existed.
+func (s *Service) CreateInstance(ctx context.Context, tenantSlug string) (created bool, err error) {
 	body := map[string]any{
 		"instanceName": tenantSlug,
 		"integration":  "WHATSAPP-BAILEYS",
@@ -146,21 +188,25 @@ func (s *Service) CreateInstance(ctx context.Context, tenantSlug string) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(b))
 	if err != nil {
-		return err
+		return false, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("apikey", s.apiKey)
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return fmt.Errorf("evolution: create instance returned %d", resp.StatusCode)
+	// 400 means instance already exists — that's fine (idempotent)
+	if resp.StatusCode == http.StatusBadRequest {
+		return false, nil
 	}
-	return nil
+	if resp.StatusCode >= 500 {
+		return false, fmt.Errorf("evolution: create instance returned %d", resp.StatusCode)
+	}
+	return resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK, nil
 }
 
 // DisconnectInstance logs out a tenant's WhatsApp instance.

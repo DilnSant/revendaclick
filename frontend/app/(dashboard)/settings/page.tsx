@@ -8,7 +8,7 @@ import type { SubscriptionData } from './actions'
 
 export const metadata = { title: 'Configurações' }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 interface Props {
   searchParams: Promise<{ tab?: string }>

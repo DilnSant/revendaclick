@@ -2,6 +2,7 @@ package evolution
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -87,8 +88,25 @@ func (h *Handler) Connect(c *gin.Context) {
 		return
 	}
 
-	// Try to create instance (idempotent — Evolution API returns 400 if exists)
-	_ = h.svc.CreateInstance(c.Request.Context(), slug)
+	// Try to create instance (idempotent — Evolution returns 400 if already exists)
+	created, err := h.svc.CreateInstance(c.Request.Context(), slug)
+	if err != nil {
+		h.logger.Warn("evolution: create instance", zap.Error(err))
+	}
+
+	// If newly created, give Evolution a moment to initialise the instance
+	// before requesting the QR code (otherwise Evolution may return an error)
+	if created {
+		select {
+		case <-c.Request.Context().Done():
+			c.JSON(http.StatusServiceUnavailable, gin.H{"error": gin.H{
+				"code":    "evolution_unavailable",
+				"message": "Serviço WhatsApp indisponível. Tente novamente.",
+			}})
+			return
+		case <-time.After(2 * time.Second):
+		}
+	}
 
 	qr, err := h.svc.GetQRCode(c.Request.Context(), slug)
 	if err != nil {
@@ -101,6 +119,17 @@ func (h *Handler) Connect(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": qr})
+}
+
+// GET /api/evolution/health — probes whether Evolution API is reachable
+// Returns 200 if up, 503 if down. Used by the frontend to show startup state.
+func (h *Handler) GetHealth(c *gin.Context) {
+	up := h.svc.IsReachable(c.Request.Context())
+	if !up {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"status": "unavailable"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 // DELETE /api/evolution/disconnect — logs out tenant instance

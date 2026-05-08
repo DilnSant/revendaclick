@@ -58,10 +58,10 @@ services:
     environment:
       - NODE_ENV=production
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      # Server-side SSR calls use the internal Docker network
-      - NEXT_PUBLIC_API_URL=http://backend:8080
       - NEXT_PUBLIC_APP_URL=https://app.revendaclick.com.br
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      # Server-side internal routing — bypasses public internet for SSR fetches
+      - INTERNAL_API_URL=http://backend:8080
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 15s
@@ -88,7 +88,8 @@ services:
       - SERVER_URL=https://evolution.revendaclick.com.br
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
       - DATABASE_PROVIDER=postgresql
-      - DATABASE_CONNECTION_URI=${DATABASE_URL}
+      # CRITICAL: Evolution Prisma requires session pooler port 5432 (not transaction pooler 6543)
+      - DATABASE_CONNECTION_URI=${EVOLUTION_DATABASE_URL}
       - DATABASE_CONNECTION_CLIENT_NAME=evolution_api
       - DATABASE_SAVE_DATA_INSTANCE=true
       - DATABASE_SAVE_DATA_NEW_MESSAGE=true

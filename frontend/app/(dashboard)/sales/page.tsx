@@ -6,7 +6,7 @@ import type { Sale } from './actions'
 
 export const metadata = { title: 'Vendas' }
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 interface Vehicle { id: string; title: string; brand: string; model: string; price: number; status: string }
 interface User    { id: string; name: string; role: string }

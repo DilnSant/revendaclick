@@ -8,8 +8,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/revendaclick-backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/revendaclick-frontend
+  # Docker registry requires lowercase — compute once and reuse
+  BACKEND_IMAGE: ghcr.io/dilnsant/revendaclick-backend
+  FRONTEND_IMAGE: ghcr.io/dilnsant/revendaclick-frontend
 
 jobs:
 

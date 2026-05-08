@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ctx = await getTenantFromHeaders()
   if (!ctx) return { title: vehicleSlug }
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+  const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
   const vehicle = await fetchVehicle(apiUrl, slug, vehicleSlug)
   const tenant  = await getTenantById(ctx.id)
 
@@ -75,7 +75,7 @@ export default async function VehiclePage({ params }: Props) {
   const ctx = await getTenantFromHeaders()
   if (!ctx) notFound()
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+  const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
   const [vehicle, tenant] = await Promise.all([
     fetchVehicle(apiUrl, slug, vehicleSlug),
     getTenantById(ctx.id),
