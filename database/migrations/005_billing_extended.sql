@@ -84,7 +84,8 @@ CREATE INDEX IF NOT EXISTS idx_billing_invoices_asaas_sub
 
 ALTER TABLE billing_invoices ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "billing_invoices_tenant_select"
+DROP POLICY IF EXISTS "billing_invoices_tenant_select" ON billing_invoices;
+CREATE POLICY "billing_invoices_tenant_select"
     ON billing_invoices FOR SELECT
     USING (tenant_id::text = (auth.jwt() ->> 'tenant_id'));
 
@@ -109,21 +110,24 @@ CREATE INDEX IF NOT EXISTS idx_plan_history_tenant
 
 ALTER TABLE tenant_plan_history ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "plan_history_tenant_select"
+DROP POLICY IF EXISTS "plan_history_tenant_select" ON tenant_plan_history;
+CREATE POLICY "plan_history_tenant_select"
     ON tenant_plan_history FOR SELECT
     USING (tenant_id::text = (auth.jwt() ->> 'tenant_id'));
 
 -- ─── billing_customers RLS ───────────────────────────────────────────────────
 ALTER TABLE billing_customers ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "billing_customers_tenant_select"
+DROP POLICY IF EXISTS "billing_customers_tenant_select" ON billing_customers;
+CREATE POLICY "billing_customers_tenant_select"
     ON billing_customers FOR SELECT
     USING (tenant_id::text = (auth.jwt() ->> 'tenant_id'));
 
 -- ─── billing_events RLS ──────────────────────────────────────────────────────
 ALTER TABLE billing_events ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "billing_events_tenant_select"
+DROP POLICY IF EXISTS "billing_events_tenant_select" ON billing_events;
+CREATE POLICY "billing_events_tenant_select"
     ON billing_events FOR SELECT
     USING (tenant_id::text = (auth.jwt() ->> 'tenant_id'));
 

@@ -33,7 +33,8 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs (tenant_id, entit
 
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "audit_logs_tenant_isolation"
+DROP POLICY IF EXISTS "audit_logs_tenant_isolation" ON audit_logs;
+CREATE POLICY "audit_logs_tenant_isolation"
   ON audit_logs FOR ALL
   USING (tenant_id::text = auth.jwt() ->> 'tenant_id');
 
