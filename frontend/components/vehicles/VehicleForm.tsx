@@ -234,7 +234,7 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                 <p className="text-sm font-semibold text-red-700">Limite atingido</p>
                 <p className="mt-1 text-xs text-red-600">Faça upgrade para cadastrar mais veículos.</p>
-                <a href="/settings" className="mt-2 inline-block text-xs font-semibold text-red-700 underline">Ver planos →</a>
+                <a href="/billing/plans" className="mt-2 inline-block text-xs font-semibold text-red-700 underline">Ver planos →</a>
               </div>
             )}
 

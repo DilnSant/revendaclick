@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { getSubscription } from '@/lib/billing'
 import { statusLabel, statusColor, formatCurrency, formatDate } from '@/lib/billing-utils'
+import CancelButton from './_components/CancelButton'
 
 export const metadata = { title: 'Assinatura — RevendaClick' }
 
@@ -138,16 +139,3 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   )
 }
 
-// Client component for cancel action
-function CancelButton() {
-  return (
-    <form action="/api/billing/cancel-action" method="POST">
-      <Link
-        href="/billing/plans"
-        className="flex w-full items-center justify-center rounded-lg border border-red-200 px-4 py-3 text-sm text-red-600 hover:bg-red-50"
-      >
-        Cancelar assinatura
-      </Link>
-    </form>
-  )
-}

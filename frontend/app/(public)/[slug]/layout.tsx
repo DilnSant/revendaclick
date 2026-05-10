@@ -77,7 +77,7 @@ export default async function StoreLayout({ children, params }: Props) {
       <footer className="mt-16 border-t border-gray-100 bg-white py-8 text-center text-sm text-gray-500">
         <p>
           {tenant.name} &mdash; Powered by{' '}
-          <a href="https://revendaclick.app" className="font-medium text-primary hover:underline">
+          <a href="https://revendaclick.com.br" className="font-medium text-primary hover:underline">
             RevendaClick
           </a>
         </p>

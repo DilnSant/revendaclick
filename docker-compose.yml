@@ -56,9 +56,10 @@ services:
     environment:
       - NODE_ENV=production
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      # Server-side calls go directly to the backend over the Docker network
-      - NEXT_PUBLIC_API_URL=http://backend:8080
-      - NEXT_PUBLIC_APP_URL=http://localhost
+      # Server-side SSR calls go directly to the backend over the Docker network
+      - INTERNAL_API_URL=http://backend:8080
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost}
     ports:
       - "3000:3000"
     healthcheck:

@@ -230,7 +230,7 @@ export default function RegisterPage() {
                 <label className="label">Endereço da loja *</label>
                 <div className="flex items-center rounded-lg border border-gray-300 shadow-sm focus-within:border-red-600 focus-within:ring-1 focus-within:ring-red-600 overflow-hidden">
                   <span className="shrink-0 bg-gray-50 px-3 py-2 text-sm text-gray-400 border-r border-gray-300">
-                    revendaclick.app/
+                    revendaclick.com.br/
                   </span>
                   <input
                     value={store.tenant_slug}

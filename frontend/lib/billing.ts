@@ -1,7 +1,7 @@
 // Server-side billing functions — only import in Server Components
 import { createClient } from '@/lib/supabaseServer'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 export type {
   Subscription,

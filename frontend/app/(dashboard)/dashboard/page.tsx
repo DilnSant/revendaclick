@@ -182,12 +182,12 @@ export default async function DashboardPage() {
         <div className="card p-6">
           <p className="text-sm font-medium text-gray-900">Sua loja pública:</p>
           <a
-            href={`/loja/${tenant.slug}`}
+            href={`/${tenant.slug}`}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-1 block text-primary hover:underline text-sm"
           >
-            revendaclick.com.br/loja/{tenant.slug}
+            revendaclick.com.br/{tenant.slug}
           </a>
         </div>
       </div>

@@ -72,12 +72,12 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Trust stats */}
+            {/* Trust badges */}
             <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4">
               {[
-                { value: '400+', label: 'Revendas ativas' },
-                { value: '12k+', label: 'Veículos cadastrados' },
-                { value: '98%', label: 'Satisfação' },
+                { value: '30 dias', label: 'Teste grátis' },
+                { value: 'Sem cartão', label: 'Para começar' },
+                { value: 'Cancele', label: 'Quando quiser' },
               ].map(({ value, label }) => (
                 <div key={label} className="text-center">
                   <div className="text-2xl font-heading font-bold text-white">{value}</div>
