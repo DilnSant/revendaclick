@@ -170,6 +170,13 @@ func (s *Service) GetQRCode(ctx context.Context, tenantSlug string) (*QRCodeResp
 			s.logger.Warn("evolution: qr server error", zap.Int("status", resp.StatusCode), zap.Int("attempt", attempt+1))
 			continue
 		}
+		// Evolution v2 returns base64 with "data:image/png;base64," prefix — strip it
+		// so the frontend can handle it consistently.
+		if strings.HasPrefix(qr.Base64, "data:") {
+			if comma := strings.IndexByte(qr.Base64, ','); comma >= 0 {
+				qr.Base64 = qr.Base64[comma+1:]
+			}
+		}
 		return &qr, nil
 	}
 	return nil, fmt.Errorf("evolution: qr unavailable after retries: %w", lastErr)

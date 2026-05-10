@@ -39,6 +39,19 @@ func main() {
 	defer pool.Close()
 	logger.Info("database connected")
 
+	// Startup integration checks (non-fatal — log clearly so ops can diagnose)
+	if cfg.AsaasAPIKey == "" {
+		logger.Warn("ASAAS_API_KEY not set — billing subscribe/cancel will return 401")
+	} else {
+		logger.Info("asaas configured", zap.String("env", cfg.AsaasEnv))
+	}
+	if cfg.EvolutionAPIKey == "" {
+		logger.Warn("EVOLUTION_API_KEY not set — WhatsApp integration disabled")
+	}
+	if cfg.OpenRouterAPIKey == "" {
+		logger.Warn("OPENROUTER_API_KEY not set — AI features disabled")
+	}
+
 	handler := server.New(cfg, pool, logger)
 
 	srv := &http.Server{
