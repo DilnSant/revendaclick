@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { captureError } from '@/lib/error-tracking'
 
 interface Props {
   error: Error & { digest?: string }
@@ -9,7 +10,7 @@ interface Props {
 
 export default function DashboardError({ error, reset }: Props) {
   useEffect(() => {
-    console.error('[Dashboard error]', error)
+    captureError(error, { digest: error.digest, location: 'dashboard' })
   }, [error])
 
   return (

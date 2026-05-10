@@ -34,7 +34,8 @@ export async function getSubscription() {
       next: { revalidate: 0 },
     })
     if (!res.ok) return null
-    return res.json()
+    const json = await res.json()
+    return json.data ?? null
   } catch {
     return null
   }
@@ -50,8 +51,8 @@ export async function getInvoices() {
       next: { revalidate: 0 },
     })
     if (!res.ok) return []
-    const data = await res.json()
-    return data.invoices ?? []
+    const json = await res.json()
+    return json.data?.invoices ?? []
   } catch {
     return []
   }
@@ -61,7 +62,8 @@ export async function getPlans() {
   try {
     const res = await fetch(`${API}/api/plans`, { next: { revalidate: 3600 } })
     if (!res.ok) return []
-    return res.json()
+    const json = await res.json()
+    return json.data ?? []
   } catch {
     return []
   }

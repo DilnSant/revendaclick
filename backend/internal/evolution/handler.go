@@ -22,9 +22,13 @@ func NewHandler(svc *Service, apiKey string, logger *zap.Logger) *Handler {
 func (h *Handler) Webhook(c *gin.Context) {
 	incomingKey := c.GetHeader("apikey")
 	if h.apiKey != "" && incomingKey != h.apiKey {
+		h.logger.Warn("evolution webhook: invalid apikey", zap.String("ip", c.ClientIP()))
 		c.Status(http.StatusUnauthorized)
 		return
 	}
+
+	// Body size guard — prevent large payloads from media messages
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 512*1024)
 
 	var payload WebhookPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -32,8 +36,17 @@ func (h *Handler) Webhook(c *gin.Context) {
 		return
 	}
 
+	h.logger.Debug("evolution webhook received",
+		zap.String("event", payload.Event),
+		zap.String("instance", payload.Instance),
+	)
+
 	if err := h.svc.HandleWebhook(c.Request.Context(), &payload); err != nil {
-		h.logger.Error("evolution webhook error", zap.Error(err))
+		h.logger.Error("evolution webhook error",
+			zap.String("event", payload.Event),
+			zap.String("instance", payload.Instance),
+			zap.Error(err),
+		)
 		c.Status(http.StatusInternalServerError)
 		return
 	}

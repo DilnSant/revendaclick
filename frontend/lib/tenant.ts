@@ -187,7 +187,8 @@ export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> 
       cache: 'no-store',
     })
     if (!res.ok) return null
-    const data = await res.json()
+    const envelope = await res.json()
+    const data = envelope.data ?? {}
     return {
       vehicles_count:      data.vehicles_count,
       users_count:         data.users_count,

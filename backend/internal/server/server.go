@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -76,7 +77,17 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 
 	// ── Health ───────────────────────────────────────────────────────────────
 	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "ok"})
+		ctx, cancel := c.Request.Context(), func() {}
+		if _, ok := ctx.Deadline(); !ok {
+			ctx, cancel = context.WithTimeout(ctx, 3*time.Second)
+		}
+		defer cancel()
+		if err := pool.Ping(ctx); err != nil {
+			logger.Warn("health: db ping failed", zap.Error(err))
+			c.JSON(http.StatusServiceUnavailable, gin.H{"status": "unhealthy", "db": "error"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": "ok", "db": "ok"})
 	})
 	r.GET("/api/v1/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"status": "ok", "version": "1"})
