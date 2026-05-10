@@ -7,8 +7,11 @@ interface FipeItem { codigo: string; nome: string }
 interface Props {
   brand: string
   model: string
+  version: string
   onBrandChange: (name: string) => void
   onModelChange: (name: string) => void
+  onVersionChange: (nome: string) => void
+  onFipePrice?: (price: number) => void
 }
 
 function useDebounce<T>(value: T, delay = 300): T {
@@ -37,7 +40,6 @@ function SearchSelect({ label, required, value, options, loading, disabled, plac
   const debouncedQuery = useDebounce(query, 200)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Sync external value changes (e.g. form reset)
   useEffect(() => { setQuery(value) }, [value])
 
   const filtered = debouncedQuery.length < 1
@@ -48,7 +50,6 @@ function SearchSelect({ label, required, value, options, loading, disabled, plac
     function onClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false)
-        // Reset to last valid value
         setQuery(value)
       }
     }
@@ -108,15 +109,21 @@ function SearchSelect({ label, required, value, options, loading, disabled, plac
   )
 }
 
-export default function FipeSelects({ brand, model, onBrandChange, onModelChange }: Props) {
+export default function FipeSelects({
+  brand, model, version,
+  onBrandChange, onModelChange, onVersionChange, onFipePrice,
+}: Props) {
   const [brands, setBrands] = useState<FipeItem[]>([])
   const [models, setModels] = useState<FipeItem[]>([])
+  const [versions, setVersions] = useState<FipeItem[]>([])
   const [loadingBrands, setLoadingBrands] = useState(false)
   const [loadingModels, setLoadingModels] = useState(false)
+  const [loadingVersions, setLoadingVersions] = useState(false)
   const [selectedBrandCode, setSelectedBrandCode] = useState<string | null>(null)
+  const [selectedModelCode, setSelectedModelCode] = useState<string | null>(null)
   const initialBrandLoadedRef = useRef(false)
+  const initialModelLoadedRef = useRef(false)
 
-  // Load brands on mount
   useEffect(() => {
     setLoadingBrands(true)
     fetch('/api/fipe/brands')
@@ -126,7 +133,7 @@ export default function FipeSelects({ brand, model, onBrandChange, onModelChange
       .finally(() => setLoadingBrands(false))
   }, [])
 
-  // Edit mode: when brands load and brand prop is pre-filled, resolve the code and load models
+  // Edit mode: resolve brand code when brands load
   useEffect(() => {
     if (initialBrandLoadedRef.current) return
     if (!brand || brands.length === 0) return
@@ -138,9 +145,21 @@ export default function FipeSelects({ brand, model, onBrandChange, onModelChange
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brand, brands])
 
-  // Load models when brand code changes
+  // Edit mode: resolve model code when models load
+  useEffect(() => {
+    if (initialModelLoadedRef.current) return
+    if (!model || models.length === 0 || !selectedBrandCode) return
+    const match = models.find(m => m.nome.toLowerCase() === model.toLowerCase())
+    if (!match) return
+    initialModelLoadedRef.current = true
+    setSelectedModelCode(match.codigo)
+    loadVersions(selectedBrandCode, match.codigo)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, models, selectedBrandCode])
+
   const loadModels = useCallback((brandCode: string) => {
     setModels([])
+    setVersions([])
     setLoadingModels(true)
     fetch(`/api/fipe/models?brand=${brandCode}`)
       .then(r => r.json())
@@ -149,38 +168,92 @@ export default function FipeSelects({ brand, model, onBrandChange, onModelChange
       .finally(() => setLoadingModels(false))
   }, [])
 
+  const loadVersions = useCallback((brandCode: string, modelCode: string) => {
+    setVersions([])
+    setLoadingVersions(true)
+    fetch(`/api/fipe/versions?brand=${brandCode}&model=${modelCode}`)
+      .then(r => r.json())
+      .then((data: FipeItem[]) => setVersions(Array.isArray(data) ? data : []))
+      .catch(() => setVersions([]))
+      .finally(() => setLoadingVersions(false))
+  }, [])
+
+  async function fetchFipePrice(brandCode: string, modelCode: string, versionCode: string) {
+    if (!onFipePrice) return
+    try {
+      const res = await fetch(
+        `https://parallelum.com.br/fipe/api/v1/carros/marcas/${brandCode}/modelos/${modelCode}/anos/${versionCode}`,
+      )
+      if (!res.ok) return
+      const data = await res.json()
+      // Valor is like "R$ 85.000,00" — parse it
+      const raw: string = data.Valor ?? ''
+      const num = parseFloat(raw.replace(/[^0-9,]/g, '').replace(',', '.'))
+      if (!isNaN(num) && num > 0) onFipePrice(num)
+    } catch { /* ignore */ }
+  }
+
   function handleBrandSelect(nome: string, codigo: string) {
     setSelectedBrandCode(codigo)
+    setSelectedModelCode(null)
+    initialModelLoadedRef.current = false
     onBrandChange(nome)
-    onModelChange('')  // clear model when brand changes
+    onModelChange('')
+    onVersionChange('')
     loadModels(codigo)
   }
 
-  function handleModelSelect(nome: string) {
+  function handleModelSelect(nome: string, codigo: string) {
+    setSelectedModelCode(codigo)
     onModelChange(nome)
+    onVersionChange('')
+    if (selectedBrandCode) loadVersions(selectedBrandCode, codigo)
+  }
+
+  function handleVersionSelect(nome: string, codigo: string) {
+    onVersionChange(nome)
+    if (selectedBrandCode && selectedModelCode) {
+      fetchFipePrice(selectedBrandCode, selectedModelCode, codigo)
+    }
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <SearchSelect
+          label="Marca"
+          required
+          value={brand}
+          options={brands}
+          loading={loadingBrands}
+          placeholder="Ex: Honda"
+          onChange={handleBrandSelect}
+        />
+        <SearchSelect
+          label="Modelo"
+          required
+          value={model}
+          options={models}
+          loading={loadingModels}
+          disabled={!selectedBrandCode && models.length === 0}
+          placeholder={selectedBrandCode ? 'Ex: Civic' : 'Selecione a marca primeiro'}
+          onChange={handleModelSelect}
+        />
+      </div>
       <SearchSelect
-        label="Marca"
-        required
-        value={brand}
-        options={brands}
-        loading={loadingBrands}
-        placeholder="Ex: Honda"
-        onChange={handleBrandSelect}
+        label="Versão / Ano-Combustível (FIPE)"
+        value={version}
+        options={versions}
+        loading={loadingVersions}
+        disabled={!selectedModelCode && versions.length === 0}
+        placeholder={selectedModelCode ? 'Selecione a versão' : 'Selecione o modelo primeiro'}
+        onChange={handleVersionSelect}
       />
-      <SearchSelect
-        label="Modelo"
-        required
-        value={model}
-        options={models}
-        loading={loadingModels}
-        disabled={!selectedBrandCode && models.length === 0}
-        placeholder={selectedBrandCode ? 'Ex: Civic' : 'Selecione a marca primeiro'}
-        onChange={(nome) => handleModelSelect(nome)}
-      />
+      {onFipePrice && versions.length > 0 && (
+        <p className="text-[10px] text-gray-400">
+          Selecionar a versão preenche automaticamente o Preço FIPE.
+        </p>
+      )}
     </div>
   )
 }

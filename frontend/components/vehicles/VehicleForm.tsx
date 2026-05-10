@@ -430,18 +430,15 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
             </div>
 
             {/* Brand / Model / Version */}
-            <div className="space-y-3">
-              <FipeSelects
-                brand={form.brand}
-                model={form.model}
-                onBrandChange={(name) => setForm((p) => ({ ...p, brand: name }))}
-                onModelChange={(name) => setForm((p) => ({ ...p, model: name }))}
-              />
-              <div>
-                <label className="label">Versão</label>
-                <input type="text" value={form.version} onChange={set('version')} className="input" placeholder="Ex: EXL, Sport, LX" />
-              </div>
-            </div>
+            <FipeSelects
+              brand={form.brand}
+              model={form.model}
+              version={form.version}
+              onBrandChange={(name) => setForm((p) => ({ ...p, brand: name }))}
+              onModelChange={(name) => setForm((p) => ({ ...p, model: name }))}
+              onVersionChange={(name) => setForm((p) => ({ ...p, version: name }))}
+              onFipePrice={(price) => setForm((p) => ({ ...p, fipe_price: price }))}
+            />
 
             {/* Year model / manufacture */}
             <div className="grid grid-cols-2 gap-3">
