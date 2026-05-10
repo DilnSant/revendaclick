@@ -81,15 +81,15 @@ jobs:
           cache-to: type=gha,scope=frontend,mode=max
 
   # ── Deploy via Coolify webhook ────────────────────────────────────────────
-  deploy:
-    name: Deploy to Production
-    needs: build-push
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - name: Trigger Coolify deploy
-        run: |
-          curl --silent --fail --max-time 30 \
-            --request GET \
-            "${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}"
+###  deploy:
+ #   name: Deploy to Production
+#    needs: build-push
+  #  runs-on: ubuntu-latest
+ #   environment: production
+#
+  #  steps:
+    #  - name: Trigger Coolify deploy
+   #     run: |
+  #        curl --silent --fail --max-time 30 \
+ #           --request GET \
+#            "${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}"
