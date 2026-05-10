@@ -16,9 +16,10 @@ export default function LandingPage() {
           <Image
             src="/logo.png"
             alt="RevendaClick"
-            width={280}
-            height={72}
-            className="h-16 w-auto object-contain"
+            width={870}
+            height={592}
+            style={{ height: '72px', width: 'auto' }}
+            className="object-contain"
             priority
           />
           <div className="flex items-center gap-3">
