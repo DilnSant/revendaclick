@@ -114,6 +114,7 @@ export default function FipeSelects({ brand, model, onBrandChange, onModelChange
   const [loadingBrands, setLoadingBrands] = useState(false)
   const [loadingModels, setLoadingModels] = useState(false)
   const [selectedBrandCode, setSelectedBrandCode] = useState<string | null>(null)
+  const initialBrandLoadedRef = useRef(false)
 
   // Load brands on mount
   useEffect(() => {
@@ -124,6 +125,18 @@ export default function FipeSelects({ brand, model, onBrandChange, onModelChange
       .catch(() => setBrands([]))
       .finally(() => setLoadingBrands(false))
   }, [])
+
+  // Edit mode: when brands load and brand prop is pre-filled, resolve the code and load models
+  useEffect(() => {
+    if (initialBrandLoadedRef.current) return
+    if (!brand || brands.length === 0) return
+    const match = brands.find(b => b.nome.toLowerCase() === brand.toLowerCase())
+    if (!match) return
+    initialBrandLoadedRef.current = true
+    setSelectedBrandCode(match.codigo)
+    loadModels(match.codigo)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brand, brands])
 
   // Load models when brand code changes
   const loadModels = useCallback((brandCode: string) => {
