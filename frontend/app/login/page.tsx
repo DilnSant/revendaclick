@@ -44,7 +44,7 @@ function LoginForm() {
           alt="RevendaClick"
           width={180}
           height={48}
-          className="h-11 w-auto object-contain"
+          className="h-20 w-auto object-contain"
           priority
         />
       </div>

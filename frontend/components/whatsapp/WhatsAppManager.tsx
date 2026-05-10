@@ -1,11 +1,9 @@
 'use client'
 
 import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
-import { createClient } from '@/lib/supabaseClient'
 import type { InstanceStatus } from '@/app/(dashboard)/whatsapp/page'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
-
+// All Evolution calls go through local Next.js proxy routes (same-origin, no CORS issues)
 const RECONNECT_INTERVAL = 30 * 1000  // 30s auto-reconnect poll
 
 interface QRData {
@@ -13,19 +11,9 @@ interface QRData {
   base64?: string
 }
 
-async function getToken(): Promise<string> {
-  const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  return session?.access_token ?? ''
-}
-
 async function apiFetch<T>(method: string, path: string): Promise<{ data?: T; error?: string; unavailable?: boolean }> {
-  const token = await getToken()
   try {
-    const res = await fetch(`${API}${path}`, {
-      method,
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    const res = await fetch(path, { method })
     const json = await res.json().catch(() => ({}))
     if (!res.ok) {
       const errObj = json.error

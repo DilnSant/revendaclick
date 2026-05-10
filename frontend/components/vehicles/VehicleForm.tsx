@@ -7,6 +7,41 @@ import {
   slugify,
 } from '@/lib/vehicles'
 import { createVehicle, updateVehicle } from '@/app/(dashboard)/vehicles/actions'
+import FipeSelects from '@/components/vehicles/FipeSelects'
+
+const MAX_PHOTOS = 20
+const MAX_SIZE_MB = 8
+
+async function compressImage(file: File): Promise<File> {
+  if (!file.type.startsWith('image/')) return file
+  return new Promise((resolve) => {
+    const img = new window.Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      const maxW = 1600
+      const ratio = Math.min(1, maxW / img.naturalWidth)
+      const w = Math.round(img.naturalWidth * ratio)
+      const h = Math.round(img.naturalHeight * ratio)
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { resolve(file); return }
+      ctx.drawImage(img, 0, 0, w, h)
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size >= file.size) { resolve(file); return }
+          resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }))
+        },
+        'image/jpeg',
+        0.85,
+      )
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file) }
+    img.src = url
+  })
+}
 
 interface Props {
   vehicle?: Vehicle
@@ -70,6 +105,7 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
   const [upgradeRequired, setUpgradeRequired] = useState(false)
   const [form, setForm] = useState<FormState>(initialForm(vehicle))
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<{ done: number; total: number } | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -93,33 +129,64 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
     const fileArr = Array.from(files)
     if (fileArr.length === 0) return
 
-    setUploading(true)
     setUploadError(null)
 
-    const urls: string[] = []
-    for (const file of fileArr) {
-      const fd = new FormData()
-      fd.append('file', file)
-      try {
+    // Enforce photo limit
+    const currentCount = form.images.length
+    const available = MAX_PHOTOS - currentCount
+    if (available <= 0) {
+      setUploadError(`Limite de ${MAX_PHOTOS} fotos atingido.`)
+      return
+    }
+    const toUpload = fileArr.slice(0, available)
+
+    // Validate sizes before compressing
+    const oversized = toUpload.filter(f => f.size > MAX_SIZE_MB * 1024 * 1024)
+    if (oversized.length > 0) {
+      setUploadError(`${oversized.length} arquivo(s) excedem ${MAX_SIZE_MB} MB.`)
+      return
+    }
+
+    setUploading(true)
+    setUploadProgress({ done: 0, total: toUpload.length })
+
+    // Compress all images client-side before uploading
+    const compressed = await Promise.all(toUpload.map(compressImage))
+
+    // Upload in parallel (all at once)
+    const results = await Promise.allSettled(
+      compressed.map(async (file) => {
+        const fd = new FormData()
+        fd.append('file', file)
         const res = await fetch('/api/upload/vehicle-photo', { method: 'POST', body: fd })
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
-          setUploadError((err as { error?: string }).error ?? 'Erro no upload')
-          setUploading(false)
-          return
+          throw new Error((err as { error?: string }).error ?? `Erro ${res.status}`)
         }
         const { url } = await res.json() as { url: string }
-        urls.push(url)
-      } catch {
-        setUploadError('Erro de conexão ao fazer upload')
-        setUploading(false)
-        return
-      }
+        setUploadProgress(p => p ? { done: p.done + 1, total: p.total } : null)
+        return url
+      }),
+    )
+
+    const urls: string[] = []
+    const errors: string[] = []
+    for (const r of results) {
+      if (r.status === 'fulfilled') urls.push(r.value)
+      else errors.push(r.reason instanceof Error ? r.reason.message : 'Erro no upload')
     }
 
-    setForm((prev) => ({ ...prev, images: [...prev.images, ...urls] }))
+    if (urls.length > 0) {
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...urls] }))
+    }
+    if (errors.length > 0) {
+      setUploadError(`${errors.length} foto(s) não enviada(s): ${errors[0]}`)
+    }
+
     setUploading(false)
-  }, [])
+    setUploadProgress(null)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.images.length])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files) uploadFiles(e.target.files)
@@ -259,10 +326,24 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
                   ${dragging ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-red-300 hover:bg-red-50/30'}`}
               >
                 {uploading ? (
-                  <>
-                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
-                    <p className="text-xs text-gray-500">Enviando…</p>
-                  </>
+                  <div className="w-full space-y-2 px-2">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                      <p className="text-xs text-gray-500">
+                        {uploadProgress
+                          ? `Enviando ${uploadProgress.done}/${uploadProgress.total}…`
+                          : 'Comprimindo…'}
+                      </p>
+                    </div>
+                    {uploadProgress && (
+                      <div className="h-1.5 w-full rounded-full bg-gray-200">
+                        <div
+                          className="h-1.5 rounded-full bg-red-500 transition-all duration-300"
+                          style={{ width: `${(uploadProgress.done / uploadProgress.total) * 100}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 ) : (
                   <>
                     <svg className="h-7 w-7 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -271,14 +352,16 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
                     <p className="text-xs text-gray-500">
                       Arraste fotos aqui ou <span className="font-medium text-red-600">clique para adicionar</span>
                     </p>
-                    <p className="text-[10px] text-gray-400">JPEG, PNG, WebP · máx 8 MB por foto</p>
+                    <p className="text-[10px] text-gray-400">
+                      JPEG, PNG, WebP · máx {MAX_SIZE_MB} MB · até {MAX_PHOTOS} fotos
+                      {form.images.length > 0 ? ` · ${MAX_PHOTOS - form.images.length} restantes` : ''}
+                    </p>
                   </>
                 )}
                 <input
                   ref={fileRef}
                   type="file"
-                  accept="image/*"
-                  capture="environment"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
                   multiple
                   className="hidden"
                   onChange={handleFileChange}
@@ -347,18 +430,16 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
             </div>
 
             {/* Brand / Model / Version */}
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="label">Marca <span className="text-red-500">*</span></label>
-                <input type="text" value={form.brand} onChange={set('brand')} required className="input" placeholder="Honda" />
-              </div>
-              <div>
-                <label className="label">Modelo <span className="text-red-500">*</span></label>
-                <input type="text" value={form.model} onChange={set('model')} required className="input" placeholder="Civic" />
-              </div>
+            <div className="space-y-3">
+              <FipeSelects
+                brand={form.brand}
+                model={form.model}
+                onBrandChange={(name) => setForm((p) => ({ ...p, brand: name }))}
+                onModelChange={(name) => setForm((p) => ({ ...p, model: name }))}
+              />
               <div>
                 <label className="label">Versão</label>
-                <input type="text" value={form.version} onChange={set('version')} className="input" placeholder="EXL" />
+                <input type="text" value={form.version} onChange={set('version')} className="input" placeholder="Ex: EXL, Sport, LX" />
               </div>
             </div>
 

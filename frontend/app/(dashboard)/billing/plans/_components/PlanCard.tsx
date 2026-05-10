@@ -15,6 +15,8 @@ export default function PlanCard({ plan, currentPlanName, currentCycle }: Props)
   const [billingType, setBillingType] = useState<'BOLETO' | 'PIX' | 'CREDIT_CARD'>('BOLETO')
   const [loading, setLoading] = useState(false)
   const [cpf, setCpf] = useState('')
+  const [subscribeError, setSubscribeError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
   const isCurrent = plan.name === currentPlanName
   const price = cycle === 'yearly' ? plan.price_yearly / 12 : plan.price_monthly
@@ -24,6 +26,8 @@ export default function PlanCard({ plan, currentPlanName, currentCycle }: Props)
 
   async function handleSubscribe() {
     setLoading(true)
+    setSubscribeError(null)
+    setSuccessMsg(null)
     try {
       const res = await fetch('/api/billing/subscribe-action', {
         method: 'POST',
@@ -32,17 +36,22 @@ export default function PlanCard({ plan, currentPlanName, currentCycle }: Props)
           plan_name: plan.name,
           billing_cycle: cycle,
           billing_type: billingType,
-          cpf_or_cnpj: cpf,
+          cpf_or_cnpj: cpf || undefined,
         }),
       })
       const data = await res.json()
+      if (!res.ok) {
+        setSubscribeError(data.error ?? 'Erro ao processar. Tente novamente.')
+        return
+      }
       if (data.asaas_payment_link) {
+        setSuccessMsg('Redirecionando para pagamento…')
         window.open(data.asaas_payment_link, '_blank')
-      } else if (data.error) {
-        alert(data.error)
+      } else {
+        setSuccessMsg('Assinatura ativada! Recarregue a página.')
       }
     } catch {
-      alert('Erro ao processar. Tente novamente.')
+      setSubscribeError('Erro de conexão. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -144,6 +153,17 @@ export default function PlanCard({ plan, currentPlanName, currentCycle }: Props)
         </div>
       )}
 
+      {subscribeError && (
+        <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
+          {subscribeError}
+        </div>
+      )}
+      {successMsg && (
+        <div className="mt-3 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700">
+          {successMsg}
+        </div>
+      )}
+
       {/* CTA */}
       <button
         onClick={isCurrent ? undefined : handleSubscribe}
@@ -152,11 +172,11 @@ export default function PlanCard({ plan, currentPlanName, currentCycle }: Props)
           isCurrent
             ? 'bg-gray-100 text-gray-400 cursor-default'
             : isPro
-            ? 'bg-primary text-white hover:bg-primary/90'
-            : 'bg-gray-900 text-white hover:bg-gray-700'
+            ? 'bg-primary text-white hover:bg-primary/90 disabled:opacity-60'
+            : 'bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60'
         }`}
       >
-        {isCurrent ? 'Plano atual' : loading ? 'Aguarde…' : 'Assinar'}
+        {isCurrent ? 'Plano atual' : loading ? 'Processando…' : 'Assinar'}
       </button>
 
       <p className="mt-2 text-center text-xs text-gray-400">

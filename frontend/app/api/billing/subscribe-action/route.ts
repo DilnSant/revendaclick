@@ -27,11 +27,13 @@ export async function POST(request: Request) {
     body: JSON.stringify({ plan_name, billing_cycle, billing_type, cpf_or_cnpj }),
   })
 
-  const data = await res.json()
+  const json = await res.json()
 
   if (!res.ok) {
-    return NextResponse.json({ error: data.error ?? 'Erro ao processar' }, { status: res.status })
+    const msg = json.error?.message ?? json.error ?? 'Erro ao processar assinatura'
+    return NextResponse.json({ error: typeof msg === 'string' ? msg : JSON.stringify(msg) }, { status: res.status })
   }
 
-  return NextResponse.json(data)
+  // Backend wraps in { data: Subscription } — extract so PlanCard gets flat object
+  return NextResponse.json(json.data ?? json)
 }

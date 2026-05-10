@@ -208,7 +208,7 @@ export default function DashboardShell({
             alt="RevendaClick"
             width={148}
             height={40}
-            className="h-9 w-auto object-contain"
+            className="h-14 w-auto object-contain"
             priority
           />
         </div>
@@ -262,7 +262,7 @@ export default function DashboardShell({
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Image src="/logo.png" alt="RevendaClick" width={120} height={32} className="h-7 w-auto object-contain" />
+          <Image src="/logo.png" alt="RevendaClick" width={160} height={44} className="h-11 w-auto object-contain" />
         </header>
 
         {/* Desktop topbar */}

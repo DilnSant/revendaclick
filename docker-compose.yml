@@ -26,7 +26,7 @@ services:
     env_file: ./backend/.env
     environment:
       - ENV=production
-      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost,https://revendaclick.com.br
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost,https://revendaclick.com.br,https://app.revendaclick.com.br,https://www.revendaclick.com.br}
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
     ports:
