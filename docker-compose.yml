@@ -29,6 +29,10 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost,https://revendaclick.com.br,https://app.revendaclick.com.br,https://www.revendaclick.com.br}
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4.1-mini}
+      - ASAAS_API_KEY=${ASAAS_API_KEY:-}
+      - ASAAS_ENV=${ASAAS_ENV:-sandbox}
     expose:
       - "8080"
     volumes:
