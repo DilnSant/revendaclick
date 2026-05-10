@@ -72,7 +72,7 @@ export default function OnboardingPage() {
               alt="RevendaClick"
               width={180}
               height={48}
-              className="h-20 w-auto object-contain"
+              className="h-28 w-auto object-contain"
               priority
             />
           </div>

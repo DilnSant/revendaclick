@@ -60,6 +60,8 @@ services:
       - INTERNAL_API_URL=http://backend:8080
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost}
+      # Server-only (not baked at build time) — used for invite email redirect URLs
+      - APP_URL=${APP_URL:-https://app.revendaclick.com.br}
     ports:
       - "3000:3000"
     healthcheck:
@@ -79,7 +81,7 @@ services:
   evolution:
     image: atendai/evolution-api:latest
     environment:
-      - SERVER_URL=http://localhost:8081
+      - SERVER_URL=${EVOLUTION_SERVER_URL:-https://evolution.revendaclick.com.br}
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
       - DATABASE_PROVIDER=postgresql
       - DATABASE_CONNECTION_URI=${EVOLUTION_DATABASE_URL:-postgresql://postgres:postgres@host.docker.internal:5432/evolution}

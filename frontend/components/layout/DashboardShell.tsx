@@ -202,13 +202,13 @@ export default function DashboardShell({
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Logo */}
-        <div className="flex h-16 shrink-0 items-center border-b border-gray-100 px-4">
+        <div className="flex h-20 shrink-0 items-center border-b border-gray-100 px-4">
           <Image
             src="/logo.png"
             alt="RevendaClick"
-            width={148}
-            height={40}
-            className="h-14 w-auto object-contain"
+            width={240}
+            height={64}
+            className="h-16 w-auto object-contain"
             priority
           />
         </div>
@@ -253,7 +253,7 @@ export default function DashboardShell({
       {/* Main area */}
       <div className="lg:pl-64 flex flex-col min-h-screen">
         {/* Mobile topbar */}
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-gray-100 bg-white/95 backdrop-blur px-4 lg:hidden">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-gray-100 bg-white/95 backdrop-blur px-4 lg:hidden">
           <button
             onClick={() => setMobileOpen(true)}
             className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors"
@@ -262,7 +262,7 @@ export default function DashboardShell({
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Image src="/logo.png" alt="RevendaClick" width={160} height={44} className="h-11 w-auto object-contain" />
+          <Image src="/logo.png" alt="RevendaClick" width={200} height={52} className="h-12 w-auto object-contain" />
         </header>
 
         {/* Desktop topbar */}

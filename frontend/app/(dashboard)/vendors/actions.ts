@@ -19,8 +19,13 @@ export async function inviteVendor(
 ): Promise<{ success?: true; error?: string }> {
   if (!email || !name || !role) return { error: 'Preencha todos os campos obrigatórios.' }
 
+  // APP_URL is a server-only runtime var; fallback to production URL
+  const appUrl = process.env.APP_URL ?? 'https://app.revendaclick.com.br'
+  const redirectTo = `${appUrl}/auth/callback`
+
   const admin = createServiceClient()
   const { data, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo,
     data: { name },
   })
   if (inviteErr || !data?.user) {

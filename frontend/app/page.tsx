@@ -12,12 +12,12 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
       {/* ── NAV ──────────────────────────────────────────────────────── */}
       <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
           <Image
             src="/logo.png"
             alt="RevendaClick"
-            width={160}
-            height={44}
+            width={280}
+            height={72}
             className="h-16 w-auto object-contain"
             priority
           />
@@ -174,7 +174,7 @@ export default function LandingPage() {
       {/* ── FOOTER ───────────────────────────────────────────────────── */}
       <footer className="border-t border-gray-100 bg-white py-8">
         <div className="mx-auto max-w-7xl px-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-          <Image src="/logo.png" alt="RevendaClick" width={180} height={48} className="h-14 w-auto object-contain" />
+          <Image src="/logo.png" alt="RevendaClick" width={280} height={72} className="h-16 w-auto object-contain" />
           <p className="text-xs text-gray-400">
             © {new Date().getFullYear()} RevendaClick. Todos os direitos reservados.
           </p>
