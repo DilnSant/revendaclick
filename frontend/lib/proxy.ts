@@ -1,8 +1,8 @@
 import { createClient } from './supabaseServer'
 
-// In Docker: backend:8080. In development: localhost:8080.
-// NEXT_PUBLIC_API_URL is overridden to the internal Docker service URL at runtime.
-const BACKEND = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+// INTERNAL_API_URL is a runtime-only server-side var (http://backend:8080 in Docker).
+// Falls back to NEXT_PUBLIC_API_URL (baked at build time) for local dev.
+const BACKEND = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

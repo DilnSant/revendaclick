@@ -29,8 +29,8 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost,https://revendaclick.com.br,https://app.revendaclick.com.br,https://www.revendaclick.com.br}
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     volumes:
       - backend_logs:/app/logs
     healthcheck:
@@ -62,8 +62,8 @@ services:
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost}
       # Server-only (not baked at build time) — used for invite email redirect URLs
       - APP_URL=${APP_URL:-https://app.revendaclick.com.br}
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 15s
