@@ -202,13 +202,13 @@ export default function DashboardShell({
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Logo */}
-        <div className="flex h-20 shrink-0 items-center border-b border-gray-100 px-4">
+        <div className="flex h-40 shrink-0 items-center border-b border-gray-100 px-4">
           <Image
             src="/logo.png"
             alt="RevendaClick"
             width={870}
             height={592}
-            style={{ height: '72px', width: 'auto' }}
+            style={{ height: '144px', width: 'auto' }}
             className="object-contain"
             priority
           />
@@ -263,7 +263,7 @@ export default function DashboardShell({
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
-          <Image src="/logo.png" alt="RevendaClick" width={870} height={592} style={{ height: '48px', width: 'auto' }} className="object-contain" />
+          <Image src="/logo.png" alt="RevendaClick" width={870} height={592} style={{ height: '96px', width: 'auto' }} className="object-contain" />
         </header>
 
         {/* Desktop topbar */}

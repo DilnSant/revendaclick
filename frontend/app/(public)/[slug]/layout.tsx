@@ -56,7 +56,7 @@ export default async function StoreLayout({ children, params }: Props) {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           {tenant.logo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={tenant.logo_url} alt={tenant.name} className="h-8 w-auto object-contain" />
+            <img src={tenant.logo_url} alt={tenant.name} className="h-16 w-auto object-contain" />
           ) : (
             <span className="text-lg font-heading font-bold text-graphite">{tenant.name}</span>
           )}

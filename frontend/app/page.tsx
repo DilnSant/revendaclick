@@ -175,7 +175,7 @@ export default function LandingPage() {
       {/* ── FOOTER ───────────────────────────────────────────────────── */}
       <footer className="border-t border-gray-100 bg-white py-8">
         <div className="mx-auto max-w-7xl px-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
-          <Image src="/logo.png" alt="RevendaClick" width={280} height={72} className="h-16 w-auto object-contain" />
+          <Image src="/logo.png" alt="RevendaClick" width={560} height={144} className="h-32 w-auto object-contain" />
           <p className="text-xs text-gray-400">
             © {new Date().getFullYear()} RevendaClick. Todos os direitos reservados.
           </p>

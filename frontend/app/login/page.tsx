@@ -44,7 +44,7 @@ function LoginForm() {
           alt="RevendaClick"
           width={870}
           height={592}
-          style={{ height: '140px', width: 'auto' }}
+          style={{ height: '280px', width: 'auto' }}
           className="object-contain"
           priority
         />
