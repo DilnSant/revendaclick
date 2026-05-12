@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useOptimistic, useTransition } from 'react'
 import {
   type Vehicle, type VehicleStatus,
@@ -16,7 +17,7 @@ interface Props {
   usage: PlanUsage | null
 }
 
-export default function VehicleGrid({ vehicles, total, usage }: Props) {
+export default function VehicleGrid({ vehicles, usage }: Omit<Props, 'total'> & { total?: number }) {
   const [, startTransition] = useTransition()
   const [optimisticVehicles, updateOptimistic] = useOptimistic(
     vehicles,
@@ -111,12 +112,12 @@ export default function VehicleGrid({ vehicles, total, usage }: Props) {
           </div>
           {usagePct >= 85 && usagePct < 100 && (
             <p className="mt-2 text-xs text-orange-600">
-              Você atingiu {usagePct}% do limite. <a href="/settings" className="underline">Faça upgrade</a> para não perder oportunidades.
+              Você atingiu {usagePct}% do limite. <Link href="/settings" className="underline">Faça upgrade</Link> para não perder oportunidades.
             </p>
           )}
           {usagePct >= 100 && (
             <p className="mt-2 text-xs text-red-600 font-medium">
-              Limite atingido. <a href="/settings" className="underline font-semibold">Faça upgrade</a> para adicionar mais veículos.
+              Limite atingido. <Link href="/settings" className="underline font-semibold">Faça upgrade</Link> para adicionar mais veículos.
             </p>
           )}
         </div>
@@ -149,9 +150,9 @@ export default function VehicleGrid({ vehicles, total, usage }: Props) {
           <p className="mt-1 text-xs text-red-600">
             Faça upgrade do seu plano para cadastrar mais veículos.
           </p>
-          <a href="/settings" className="mt-3 inline-block rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700">
+          <Link href="/settings" className="mt-3 inline-block rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700">
             Ver planos
-          </a>
+          </Link>
           <button onClick={() => setUpgradeRequired(false)} className="mt-3 ml-3 text-xs text-red-400">
             Fechar
           </button>

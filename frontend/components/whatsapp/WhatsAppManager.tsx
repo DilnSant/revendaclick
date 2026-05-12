@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
 import type { InstanceStatus } from '@/app/(dashboard)/whatsapp/page'
 
@@ -251,10 +252,13 @@ export default function WhatsAppManager({
 
           {qr.base64 ? (
             <div className="flex justify-center">
-              <img
+              <Image
                 src={`data:image/png;base64,${qr.base64}`}
                 alt="QR Code WhatsApp"
-                className="h-64 w-64 rounded-lg border border-gray-200 shadow-sm"
+                width={256}
+                height={256}
+                className="rounded-lg border border-gray-200 shadow-sm"
+                unoptimized
               />
             </div>
           ) : qr.code ? (
@@ -274,7 +278,7 @@ export default function WhatsAppManager({
           </button>
 
           <p className="text-xs text-gray-400">
-            O QR code expira em ~60 segundos. Clique em "Gerar novo QR code" se expirar.
+            O QR code expira em ~60 segundos. Clique em &ldquo;Gerar novo QR code&rdquo; se expirar.
           </p>
         </div>
       )}
@@ -300,7 +304,7 @@ export default function WhatsAppManager({
         <div className="card p-6 space-y-3">
           <h2 className="text-base font-semibold text-gray-900">Como funciona</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
-            <li>Clique em "Conectar WhatsApp"</li>
+            <li>Clique em &ldquo;Conectar WhatsApp&rdquo;</li>
             <li>Escaneie o QR code com o WhatsApp da sua revenda</li>
             <li>Leads que enviarem mensagens serão criados automaticamente no CRM</li>
             <li>Mensagens são registradas como atividades na linha do tempo do lead</li>

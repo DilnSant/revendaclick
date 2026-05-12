@@ -135,7 +135,7 @@ export default function PlanCard({ plan, currentPlanName, currentCycle }: Props)
           <label className="text-xs text-gray-500 mb-1 block">Forma de pagamento</label>
           <select
             value={billingType}
-            onChange={(e) => setBillingType(e.target.value as any)}
+            onChange={(e) => setBillingType(e.target.value as 'BOLETO' | 'PIX' | 'CREDIT_CARD')}
             className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
           >
             <option value="BOLETO">Boleto</option>

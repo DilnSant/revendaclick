@@ -2,12 +2,11 @@
 
 import { useState, useTransition, useEffect, useRef } from 'react'
 import {
-  STATUS_CONFIG, KANBAN_COLUMNS, SOURCE_LABELS, whatsAppUrl, sellerInitials,
+  STATUS_CONFIG, KANBAN_COLUMNS, SOURCE_LABELS, whatsAppUrl,
   type Lead, type Seller, type LeadStatus,
 } from '@/lib/crm'
 import { updateLeadStatus, assignSeller, updateLeadNotes, deleteLead, setFollowUp } from '@/app/(dashboard)/leads/actions'
 import ActivityTimeline from './ActivityTimeline'
-import StatusBadge from './StatusBadge'
 
 interface Props {
   lead: Lead
@@ -100,8 +99,6 @@ export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete 
       onDelete()
     })
   }
-
-  const assignedSeller = sellers.find((s) => s.id === lead.seller_id)
 
   return (
     <>

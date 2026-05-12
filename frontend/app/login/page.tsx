@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Suspense, useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
@@ -85,9 +86,9 @@ function LoginForm() {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="label mb-0" htmlFor="password">Senha</label>
-              <a href="/forgot-password" className="text-xs text-primary hover:text-primary-dark font-medium transition-colors">
+              <Link href="/forgot-password" className="text-xs text-primary hover:text-primary-dark font-medium transition-colors">
                 Esqueci minha senha
-              </a>
+              </Link>
             </div>
             <input
               id="password"
@@ -119,9 +120,9 @@ function LoginForm() {
 
       <p className="text-center text-sm text-gray-500">
         Não tem conta?{' '}
-        <a href="/register" className="font-semibold text-primary hover:text-primary-dark transition-colors">
+        <Link href="/register" className="font-semibold text-primary hover:text-primary-dark transition-colors">
           Criar gratuitamente
-        </a>
+        </Link>
       </p>
     </div>
   )

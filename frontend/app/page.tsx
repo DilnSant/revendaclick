@@ -180,8 +180,8 @@ export default function LandingPage() {
             © {new Date().getFullYear()} RevendaClick. Todos os direitos reservados.
           </p>
           <div className="flex gap-5 text-xs text-gray-400">
-            <a href="/privacy" className="hover:text-gray-600 transition-colors">Privacidade</a>
-            <a href="/terms" className="hover:text-gray-600 transition-colors">Termos</a>
+            <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacidade</Link>
+            <Link href="/terms" className="hover:text-gray-600 transition-colors">Termos</Link>
           </div>
         </div>
       </footer>

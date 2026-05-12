@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
@@ -54,7 +55,6 @@ export default async function CRMPage() {
 
   const total       = leads.length
   const wonLeads    = leads.filter(l => l.status === 'closed_won').length
-  const lostLeads   = leads.filter(l => l.status === 'closed_lost').length
   const convRate    = total > 0 ? Math.round((wonLeads / total) * 100) : 0
   const activeLeads = leads.filter(l => !['closed_won', 'closed_lost'].includes(l.status)).length
 
@@ -65,9 +65,9 @@ export default async function CRMPage() {
           <h1 className="text-2xl font-heading font-bold text-graphite">CRM</h1>
           <p className="mt-0.5 text-sm text-gray-500">Visão geral do pipeline de vendas</p>
         </div>
-        <a href="/leads" className="btn-primary shrink-0">
+        <Link href="/leads" className="btn-primary shrink-0">
           Ver leads completos
-        </a>
+        </Link>
       </div>
 
       {/* KPI row */}
@@ -124,7 +124,7 @@ export default async function CRMPage() {
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Leads recentes</h2>
-            <a href="/leads" className="text-xs font-medium text-red-600 hover:text-red-700">Ver todos →</a>
+            <Link href="/leads" className="text-xs font-medium text-red-600 hover:text-red-700">Ver todos →</Link>
           </div>
           {recentLeads.length === 0 ? (
             <p className="text-sm text-gray-400">Nenhum lead ainda.</p>

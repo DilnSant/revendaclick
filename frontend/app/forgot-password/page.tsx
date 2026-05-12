@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { createClient } from '@/lib/supabaseClient'
 
@@ -48,9 +49,9 @@ export default function ForgotPasswordPage() {
             <p className="mt-1 text-sm text-green-700">
               Verifique sua caixa de entrada e siga as instruções.
             </p>
-            <a href="/login" className="mt-4 block text-sm font-medium text-red-600 hover:text-red-700">
+            <Link href="/login" className="mt-4 block text-sm font-medium text-red-600 hover:text-red-700">
               Voltar ao login
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -76,9 +77,9 @@ export default function ForgotPasswordPage() {
               </button>
             </form>
 
-            <a href="/login" className="mt-4 block text-center text-sm text-gray-500 hover:text-gray-700">
+            <Link href="/login" className="mt-4 block text-center text-sm text-gray-500 hover:text-gray-700">
               ← Voltar ao login
-            </a>
+            </Link>
           </div>
         )}
       </div>

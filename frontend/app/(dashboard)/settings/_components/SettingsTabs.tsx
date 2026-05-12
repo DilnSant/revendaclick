@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { updateTenantProfile, subscribePlan } from '../actions'
 import type { SubscriptionData } from '../actions'
@@ -191,9 +192,9 @@ function UsersTab({ users }: { users: User[] }) {
             Equipe
             <span className="ml-2 text-sm font-normal text-gray-400">{users.length} usuário{users.length !== 1 ? 's' : ''}</span>
           </h2>
-          <a href="/vendors" className="text-xs font-medium text-red-600 hover:text-red-700">
+          <Link href="/vendors" className="text-xs font-medium text-red-600 hover:text-red-700">
             Gerenciar vendedores →
-          </a>
+          </Link>
         </div>
 
         {users.length === 0 ? (

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect, createContext, useContext } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -166,9 +167,8 @@ interface Props {
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
 
-export default function DashboardShell({
-  tenantName, tenantSlug, userEmail, planDisplay, subscriptionStatus, planFeatures, children,
-}: Props) {
+export default function DashboardShell(props: Props) {
+  const { tenantName, tenantSlug, userEmail, planDisplay, planFeatures, children } = props
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const features: PlanFeatures = {
@@ -330,7 +330,8 @@ function NavGroup({
   )
 }
 
-function UserFooter({ userEmail, tenantSlug }: { userEmail: string; tenantSlug: string }) {
+function UserFooter(props: { userEmail: string; tenantSlug: string }) {
+  const { userEmail } = props
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
@@ -358,7 +359,7 @@ function UserFooter({ userEmail, tenantSlug }: { userEmail: string; tenantSlug: 
             <p className="text-xs font-medium text-gray-900 truncate">{userEmail}</p>
           </div>
           <div className="p-1">
-            <a
+            <Link
               href="/settings"
               className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-gray-700 hover:bg-gray-50"
               onClick={() => setOpen(false)}
@@ -368,7 +369,7 @@ function UserFooter({ userEmail, tenantSlug }: { userEmail: string; tenantSlug: 
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               Configurações
-            </a>
+            </Link>
             <button
               onClick={handleLogout}
               disabled={pending}

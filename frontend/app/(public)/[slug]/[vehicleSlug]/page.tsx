@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getTenantFromHeaders, getTenantById, buildWhatsAppUrl } from '@/lib/tenant'
+import { getTenantBySlug, buildWhatsAppUrl } from '@/lib/tenant'
 
 interface Props {
   params: Promise<{ slug: string; vehicleSlug: string }>
@@ -36,12 +36,12 @@ type VehicleDetail = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, vehicleSlug } = await params
-  const ctx = await getTenantFromHeaders()
-  if (!ctx) return { title: vehicleSlug }
 
   const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
-  const vehicle = await fetchVehicle(apiUrl, slug, vehicleSlug)
-  const tenant  = await getTenantById(ctx.id)
+  const [vehicle, tenant] = await Promise.all([
+    fetchVehicle(apiUrl, slug, vehicleSlug),
+    getTenantBySlug(slug),
+  ])
 
   if (!vehicle || !tenant) return { title: vehicleSlug }
 
@@ -72,13 +72,10 @@ export const revalidate = 60
 export default async function VehiclePage({ params }: Props) {
   const { slug, vehicleSlug } = await params
 
-  const ctx = await getTenantFromHeaders()
-  if (!ctx) notFound()
-
   const apiUrl = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
   const [vehicle, tenant] = await Promise.all([
     fetchVehicle(apiUrl, slug, vehicleSlug),
-    getTenantById(ctx.id),
+    getTenantBySlug(slug),
   ])
 
   if (!vehicle || !tenant) notFound()

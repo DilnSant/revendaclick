@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import {
   type Vehicle, type VehicleCondition, type FuelType, type TransmissionType,
@@ -120,7 +121,6 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
     if (!isEdit && form.title) {
       setForm((prev) => ({ ...prev, slug: slugify(`${prev.title}-${prev.year_model}`) }))
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.title, form.year_model, isEdit])
 
   // ── Photo upload helpers ────────────────────────────────────────────────────
@@ -185,7 +185,6 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
 
     setUploading(false)
     setUploadProgress(null)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.images.length])
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -301,7 +300,7 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
                 <p className="text-sm font-semibold text-red-700">Limite atingido</p>
                 <p className="mt-1 text-xs text-red-600">Faça upgrade para cadastrar mais veículos.</p>
-                <a href="/billing/plans" className="mt-2 inline-block text-xs font-semibold text-red-700 underline">Ver planos →</a>
+                <Link href="/billing/plans" className="mt-2 inline-block text-xs font-semibold text-red-700 underline">Ver planos →</Link>
               </div>
             )}
 

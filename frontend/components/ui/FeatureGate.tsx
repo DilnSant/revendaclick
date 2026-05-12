@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { usePlanFeatures } from '@/components/layout/DashboardShell'
 
 type FeatureKey = 'has_crm' | 'has_analytics' | 'has_whatsapp' | 'has_kanban' | 'has_api_access' | 'has_white_label'
@@ -41,12 +42,12 @@ function UpgradePrompt({ feature }: { feature: FeatureKey }) {
       <p className="mt-1 text-xs text-gray-500">
         Faça upgrade do seu plano para desbloquear este recurso.
       </p>
-      <a
+      <Link
         href="/billing/plans"
         className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
       >
         Ver planos
-      </a>
+      </Link>
     </div>
   )
 }

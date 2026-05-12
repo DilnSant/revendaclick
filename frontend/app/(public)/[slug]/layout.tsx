@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getTenantFromHeaders, getTenantById } from '@/lib/tenant'
+import { getTenantBySlug } from '@/lib/tenant'
 
 interface Props {
   children: React.ReactNode
@@ -9,39 +9,24 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const ctx = await getTenantFromHeaders()
-  if (!ctx) return { title: slug }
-
-  const tenant = await getTenantById(ctx.id)
+  const tenant = await getTenantBySlug(slug)
+  if (!tenant) return { title: slug }
 
   return {
-    title: { default: tenant?.name ?? slug, template: `%s | ${tenant?.name ?? slug}` },
-    description: tenant?.seo_description ?? tenant?.description ?? undefined,
+    title: { default: tenant.name, template: `%s | ${tenant.name}` },
+    description: tenant.seo_description ?? tenant.description ?? undefined,
     openGraph: {
-      title: tenant?.seo_title ?? tenant?.name ?? slug,
-      description: tenant?.seo_description ?? tenant?.description ?? undefined,
-      images: tenant?.logo_url ? [{ url: tenant.logo_url }] : undefined,
+      title: tenant.seo_title ?? tenant.name,
+      description: tenant.seo_description ?? tenant.description ?? undefined,
+      images: tenant.logo_url ? [{ url: tenant.logo_url }] : undefined,
       type: 'website',
     },
   }
 }
 
-/**
- * Layout for all public store pages.
- *
- * The middleware already resolved the tenant from the slug and injected it into
- * the request headers. We read those headers here to gate the layout — if the
- * tenant is missing (middleware let a bad slug through somehow), show 404.
- *
- * We then fetch the FULL tenant row (cached via React cache) and pass it down.
- */
 export default async function StoreLayout({ children, params }: Props) {
-  const ctx = await getTenantFromHeaders()
-
-  // Middleware should always resolve valid tenants, but guard defensively.
-  if (!ctx) notFound()
-
-  const tenant = await getTenantById(ctx.id)
+  const { slug } = await params
+  const tenant = await getTenantBySlug(slug)
   if (!tenant) notFound()
 
   const primaryColor = tenant.theme?.primary_color ?? '#E53935'

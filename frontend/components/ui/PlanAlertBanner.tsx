@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { PlanUsage } from '@/lib/tenant'
 
 interface Props {
@@ -40,12 +41,12 @@ export default function PlanAlertBanner({ usage }: Props) {
     <div className={`border-b px-4 py-3 ${cfg.bg}`}>
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
         <p className={`text-sm font-medium ${cfg.text}`}>{cfg.message}</p>
-        <a
+        <Link
           href="/settings?tab=plan"
           className="shrink-0 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary-dark"
         >
           Fazer upgrade
-        </a>
+        </Link>
       </div>
     </div>
   )

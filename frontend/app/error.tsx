@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect } from 'react'
 import { captureError } from '@/lib/error-tracking'
 
@@ -39,12 +40,12 @@ export default function GlobalError({ error, reset }: Props) {
             >
               Tentar novamente
             </button>
-            <a
+            <Link
               href="/"
               className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
             >
               Voltar ao início
-            </a>
+            </Link>
           </div>
         </div>
       </body>

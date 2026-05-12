@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
@@ -47,7 +48,7 @@ export default async function LeadsPage({ searchParams }: Props) {
 
         {/* View switcher */}
         <div className="flex items-center rounded-lg border border-gray-200 bg-white p-1">
-          <a
+          <Link
             href="/leads"
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
               view === 'kanban'
@@ -56,8 +57,8 @@ export default async function LeadsPage({ searchParams }: Props) {
             }`}
           >
             Kanban
-          </a>
-          <a
+          </Link>
+          <Link
             href="/leads?view=list"
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
               view === 'list'
@@ -66,7 +67,7 @@ export default async function LeadsPage({ searchParams }: Props) {
             }`}
           >
             Lista
-          </a>
+          </Link>
         </div>
       </div>
 

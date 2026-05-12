@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabaseServer'
@@ -104,7 +105,7 @@ export default async function DashboardPage() {
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-900">Fluxo de caixa — últimos meses</h2>
-            <a href="/financial" className="text-xs font-medium text-red-600 hover:text-red-700">Ver completo →</a>
+            <Link href="/financial" className="text-xs font-medium text-red-600 hover:text-red-700">Ver completo →</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -138,7 +139,7 @@ export default async function DashboardPage() {
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-900">Follow-ups pendentes</h2>
-            <a href="/leads" className="text-xs font-medium text-red-600 hover:text-red-700">Ver leads →</a>
+            <Link href="/leads" className="text-xs font-medium text-red-600 hover:text-red-700">Ver leads →</Link>
           </div>
           <div className="space-y-2">
             {followUps.slice(0, 5).map(lead => {
@@ -173,7 +174,7 @@ export default async function DashboardPage() {
                 <p className="text-sm font-medium text-gray-900">Plano atual: {usage.plan_display}</p>
                 <p className="mt-0.5 text-xs text-gray-500">Status: {usage.subscription_status}</p>
               </div>
-              <a href="/billing" className="btn-primary text-xs">Gerenciar</a>
+              <Link href="/billing" className="btn-primary text-xs">Gerenciar</Link>
             </div>
           </div>
         )}

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
@@ -285,9 +286,9 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-500">
           Já tem conta?{' '}
-          <a href="/login" className="font-medium text-red-600 hover:text-red-700">
+          <Link href="/login" className="font-medium text-red-600 hover:text-red-700">
             Fazer login
-          </a>
+          </Link>
         </p>
       </div>
     </div>

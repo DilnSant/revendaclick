@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getTenantFromHeaders, getTenantById, buildWhatsAppUrl } from '@/lib/tenant'
+import { getTenantBySlug, buildWhatsAppUrl } from '@/lib/tenant'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -12,12 +12,9 @@ export default async function StorePage({ params, searchParams }: Props) {
   const { slug } = await params
   const query = await searchParams
 
-  const ctx = await getTenantFromHeaders()
-  if (!ctx) notFound()
-
   const [tenant, vehiclesRes] = await Promise.all([
-    getTenantById(ctx.id),
-    fetchVehicles(ctx.slug, query),
+    getTenantBySlug(slug),
+    fetchVehicles(slug, query),
   ])
 
   if (!tenant) notFound()

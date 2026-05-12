@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { useCallback, useRef, useState, useTransition } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import type { Customer } from '@/lib/customers'
 import { formatPhone, formatCpfCnpj, initials, BR_STATES } from '@/lib/customers'
