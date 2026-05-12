@@ -43,5 +43,10 @@ export async function setupTenant(payload: SetupPayload): Promise<ApiResult<Setu
   if (!res.ok) {
     return { data: null, error: json.error ?? { code: 'error', message: 'Erro ao criar loja. Tente novamente.' } }
   }
+
+  // Refresh Supabase session so the new JWT (with tenant_id + user_role in
+  // app_metadata) is issued before the redirect. Required for Storage RLS.
+  await supabase.auth.refreshSession()
+
   return { data: (json.data ?? json) as SetupResult, error: null }
 }

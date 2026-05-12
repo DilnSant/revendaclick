@@ -132,6 +132,35 @@ services:
       - traefik.http.routers.rc-evolution-http.entrypoints=http
       - traefik.http.routers.rc-evolution-http.middlewares=rc-https-redirect
 
+  # ── Daily backup (3 AM UTC) ───────────────────────────────────────────────────
+  backup:
+    image: alpine:3.20
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache postgresql-client aws-cli bash > /dev/null 2>&1
+        while true; do
+          sleep $(( $(date -d 'tomorrow 03:00' +%s 2>/dev/null || date -v+1d -j -f '%H:%M' '03:00' +%s) - $(date +%s) ))
+          /scripts/backup.sh
+        done
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - BACKUP_S3_BUCKET=${BACKUP_S3_BUCKET:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-sa-east-1}
+    volumes:
+      - /opt/revendaclick/backups:/opt/revendaclick/backups
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infra/scripts/backup.sh:/scripts/backup.sh:ro
+    restart: unless-stopped
+    networks:
+      - revendaclick
+    deploy:
+      resources:
+        limits:
+          memory: 128m
+
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
   letsencrypt:

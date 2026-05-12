@@ -1,8 +1,11 @@
 package onboarding
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -63,11 +66,13 @@ type SetupResult struct {
 }
 
 type Handler struct {
-	pool *pgxpool.Pool
+	pool         *pgxpool.Pool
+	supabaseURL  string
+	serviceKey   string
 }
 
-func NewHandler(pool *pgxpool.Pool) *Handler {
-	return &Handler{pool: pool}
+func NewHandler(pool *pgxpool.Pool, supabaseURL, serviceKey string) *Handler {
+	return &Handler{pool: pool, supabaseURL: supabaseURL, serviceKey: serviceKey}
 }
 
 // POST /api/onboarding/setup  (JWT auth only — no tenant resolution required)
@@ -115,6 +120,11 @@ func (h *Handler) Setup(c *gin.Context) {
 		return
 	}
 
+	// Update Supabase app_metadata so the JWT carries tenant_id + user_role.
+	// This is required for Storage RLS and for direct Supabase client calls.
+	// Non-fatal: the DB fallback in TenantResolver still works if this fails.
+	_ = h.updateSupabaseAppMetadata(c.Request.Context(), userID, result.TenantID, "owner")
+
 	response.JSON(c, http.StatusCreated, result)
 }
 
@@ -159,6 +169,43 @@ func (h *Handler) setupTenantTx(ctx context.Context, userID string, req *SetupRe
 		TenantSlug: strings.TrimSpace(req.TenantSlug),
 		TenantName: strings.TrimSpace(req.TenantName),
 	}, nil
+}
+
+// updateSupabaseAppMetadata patches app_metadata on the Supabase Auth user so that
+// subsequent JWTs include tenant_id and user_role at the top level — required for
+// Storage RLS policies that use auth.jwt() ->> 'tenant_id'.
+func (h *Handler) updateSupabaseAppMetadata(ctx context.Context, userID, tenantID, role string) error {
+	if h.supabaseURL == "" || h.serviceKey == "" {
+		return fmt.Errorf("supabase credentials not configured")
+	}
+
+	body, _ := json.Marshal(map[string]any{
+		"app_metadata": map[string]string{
+			"tenant_id": tenantID,
+			"user_role": role,
+		},
+	})
+
+	url := strings.TrimRight(h.supabaseURL, "/") + "/auth/v1/admin/users/" + userID
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+h.serviceKey)
+	req.Header.Set("apikey", h.serviceKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("supabase admin API returned %d", resp.StatusCode)
+	}
+	return nil
 }
 
 // GET /api/onboarding
