@@ -1,5 +1,29 @@
 services:
 
+  # ── Traefik reverse proxy + SSL ───────────────────────────────────────────────
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=web
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --certificatesresolvers.letsencrypt.acme.email=dilneysantos.developer@gmail.com
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --log.level=ERROR
+      - --api.dashboard=false
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
+    restart: unless-stopped
+    networks:
+      - web
+
   # ── Go backend API ───────────────────────────────────────────────────────────
   backend:
     image: ${BACKEND_IMAGE}:${IMAGE_TAG:-latest}
@@ -10,7 +34,7 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
       - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - ALLOWED_ORIGINS=https://app.revendaclick.com.br,https://api.revendaclick.com.br,https://revendaclick.com.br,https://www.revendaclick.com.br
+      - ALLOWED_ORIGINS=https://app.revendaclick.com.br,https://revendaclick.com.br,https://www.revendaclick.com.br
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -28,7 +52,7 @@ services:
     restart: unless-stopped
     networks:
       - revendaclick
-      - coolify-proxy
+      - web
     deploy:
       resources:
         limits:
@@ -37,7 +61,7 @@ services:
           memory: 64m
     labels:
       - traefik.enable=true
-      - traefik.docker.network=coolify
+      - traefik.docker.network=web
       # ── api.revendaclick.com.br ─────────────────────────────────────────────
       - traefik.http.routers.rc-api.rule=Host(`api.revendaclick.com.br`)
       - traefik.http.routers.rc-api.entrypoints=https
@@ -51,35 +75,6 @@ services:
       - traefik.http.routers.rc-api-http.middlewares=rc-https-redirect
       - traefik.http.middlewares.rc-https-redirect.redirectscheme.scheme=https
       - traefik.http.middlewares.rc-https-redirect.redirectscheme.permanent=true
-
-  # ── Next.js frontend ─────────────────────────────────────────────────────────
-  frontend:
-    image: ${FRONTEND_IMAGE}:${IMAGE_TAG:-latest}
-    environment:
-      - NODE_ENV=production
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - NEXT_PUBLIC_APP_URL=https://app.revendaclick.com.br
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      # Server-side internal routing — bypasses public internet for SSR fetches
-      - INTERNAL_API_URL=http://backend:8080
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - revendaclick
-    deploy:
-      resources:
-        limits:
-          memory: 512m
-        reservations:
-          memory: 128m
 
   # ── Evolution API (WhatsApp) ─────────────────────────────────────────────────
   evolution:
@@ -115,7 +110,7 @@ services:
     restart: unless-stopped
     networks:
       - revendaclick
-      - coolify-proxy
+      - web
     deploy:
       resources:
         limits:
@@ -124,7 +119,7 @@ services:
           memory: 128m
     labels:
       - traefik.enable=true
-      - traefik.docker.network=coolify
+      - traefik.docker.network=web
       # ── evolution.revendaclick.com.br ───────────────────────────────────────
       - traefik.http.routers.rc-evolution.rule=Host(`evolution.revendaclick.com.br`)
       - traefik.http.routers.rc-evolution.entrypoints=https
@@ -137,45 +132,9 @@ services:
       - traefik.http.routers.rc-evolution-http.entrypoints=http
       - traefik.http.routers.rc-evolution-http.middlewares=rc-https-redirect
 
-  # ── Nginx reverse proxy (frontend + internal API routing) ────────────────────
-  nginx:
-    image: nginx:1.27-alpine
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      frontend:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - revendaclick
-      - coolify-proxy
-    deploy:
-      resources:
-        limits:
-          memory: 64m
-        reservations:
-          memory: 16m
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=coolify
-      # ── app.revendaclick.com.br (frontend + /api/ proxy) ───────────────────
-      - traefik.http.routers.rc-frontend.rule=Host(`app.revendaclick.com.br`) || Host(`revendaclick.com.br`) || Host(`www.revendaclick.com.br`)
-      - traefik.http.routers.rc-frontend.entrypoints=https
-      - traefik.http.routers.rc-frontend.tls=true
-      - traefik.http.routers.rc-frontend.tls.certresolver=letsencrypt
-      - traefik.http.services.rc-frontend.loadbalancer.server.port=80
-      # HTTP → HTTPS redirect
-      - traefik.http.routers.rc-frontend-http.rule=Host(`app.revendaclick.com.br`) || Host(`revendaclick.com.br`) || Host(`www.revendaclick.com.br`)
-      - traefik.http.routers.rc-frontend-http.entrypoints=http
-      - traefik.http.routers.rc-frontend-http.middlewares=rc-https-redirect
-
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
-  nginx_logs:
+  letsencrypt:
   backend_logs:
   evolution_instances:
   evolution_store:
@@ -184,6 +143,5 @@ volumes:
 networks:
   revendaclick:
     driver: bridge
-  coolify-proxy:
-    external: true
-    name: coolify
+  web:
+    driver: bridge

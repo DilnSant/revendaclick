@@ -8,9 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # Docker registry requires lowercase — compute once and reuse
   BACKEND_IMAGE: ghcr.io/dilnsant/revendaclick-backend
-  FRONTEND_IMAGE: ghcr.io/dilnsant/revendaclick-frontend
 
 jobs:
 
@@ -32,9 +30,9 @@ jobs:
       - name: Test
         run: cd backend && go test ./... -count=1 -race -timeout 60s
 
-  # ── Build and push images ─────────────────────────────────────────────────
+  # ── Build and push backend image ──────────────────────────────────────────
   build-push:
-    name: Build & Push
+    name: Build & Push Backend
     needs: test-backend
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -64,32 +62,26 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,scope=backend,mode=max
 
-      - name: Build and push frontend
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          push: true
-          tags: |
-            ${{ env.FRONTEND_IMAGE }}:latest
-            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-          build-args: |
-            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-            NEXT_PUBLIC_API_URL=https://api.revendaclick.com.br
-            NEXT_PUBLIC_APP_URL=https://app.revendaclick.com.br
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,scope=frontend,mode=max
+  # ── Deploy via SSH ────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Production
+    needs: build-push
+    runs-on: ubuntu-latest
+    environment: production
 
-  # ── Deploy via Coolify webhook ────────────────────────────────────────────
-###  deploy:
- #   name: Deploy to Production
-#    needs: build-push
-  #  runs-on: ubuntu-latest
- #   environment: production
-#
-  #  steps:
-    #  - name: Trigger Coolify deploy
-   #     run: |
-  #        curl --silent --fail --max-time 30 \
- #           --request GET \
-#            "${{ secrets.COOLIFY_DEPLOY_WEBHOOK }}"
+    steps:
+      - name: Deploy via SSH
+        run: |
+          echo "${{ secrets.VPS_SSH_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key \
+            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "cd /opt/revendaclick && \
+             BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
+             IMAGE_TAG=${{ github.sha }} \
+             docker compose -f docker-compose.prod.yml --env-file .env pull backend && \
+             BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
+             IMAGE_TAG=${{ github.sha }} \
+             docker compose -f docker-compose.prod.yml --env-file .env up -d --remove-orphans && \
+             docker image prune -f --filter 'until=24h'"
+          rm -f /tmp/deploy_key
