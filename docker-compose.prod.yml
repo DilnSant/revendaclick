@@ -1,32 +1,11 @@
 services:
 
-  # ── Traefik reverse proxy + SSL ───────────────────────────────────────────────
-  traefik:
-    image: traefik:v3.1
-    command:
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=web
-      - --entrypoints.http.address=:80
-      - --entrypoints.https.address=:443
-      - --certificatesresolvers.letsencrypt.acme.email=dilneysantos.developer@gmail.com
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-      - --log.level=ERROR
-      - --api.dashboard=false
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - letsencrypt:/letsencrypt
-    restart: unless-stopped
-    networks:
-      - web
-
   # ── Go backend API ───────────────────────────────────────────────────────────
   backend:
     image: ${BACKEND_IMAGE}:${IMAGE_TAG:-latest}
+    ports:
+      # Bind to localhost only — Nginx on the host proxies HTTPS → here
+      - "127.0.0.1:8080:8080"
     environment:
       - PORT=8080
       - ENV=production
@@ -52,33 +31,19 @@ services:
     restart: unless-stopped
     networks:
       - revendaclick
-      - web
     deploy:
       resources:
         limits:
           memory: 256m
         reservations:
           memory: 64m
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=web
-      # ── api.revendaclick.com.br ─────────────────────────────────────────────
-      - traefik.http.routers.rc-api.rule=Host(`api.revendaclick.com.br`)
-      - traefik.http.routers.rc-api.entrypoints=https
-      - traefik.http.routers.rc-api.tls=true
-      - traefik.http.routers.rc-api.tls.certresolver=letsencrypt
-      - traefik.http.routers.rc-api.service=rc-api-svc
-      - traefik.http.services.rc-api-svc.loadbalancer.server.port=8080
-      # HTTP → HTTPS redirect
-      - traefik.http.routers.rc-api-http.rule=Host(`api.revendaclick.com.br`)
-      - traefik.http.routers.rc-api-http.entrypoints=http
-      - traefik.http.routers.rc-api-http.middlewares=rc-https-redirect
-      - traefik.http.middlewares.rc-https-redirect.redirectscheme.scheme=https
-      - traefik.http.middlewares.rc-https-redirect.redirectscheme.permanent=true
 
   # ── Evolution API (WhatsApp) ─────────────────────────────────────────────────
   evolution:
     image: atendai/evolution-api:latest
+    ports:
+      # Bind to localhost only — Nginx on the host proxies HTTPS → here
+      - "127.0.0.1:8081:8080"
     environment:
       - SERVER_URL=https://evolution.revendaclick.com.br
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
@@ -110,37 +75,26 @@ services:
     restart: unless-stopped
     networks:
       - revendaclick
-      - web
     deploy:
       resources:
         limits:
           memory: 512m
         reservations:
           memory: 128m
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=web
-      # ── evolution.revendaclick.com.br ───────────────────────────────────────
-      - traefik.http.routers.rc-evolution.rule=Host(`evolution.revendaclick.com.br`)
-      - traefik.http.routers.rc-evolution.entrypoints=https
-      - traefik.http.routers.rc-evolution.tls=true
-      - traefik.http.routers.rc-evolution.tls.certresolver=letsencrypt
-      - traefik.http.routers.rc-evolution.service=rc-evolution-svc
-      - traefik.http.services.rc-evolution-svc.loadbalancer.server.port=8080
-      # HTTP → HTTPS redirect
-      - traefik.http.routers.rc-evolution-http.rule=Host(`evolution.revendaclick.com.br`)
-      - traefik.http.routers.rc-evolution-http.entrypoints=http
-      - traefik.http.routers.rc-evolution-http.middlewares=rc-https-redirect
 
-  # ── Daily backup (3 AM UTC) ───────────────────────────────────────────────────
+  # ── Daily backup (03:00 UTC) ──────────────────────────────────────────────────
   backup:
     image: alpine:3.20
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        apk add --no-cache postgresql-client aws-cli bash > /dev/null 2>&1
+        apk add --no-cache postgresql-client aws-cli bash curl > /dev/null 2>&1
         while true; do
-          sleep $(( $(date -d 'tomorrow 03:00' +%s 2>/dev/null || date -v+1d -j -f '%H:%M' '03:00' +%s) - $(date +%s) ))
+          NOW=$(date +%s)
+          NEXT=$(date -d 'tomorrow 03:00' +%s 2>/dev/null || \
+                 python3 -c "import datetime,time; t=datetime.datetime.now().replace(hour=3,minute=0,second=0); t+=datetime.timedelta(days=1); print(int(t.timestamp()))" 2>/dev/null || \
+                 echo $((NOW + 86400)))
+          sleep $((NEXT - NOW))
           /scripts/backup.sh
         done
     environment:
@@ -152,7 +106,7 @@ services:
     volumes:
       - /opt/revendaclick/backups:/opt/revendaclick/backups
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./infra/scripts/backup.sh:/scripts/backup.sh:ro
+      - /opt/revendaclick/backup.sh:/scripts/backup.sh:ro
     restart: unless-stopped
     networks:
       - revendaclick
@@ -163,7 +117,6 @@ services:
 
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
-  letsencrypt:
   backend_logs:
   evolution_instances:
   evolution_store:
@@ -171,6 +124,4 @@ volumes:
 # ── Networks ──────────────────────────────────────────────────────────────────
 networks:
   revendaclick:
-    driver: bridge
-  web:
     driver: bridge
