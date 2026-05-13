@@ -49,6 +49,19 @@ services:
         reservations:
           memory: 64m
 
+  # ── Redis (Evolution cache) ──────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: rc_redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    restart: unless-stopped
+    networks:
+      - revendaclick
+    deploy:
+      resources:
+        limits:
+          memory: 160m
+
   # ── Evolution API (WhatsApp) ─────────────────────────────────────────────────
   evolution:
     image: atendai/evolution-api:latest
@@ -72,6 +85,10 @@ services:
       WEBHOOK_GLOBAL_ENABLED:             "true"
       WEBHOOK_GLOBAL_URL:                 "http://backend:8080/api/webhooks/evolution"
       WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS:   "false"
+      CACHE_REDIS_ENABLED:                "true"
+      CACHE_REDIS_URI:                    "redis://rc_redis:6379"
+      CACHE_REDIS_PREFIX_KEY:             "evolution"
+      CACHE_REDIS_SAVE_INSTANCES:         "true"
       QRCODE_LIMIT:                       "30"
       LOG_LEVEL:                          "ERROR"
     volumes:
