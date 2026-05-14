@@ -132,11 +132,13 @@ CREATE POLICY "billing_events_tenant_select"
     USING (tenant_id::text = (auth.jwt() ->> 'tenant_id'));
 
 -- ─── Updated_at triggers ─────────────────────────────────────────────────────
-CREATE TRIGGER IF NOT EXISTS trg_billing_customers_updated_at
+DROP TRIGGER IF EXISTS trg_billing_customers_updated_at ON billing_customers;
+CREATE TRIGGER trg_billing_customers_updated_at
     BEFORE UPDATE ON billing_customers
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
-CREATE TRIGGER IF NOT EXISTS trg_billing_invoices_updated_at
+DROP TRIGGER IF EXISTS trg_billing_invoices_updated_at ON billing_invoices;
+CREATE TRIGGER trg_billing_invoices_updated_at
     BEFORE UPDATE ON billing_invoices
     FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 

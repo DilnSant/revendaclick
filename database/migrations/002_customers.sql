@@ -35,6 +35,7 @@ CREATE POLICY customers_update ON customers FOR UPDATE
 CREATE POLICY customers_delete ON customers FOR DELETE
   USING (tenant_id = auth_tenant_id() AND auth_user_role() IN ('owner', 'admin'));
 
+DROP TRIGGER IF EXISTS set_customers_updated_at ON customers;
 CREATE TRIGGER set_customers_updated_at
   BEFORE UPDATE ON customers
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
