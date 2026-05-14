@@ -1,5 +1,4 @@
 import type { NextConfig } from 'next'
-import path from 'path'
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control',    value: 'on' },
@@ -27,9 +26,6 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
-  // Vercel manages its own deployment format — standalone is for Docker/self-hosted only.
-  // outputFileTracingRoot silences the monorepo multi-lockfile warning without enabling standalone.
-  outputFileTracingRoot: path.join(__dirname, '../../'),
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
