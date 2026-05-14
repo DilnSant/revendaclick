@@ -5,7 +5,7 @@
 set -euo pipefail
 
 APP_DIR="/opt/revendaclick"
-COMPOSE_FILE="$APP_DIR/docker-compose.prod.yml"
+COMPOSE_FILE="$APP_DIR/docker-compose.production.yml"
 ENV_FILE="$APP_DIR/.env"
 IMAGE_TAG="${1:-latest}"
 

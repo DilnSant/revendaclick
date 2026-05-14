@@ -77,11 +77,13 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i /tmp/deploy_key \
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
             "cd /opt/revendaclick && \
+             git pull origin main && \
+             cp nginx.conf /etc/nginx/nginx.conf && nginx -t && systemctl reload nginx && \
              BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
              IMAGE_TAG=${{ github.sha }} \
-             docker compose -f docker-compose.prod.yml --env-file .env pull backend && \
+             docker compose -f docker-compose.production.yml --env-file .env pull backend && \
              BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
              IMAGE_TAG=${{ github.sha }} \
-             docker compose -f docker-compose.prod.yml --env-file .env up -d --remove-orphans && \
+             docker compose -f docker-compose.production.yml --env-file .env up -d --remove-orphans && \
              docker image prune -f --filter 'until=24h'"
           rm -f /tmp/deploy_key
