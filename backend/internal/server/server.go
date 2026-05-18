@@ -67,7 +67,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	aiH        := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
 	billingH   := billing.NewHandler(
 		billing.NewService(billing.NewRepository(pool), cfg.AsaasAPIKey, cfg.AsaasEnv),
-		cfg.AsaasAPIKey,
+		cfg.AsaasWebhookToken,
 	)
 
 	jwtAuth       := appMiddleware.JWTAuth(cfg.SupabaseJWTSecret, cfg.SupabaseECKey)
@@ -190,6 +190,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 
 		// Commissions
 		gated.GET("/commissions", financialH.ListCommissions)
+		gated.PATCH("/commissions/:id/pay", ownerAdmin, financialH.PayCommission)
 
 		// Analytics
 		planGate := func(f string) gin.HandlerFunc { return appMiddleware.PlanGate(pool, f) }
@@ -208,6 +209,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		gated.GET("/evolution/qr", evolutionH.GetQR)
 		gated.POST("/evolution/connect", ownerAdmin, evolutionH.Connect)
 		gated.DELETE("/evolution/disconnect", ownerAdmin, evolutionH.Disconnect)
+		gated.POST("/evolution/send", evolutionH.Send)
 	}
 
 	return r

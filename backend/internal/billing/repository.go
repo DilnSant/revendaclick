@@ -111,7 +111,8 @@ func (r *Repository) ActivateByAsaasSubID(ctx context.Context, asaasSubID string
 
 func (r *Repository) MarkPastDueByAsaasSubID(ctx context.Context, asaasSubID string) error {
 	_, err := r.pool.Exec(ctx,
-		`UPDATE subscriptions SET status = 'past_due' WHERE asaas_subscription_id = $1`,
+		`UPDATE subscriptions SET status = 'past_due', grace_until = NOW() + INTERVAL '3 days'
+		 WHERE asaas_subscription_id = $1`,
 		asaasSubID,
 	)
 	return err
@@ -170,9 +171,7 @@ func (r *Repository) CheckSubscriptionStatus(ctx context.Context, tenantID strin
 func (r *Repository) TryLockEvent(ctx context.Context, eventKey, eventType, tenantID string, payload []byte) (bool, error) {
 	result, err := r.pool.Exec(ctx, `
 		INSERT INTO billing_events (event_key, event_type, tenant_id, payload)
-		SELECT $1, $2,
-		       (SELECT id FROM subscriptions WHERE asaas_subscription_id = $4 LIMIT 1),
-		       $3::jsonb
+		VALUES ($1, $2, NULLIF($4, '')::UUID, $3::jsonb)
 		ON CONFLICT (event_key) DO NOTHING`,
 		eventKey, eventType, string(payload), tenantID,
 	)

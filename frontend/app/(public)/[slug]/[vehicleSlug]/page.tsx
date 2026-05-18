@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getTenantBySlug, buildWhatsAppUrl } from '@/lib/tenant'
+import ShareButton from '@/components/vehicles/ShareButton'
 
 interface Props {
   params: Promise<{ slug: string; vehicleSlug: string }>
@@ -84,6 +85,8 @@ export default async function VehiclePage({ params }: Props) {
   const price = vehicle.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
   const waMsg = `Olá! Vi o *${vehicle.title}* no seu site e tenho interesse. Pode me dar mais informações?`
   const waUrl = buildWhatsAppUrl(tenant.phone_whatsapp, waMsg)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.com.br'
+  const shareUrl = `${appUrl}/${slug}/${vehicleSlug}`
 
   // schema.org structured data
   const jsonLd = {
@@ -219,6 +222,8 @@ export default async function VehiclePage({ params }: Props) {
                 <WhatsAppIcon />
                 Quero este veículo
               </a>
+
+              <ShareButton url={shareUrl} title={vehicle.title} />
 
               <a
                 href={`/${slug}`}

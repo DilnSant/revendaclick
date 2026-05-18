@@ -12,15 +12,15 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com",
       "style-src 'self' 'unsafe-inline'",
-      // img-src allows Supabase storage, any HTTPS host (logos from tenants), and data URIs
       "img-src 'self' data: blob: https:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.revendaclick.com.br",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.revendaclick.com.br https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "worker-src blob:",
     ].join('; '),
   },
 ]
@@ -47,7 +47,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // ISR cache for public store pages — Vercel Edge CDN respects s-maxage
         source: '/:slug((?!dashboard|vehicles|leads|settings|login|register|onboarding|api|_next|favicon|robots|sitemap).*)',
         headers: [
           { key: 'Cache-Control', value: 'public, s-maxage=60, stale-while-revalidate=300' },

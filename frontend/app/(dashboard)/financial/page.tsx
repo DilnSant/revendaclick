@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import NewEntryModal from '@/components/financial/NewEntryModal'
+import ExportCSVButton from '@/components/financial/ExportCSVButton'
 
 export const metadata = { title: 'Financeiro' }
 
@@ -88,6 +89,7 @@ export default async function FinancialPage() {
           <p className="mt-0.5 text-sm text-gray-500">Entradas, saídas e fluxo de caixa</p>
         </div>
         <div className="flex items-center gap-3">
+          <ExportCSVButton entries={entries} filename="financeiro" />
           <NewEntryModal />
           <Link href="/sales" className="btn-secondary shrink-0">+ Registrar venda</Link>
         </div>

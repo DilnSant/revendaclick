@@ -4,6 +4,13 @@ import Image from 'next/image'
 import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
 import type { InstanceStatus } from '@/app/(dashboard)/whatsapp/page'
 
+const TEMPLATES = [
+  { label: 'Boas-vindas', text: 'Olá! Obrigado pelo seu interesse. Como posso ajudar?' },
+  { label: 'Veículo disponível', text: 'Olá! O veículo que você consultou ainda está disponível. Gostaria de agendar uma visita?' },
+  { label: 'Proposta enviada', text: 'Olá! Enviamos uma proposta para você. Ficou com alguma dúvida?' },
+  { label: 'Follow-up', text: 'Olá! Passando para saber se ainda tem interesse no veículo. Posso te ajudar com mais informações?' },
+]
+
 // All Evolution calls go through local Next.js proxy routes (same-origin, no CORS issues)
 const RECONNECT_INTERVAL = 30 * 1000  // 30s auto-reconnect poll
 
@@ -56,6 +63,10 @@ export default function WhatsAppManager({
   const [retryCountdown, setRetryCountdown] = useState<number | null>(null)
   const [pending, startTransition] = useTransition()
   const retryTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [sendModal, setSendModal] = useState(false)
+  const [sendPhone, setSendPhone] = useState('')
+  const [sendMessage, setSendMessage] = useState('')
+  const [sending, setSending] = useState(false)
 
   function showToast(msg: string) {
     setToast(msg)
@@ -143,6 +154,30 @@ export default function WhatsAppManager({
       }
       setQr(result.data ?? null)
     })
+  }
+
+  async function handleSend(e: React.FormEvent) {
+    e.preventDefault()
+    if (!sendPhone || !sendMessage) return
+    setSending(true)
+    try {
+      const res = await fetch('/api/evolution/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: sendPhone, message: sendMessage }),
+      })
+      if (res.ok) {
+        showToast('Mensagem enviada com sucesso!')
+        setSendModal(false)
+        setSendPhone('')
+        setSendMessage('')
+      } else {
+        const json = await res.json().catch(() => ({}))
+        showToast(json.error?.message ?? 'Erro ao enviar mensagem.')
+      }
+    } finally {
+      setSending(false)
+    }
   }
 
   function handleDisconnect() {
@@ -283,10 +318,80 @@ export default function WhatsAppManager({
         </div>
       )}
 
+      {/* Send message modal */}
+      {sendModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-gray-900">Enviar mensagem</h2>
+              <button onClick={() => setSendModal(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+            </div>
+
+            <form onSubmit={handleSend} className="space-y-4">
+              <div>
+                <label className="label">Número WhatsApp</label>
+                <input
+                  type="tel"
+                  value={sendPhone}
+                  onChange={e => setSendPhone(e.target.value)}
+                  placeholder="5511999999999"
+                  required
+                  className="input"
+                />
+                <p className="mt-1 text-xs text-gray-400">Código do país + DDD + número. Exemplo: 5511999999999</p>
+              </div>
+
+              <div>
+                <label className="label">Mensagem</label>
+                <div className="mb-2 flex flex-wrap gap-1">
+                  {TEMPLATES.map(t => (
+                    <button
+                      key={t.label}
+                      type="button"
+                      onClick={() => setSendMessage(t.text)}
+                      className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs text-gray-600 hover:bg-gray-100"
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  value={sendMessage}
+                  onChange={e => setSendMessage(e.target.value)}
+                  placeholder="Digite sua mensagem…"
+                  required
+                  rows={4}
+                  maxLength={4096}
+                  className="input resize-none"
+                />
+                <p className="mt-1 text-xs text-gray-400 text-right">{sendMessage.length}/4096</p>
+              </div>
+
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setSendModal(false)} className="btn-secondary flex-1">
+                  Cancelar
+                </button>
+                <button type="submit" disabled={sending} className="btn-primary flex-1">
+                  {sending ? 'Enviando…' : 'Enviar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Info when connected */}
       {isConnected && (
         <div className="card p-6 space-y-3">
-          <h2 className="text-base font-semibold text-gray-900">WhatsApp conectado</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-gray-900">WhatsApp conectado</h2>
+            <button
+              onClick={() => setSendModal(true)}
+              className="btn-primary text-xs py-1.5 px-3"
+            >
+              Enviar mensagem
+            </button>
+          </div>
           <p className="text-sm text-gray-600">
             Leads enviando mensagens para seu WhatsApp serão automaticamente registrados no CRM.
           </p>

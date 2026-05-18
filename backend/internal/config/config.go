@@ -29,8 +29,9 @@ type Config struct {
 	EvolutionAPIKey    string
 	OpenRouterAPIKey   string
 	OpenRouterModel    string
-	AsaasAPIKey        string
-	AsaasEnv           string
+	AsaasAPIKey          string
+	AsaasEnv             string
+	AsaasWebhookToken    string
 }
 
 func Load() (*Config, error) {
@@ -47,8 +48,9 @@ func Load() (*Config, error) {
 		EvolutionAPIKey:    getEnv("EVOLUTION_API_KEY", ""),
 		OpenRouterAPIKey:   getEnv("OPENROUTER_API_KEY", ""),
 		OpenRouterModel:    getEnv("OPENROUTER_MODEL", "openai/gpt-4o-mini"),
-		AsaasAPIKey:        getEnv("ASAAS_API_KEY", ""),
-		AsaasEnv:           getEnv("ASAAS_ENV", "sandbox"),
+		AsaasAPIKey:       getEnv("ASAAS_API_KEY", ""),
+		AsaasEnv:          getEnv("ASAAS_ENV", "sandbox"),
+		AsaasWebhookToken: getEnv("ASAAS_WEBHOOK_TOKEN", ""),
 	}
 
 	// Support both EVOLUTION_API_URL and legacy EVOLUTION_BASE_URL

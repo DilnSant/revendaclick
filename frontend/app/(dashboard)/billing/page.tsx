@@ -7,7 +7,11 @@ import CancelButton from './_components/CancelButton'
 
 export const metadata = { title: 'Assinatura — RevendaClick' }
 
-export default async function BillingPage() {
+interface Props {
+  searchParams: Promise<{ reason?: string }>
+}
+
+export default async function BillingPage({ searchParams }: Props) {
   const userId = await getUserIdFromHeaders()
   if (!userId) notFound()
 
@@ -15,9 +19,21 @@ export default async function BillingPage() {
   if (!tenant) notFound()
 
   const sub = await getSubscription()
+  const { reason } = await searchParams
+  const isBlocked = reason === 'blocked'
 
   return (
     <div className="space-y-8">
+      {isBlocked && (
+        <div className="rounded-xl border border-red-300 bg-red-50 p-4">
+          <p className="font-semibold text-red-800">Acesso bloqueado</p>
+          <p className="mt-1 text-sm text-red-700">
+            Sua assinatura está inativa ou com pagamento em atraso além do período de carência.
+            Regularize o pagamento para retomar o acesso completo à plataforma.
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-heading font-bold text-graphite">Assinatura</h1>
@@ -82,7 +98,7 @@ export default async function BillingPage() {
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="mb-4 text-lg font-semibold text-gray-900">Ações</h2>
             <div className="space-y-3">
-              {sub.asaas_payment_link && (sub.is_trialing || sub.is_past_due) && (
+              {sub.asaas_payment_link && (sub.is_trialing || sub.is_past_due || sub.is_blocked) && (
                 <a
                   href={sub.asaas_payment_link}
                   target="_blank"

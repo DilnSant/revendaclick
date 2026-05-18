@@ -3,6 +3,7 @@ package financial
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -308,6 +309,21 @@ func (r *Repository) GetCashFlow(ctx context.Context, tenantID string, months in
 		list = append(list, c)
 	}
 	return list, rows.Err()
+}
+
+func (r *Repository) PayCommission(ctx context.Context, tenantID, commissionID string) error {
+	tag, err := r.pool.Exec(ctx,
+		`UPDATE commissions SET status = 'paid', paid_at = NOW(), updated_at = NOW()
+		 WHERE id = $1 AND tenant_id = $2 AND status != 'paid'`,
+		commissionID, tenantID,
+	)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("comissão não encontrada ou já paga")
+	}
+	return nil
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

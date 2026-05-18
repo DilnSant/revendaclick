@@ -54,6 +54,10 @@ func (s *Service) ListCommissions(ctx context.Context, tenantID, sellerID string
 	return s.repo.ListCommissions(ctx, tenantID, sellerID)
 }
 
+func (s *Service) PayCommission(ctx context.Context, tenantID, commissionID string) error {
+	return s.repo.PayCommission(ctx, tenantID, commissionID)
+}
+
 func (s *Service) GetCashFlow(ctx context.Context, tenantID string, months int) ([]*CashFlowMonth, error) {
 	return s.repo.GetCashFlow(ctx, tenantID, months)
 }

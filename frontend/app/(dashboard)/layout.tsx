@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import { getSubscription } from '@/lib/billing'
@@ -39,6 +40,15 @@ export default async function DashboardLayout({ children }: Props) {
     getUsageFromAPI(token),
     getSubscription(),
   ])
+
+  // Hard gate: blocked tenants (canceled or past_due beyond grace) may only access /billing
+  if (sub?.is_blocked) {
+    const headersList = await headers()
+    const pathname = headersList.get('x-pathname') ?? ''
+    if (!pathname.startsWith('/billing')) {
+      redirect('/billing?reason=blocked')
+    }
+  }
 
   return (
     <DashboardShell

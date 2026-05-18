@@ -129,6 +129,8 @@ func (s *Service) HandleWebhook(ctx context.Context, wh *AsaasWebhook, rawPayloa
 	tenantID := ""
 	if wh.Payment != nil && wh.Payment.Subscription != "" {
 		tenantID, _ = s.repo.FindTenantByAsaasSubID(ctx, wh.Payment.Subscription)
+	} else if tenantID == "" && wh.Subscription != nil && wh.Subscription.ID != "" {
+		tenantID, _ = s.repo.FindTenantByAsaasSubID(ctx, wh.Subscription.ID)
 	}
 
 	// Idempotency check — insert event_key; skip if already processed

@@ -59,11 +59,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Inject user ID into request headers so server components can read it without
-  // an extra Supabase round-trip
+  // Inject user ID and pathname into request headers so server components can
+  // read them without extra round-trips
   if (user) {
     response.headers.set('x-user-id', user.id)
   }
+  response.headers.set('x-pathname', pathname)
 
   return response
 }

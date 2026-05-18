@@ -182,6 +182,21 @@ func (h *Handler) ListCommissions(c *gin.Context) {
 	response.JSON(c, http.StatusOK, list)
 }
 
+// PATCH /api/commissions/:id/pay
+func (h *Handler) PayCommission(c *gin.Context) {
+	tenantID := middleware.TenantIDFromGin(c)
+	id := c.Param("id")
+	if id == "" {
+		response.BadRequest(c, "id obrigatório")
+		return
+	}
+	if err := h.svc.PayCommission(c.Request.Context(), tenantID, id); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": gin.H{"code": "pay_failed", "message": err.Error()}})
+		return
+	}
+	response.JSON(c, http.StatusOK, gin.H{"paid": true})
+}
+
 func queryInt(s string, fallback int) int {
 	if v, err := strconv.Atoi(s); err == nil && v > 0 {
 		return v

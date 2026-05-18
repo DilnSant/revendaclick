@@ -24,6 +24,9 @@ jobs:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
 
+      - name: Tidy modules
+        run: cd backend && go mod tidy
+
       - name: Vet
         run: cd backend && go vet ./...
 

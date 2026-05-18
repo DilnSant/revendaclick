@@ -161,3 +161,34 @@ func (h *Handler) Disconnect(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Desconectado com sucesso."})
 }
+
+// POST /api/evolution/send — sends a text message to a phone number
+func (h *Handler) Send(c *gin.Context) {
+	slug := c.GetString("tenant_slug")
+	if slug == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": gin.H{"code": "bad_request", "message": "tenant não resolvido"}})
+		return
+	}
+
+	var req struct {
+		Phone   string `json:"phone" binding:"required"`
+		Message string `json:"message" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": gin.H{"code": "bad_request", "message": err.Error()}})
+		return
+	}
+
+	if len(req.Message) > 4096 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": gin.H{"code": "bad_request", "message": "mensagem muito longa (máx 4096 caracteres)"}})
+		return
+	}
+
+	if err := h.svc.SendMessage(c.Request.Context(), slug, req.Phone, req.Message); err != nil {
+		h.logger.Warn("evolution: send message", zap.Error(err), zap.String("slug", slug))
+		c.JSON(http.StatusBadGateway, gin.H{"error": gin.H{"code": "send_failed", "message": "Falha ao enviar mensagem. Verifique se o WhatsApp está conectado."}})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": gin.H{"sent": true}})
+}
