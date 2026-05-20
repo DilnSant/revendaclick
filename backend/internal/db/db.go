@@ -19,11 +19,16 @@ func New(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	// query protocol; simple protocol must be used for all queries.
 	cfg.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
+	// Abort any query that runs longer than 10 s — prevents slow queries from
+	// exhausting the pool under load. Analytics and reports should complete
+	// well within this budget.
+	cfg.ConnConfig.RuntimeParams["statement_timeout"] = "10000"
+
 	cfg.MaxConns = 10
 	cfg.MinConns = 2
 	cfg.MaxConnLifetime = 30 * time.Minute
-	cfg.MaxConnIdleTime = 5 * time.Minute
-	cfg.HealthCheckPeriod = time.Minute
+	cfg.MaxConnIdleTime  = 5 * time.Minute
+	cfg.HealthCheckPeriod = 30 * time.Second
 
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {

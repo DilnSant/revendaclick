@@ -11,5 +11,19 @@ func NewService(repo *Repository) *Service {
 }
 
 func (s *Service) GetSummary(ctx context.Context, tenantID string) (*Summary, error) {
-	return s.repo.GetSummary(ctx, tenantID)
+	if cached, ok := globalCache.get(tenantID); ok {
+		return cached, nil
+	}
+	summary, err := s.repo.GetSummary(ctx, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	globalCache.set(tenantID, summary)
+	return summary, nil
+}
+
+// InvalidateSummary clears the analytics cache for a tenant.
+// Call after mutations that affect the summary (leads, sales, vehicles).
+func InvalidateSummary(tenantID string) {
+	globalCache.invalidate(tenantID)
 }
