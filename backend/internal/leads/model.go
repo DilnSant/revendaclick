@@ -79,11 +79,19 @@ type ListFilter struct {
 }
 
 func (r *CreateRequest) Validate() error {
-	if r.Name == "" {
+	switch {
+	case r.Name == "":
 		return validationErr("name is required")
-	}
-	if r.Phone == "" {
+	case len(r.Name) > 120:
+		return validationErr("name too long")
+	case r.Phone == "":
 		return validationErr("phone is required")
+	case len(r.Phone) > 30:
+		return validationErr("phone too long")
+	case r.Message != nil && len(*r.Message) > 2000:
+		return validationErr("message too long")
+	case r.Email != nil && len(*r.Email) > 254:
+		return validationErr("email too long")
 	}
 	return nil
 }

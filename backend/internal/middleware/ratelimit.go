@@ -88,3 +88,30 @@ func RateLimit(rps, burst float64) gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// StrictRateLimit is a tight limiter for sensitive mutation endpoints
+// (onboarding setup, billing subscribe). 3 rps sustained, burst of 5.
+func StrictRateLimit() gin.HandlerFunc {
+	return RateLimit(3, 5)
+}
+
+// MaxBodySize limits request body to n bytes on mutating requests.
+// Rejects early via Content-Length when available; otherwise MaxBytesReader
+// causes the JSON binding to fail with 400 in the handler.
+func MaxBodySize(n int64) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		m := c.Request.Method
+		if m != http.MethodPost && m != http.MethodPut && m != http.MethodPatch {
+			c.Next()
+			return
+		}
+		if c.Request.ContentLength > n {
+			c.AbortWithStatusJSON(http.StatusRequestEntityTooLarge, gin.H{
+				"error": gin.H{"code": "payload_too_large", "message": "Request body too large"},
+			})
+			return
+		}
+		c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, n)
+		c.Next()
+	}
+}

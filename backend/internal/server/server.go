@@ -45,7 +45,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	r.Use(gin.Recovery())
 	r.Use(appMiddleware.ZapLogger(logger))
 	r.Use(observability.Middleware())
-	r.Use(appMiddleware.RateLimit(20, 60)) // 20 rps sustained, 60 burst per IP
+	r.Use(appMiddleware.MaxBodySize(512 * 1024)) // 512 KB max body on POST/PUT/PATCH
+	r.Use(appMiddleware.RateLimit(20, 60))       // 20 rps sustained, 60 burst per IP
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -123,7 +124,8 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	setup := r.Group("/api")
 	setup.Use(jwtAuth)
 	{
-		setup.POST("/onboarding/setup", onboardingH.Setup)
+		// StrictRateLimit: tenant creation is expensive — 3 rps / burst 5 per IP
+		setup.POST("/onboarding/setup", appMiddleware.StrictRateLimit(), onboardingH.Setup)
 	}
 
 	// ── Protected routes — billing/tenant/usage always accessible ────────────
@@ -142,10 +144,11 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		free.PUT("/onboarding", onboardingH.Update)
 
 		// Billing routes always accessible so tenant can pay
+		// StrictRateLimit on subscribe/reactivate: they call Asaas API (external, paid)
 		free.GET("/billing/subscription", billingH.GetSubscription)
-		free.POST("/billing/subscribe", ownerAdmin, billingH.Subscribe)
+		free.POST("/billing/subscribe", ownerAdmin, appMiddleware.StrictRateLimit(), billingH.Subscribe)
 		free.DELETE("/billing/subscription", ownerAdmin, billingH.Cancel)
-		free.POST("/billing/reactivate", ownerAdmin, billingH.Reactivate)
+		free.POST("/billing/reactivate", ownerAdmin, appMiddleware.StrictRateLimit(), billingH.Reactivate)
 		free.GET("/billing/invoices", billingH.ListInvoices)
 	}
 

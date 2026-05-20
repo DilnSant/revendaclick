@@ -12,16 +12,20 @@ import (
 // (Evolution handlers require it). Full DB lookup is the fallback.
 func TenantResolver(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// JWT already has tenant_id + role — only need to resolve the slug
+		// JWT already has tenant_id + role — verify tenant is still active and get slug.
 		if c.GetString(CtxTenantID) != "" && c.GetString(CtxUserRole) != "" {
 			var slug string
-			_ = pool.QueryRow(c.Request.Context(),
+			err := pool.QueryRow(c.Request.Context(),
 				`SELECT slug FROM tenants WHERE id = $1 AND is_active = TRUE`,
 				c.GetString(CtxTenantID),
 			).Scan(&slug)
-			if slug != "" {
-				c.Set(CtxTenantSlug, slug)
+			if err != nil {
+				// Tenant not found or inactive — revoke access.
+				c.AbortWithStatusJSON(http.StatusForbidden, errJSON("tenant_inactive",
+					"Workspace not found or deactivated."))
+				return
 			}
+			c.Set(CtxTenantSlug, slug)
 			c.Next()
 			return
 		}

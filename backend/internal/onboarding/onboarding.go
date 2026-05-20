@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -15,6 +16,11 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"revendaclick/backend/internal/middleware"
 	"revendaclick/backend/internal/response"
+)
+
+var (
+	slugRe  = regexp.MustCompile(`^[a-z0-9][a-z0-9\-]{1,48}[a-z0-9]$`)
+	emailRe = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 )
 
 type Checklist struct {
@@ -44,17 +50,27 @@ type SetupRequest struct {
 }
 
 func (r *SetupRequest) validate() error {
+	slug := strings.TrimSpace(r.TenantSlug)
+	email := strings.ToLower(strings.TrimSpace(r.TenantEmail))
 	switch {
-	case strings.TrimSpace(r.TenantSlug) == "":
+	case slug == "":
 		return errors.New("tenant_slug is required")
+	case !slugRe.MatchString(slug):
+		return errors.New("tenant_slug: use apenas letras minúsculas, números e hífens (mínimo 3 caracteres)")
 	case strings.TrimSpace(r.TenantName) == "":
 		return errors.New("tenant_name is required")
-	case strings.TrimSpace(r.TenantEmail) == "":
+	case len(strings.TrimSpace(r.TenantName)) > 120:
+		return errors.New("tenant_name too long (max 120 chars)")
+	case email == "":
 		return errors.New("tenant_email is required")
+	case !emailRe.MatchString(email):
+		return errors.New("tenant_email: formato de e-mail inválido")
 	case strings.TrimSpace(r.PhoneWhatsApp) == "":
 		return errors.New("phone_whatsapp is required")
 	case strings.TrimSpace(r.UserName) == "":
 		return errors.New("user_name is required")
+	case len(strings.TrimSpace(r.UserName)) > 80:
+		return errors.New("user_name too long (max 80 chars)")
 	}
 	return nil
 }
