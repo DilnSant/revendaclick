@@ -159,7 +159,7 @@ func (s *Service) dispatchWebhookEvent(ctx context.Context, wh *AsaasWebhook) er
 		periodEnd := nextPeriodEnd(wh.Payment.DueDate, 1)
 		return s.repo.ActivateByAsaasSubID(ctx, wh.Payment.Subscription, periodEnd)
 
-	case EventPaymentOverdue:
+	case EventPaymentOverdue, EventPaymentRefunded:
 		if wh.Payment == nil || wh.Payment.Subscription == "" {
 			return nil
 		}

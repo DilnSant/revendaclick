@@ -1,6 +1,10 @@
 package financial
 
-import "context"
+import (
+	"context"
+
+	"revendaclick/backend/internal/analytics"
+)
 
 type Service struct {
 	repo *Repository
@@ -18,7 +22,12 @@ func (s *Service) CreateEntry(ctx context.Context, tenantID, userID string, req 
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	return s.repo.CreateEntry(ctx, tenantID, userID, req)
+	entry, err := s.repo.CreateEntry(ctx, tenantID, userID, req)
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return entry, nil
 }
 
 func (s *Service) ListSales(ctx context.Context, tenantID string, f ListSaleFilter) ([]*Sale, int, error) {
@@ -33,17 +42,32 @@ func (s *Service) CreateSale(ctx context.Context, tenantID string, req *CreateSa
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	return s.repo.CreateSale(ctx, tenantID, req)
+	sale, err := s.repo.CreateSale(ctx, tenantID, req)
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return sale, nil
 }
 
 func (s *Service) CompleteSale(ctx context.Context, tenantID, id string) (*Sale, error) {
 	status := "completed"
-	return s.repo.UpdateSale(ctx, tenantID, id, &UpdateSaleRequest{Status: &status})
+	sale, err := s.repo.UpdateSale(ctx, tenantID, id, &UpdateSaleRequest{Status: &status})
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return sale, nil
 }
 
 func (s *Service) CancelSale(ctx context.Context, tenantID, id string) (*Sale, error) {
 	status := "canceled"
-	return s.repo.UpdateSale(ctx, tenantID, id, &UpdateSaleRequest{Status: &status})
+	sale, err := s.repo.UpdateSale(ctx, tenantID, id, &UpdateSaleRequest{Status: &status})
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return sale, nil
 }
 
 func (s *Service) UpdateSale(ctx context.Context, tenantID, id string, req *UpdateSaleRequest) (*Sale, error) {

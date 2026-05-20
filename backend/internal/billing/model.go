@@ -133,6 +133,7 @@ const (
 	EventPaymentReceived  = "PAYMENT_RECEIVED"
 	EventPaymentConfirmed = "PAYMENT_CONFIRMED"
 	EventPaymentOverdue   = "PAYMENT_OVERDUE"
+	EventPaymentRefunded  = "PAYMENT_REFUNDED"
 	EventPaymentDeleted   = "PAYMENT_DELETED"
 	EventSubCreated       = "SUBSCRIPTION_CREATED"
 	EventSubUpdated       = "SUBSCRIPTION_UPDATED"

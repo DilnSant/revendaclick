@@ -1,6 +1,10 @@
 package vehicles
 
-import "context"
+import (
+	"context"
+
+	"revendaclick/backend/internal/analytics"
+)
 
 type Service struct {
 	repo *Repository
@@ -30,7 +34,12 @@ func (s *Service) Create(ctx context.Context, tenantID string, req *CreateReques
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
-	return s.repo.Create(ctx, tenantID, req)
+	vehicle, err := s.repo.Create(ctx, tenantID, req)
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return vehicle, nil
 }
 
 func (s *Service) Update(ctx context.Context, tenantID, id, userRole string, sellerUserID string, req *UpdateRequest) (*Vehicle, error) {
@@ -44,9 +53,18 @@ func (s *Service) Update(ctx context.Context, tenantID, id, userRole string, sel
 		return nil, ErrForbidden
 	}
 
-	return s.repo.Update(ctx, tenantID, id, req)
+	vehicle, err := s.repo.Update(ctx, tenantID, id, req)
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return vehicle, nil
 }
 
 func (s *Service) Delete(ctx context.Context, tenantID, id string) error {
-	return s.repo.Delete(ctx, tenantID, id)
+	if err := s.repo.Delete(ctx, tenantID, id); err != nil {
+		return err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return nil
 }

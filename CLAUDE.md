@@ -522,11 +522,11 @@ Operational:
 8. ~~Evolution API~~ (integrada)
 9. ~~Multi-tenant authentication~~ (Supabase SSR completo)
 10. ~~SaaS onboarding~~ (implementado)
-11. Asaas billing (webhook receiver + subscription gate)
-12. Observability (logs, Sentry, métricas)
-13. Performance optimization
-14. Security hardening
-15. Production launch
+11. ~~Asaas billing~~ (webhook receiver + subscription gate + idempotency)
+12. ~~Observability~~ (Prometheus metrics, analytics cache, DB pool collector)
+13. ~~Performance optimization~~ (nginx cache, DB indexes, analytics TTL cache)
+14. ~~Security hardening~~ (CSP, HSTS, input length limits, tenant gate, rate limit)
+15. ~~Production launch~~ (smoke tests, CI/CD deploy pipeline, VPS live)
 
 ---
 

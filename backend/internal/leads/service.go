@@ -1,6 +1,10 @@
 package leads
 
-import "context"
+import (
+	"context"
+
+	"revendaclick/backend/internal/analytics"
+)
 
 type Service struct {
 	repo *Repository
@@ -25,7 +29,12 @@ func (s *Service) Create(ctx context.Context, tenantID string, req *CreateReques
 	if req.Source == "" {
 		req.Source = "marketplace"
 	}
-	return s.repo.Create(ctx, tenantID, req, remoteIP)
+	lead, err := s.repo.Create(ctx, tenantID, req, remoteIP)
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return lead, nil
 }
 
 func (s *Service) Update(ctx context.Context, tenantID, id, userRole, sellerUserID string, req *UpdateRequest) (*Lead, error) {
@@ -38,11 +47,20 @@ func (s *Service) Update(ctx context.Context, tenantID, id, userRole, sellerUser
 		return nil, ErrForbidden
 	}
 
-	return s.repo.Update(ctx, tenantID, id, req)
+	lead, err := s.repo.Update(ctx, tenantID, id, req)
+	if err != nil {
+		return nil, err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return lead, nil
 }
 
 func (s *Service) Delete(ctx context.Context, tenantID, id string) error {
-	return s.repo.Delete(ctx, tenantID, id)
+	if err := s.repo.Delete(ctx, tenantID, id); err != nil {
+		return err
+	}
+	go analytics.InvalidateSummary(tenantID)
+	return nil
 }
 
 func (s *Service) AddActivity(ctx context.Context, tenantID, leadID, userID string, req *AddActivityRequest) (*Activity, error) {
