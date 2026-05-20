@@ -39,11 +39,21 @@ banner() {
 
 source <(grep -v '^#' "${APP_DIR}/.env" | grep '=')
 
-[[ -z "${DATABASE_URL:-}"            ]] && die "DATABASE_URL não definida no .env"
-[[ -z "${SUPABASE_URL:-}"            ]] && die "SUPABASE_URL não definida no .env"
+[[ -z "${DATABASE_URL:-}"              ]] && die "DATABASE_URL não definida no .env"
+[[ -z "${SUPABASE_URL:-}"              ]] && die "SUPABASE_URL não definida no .env"
 [[ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]] && die "SUPABASE_SERVICE_ROLE_KEY não definida no .env"
-[[ -z "${EVOLUTION_API_KEY:-}"       ]] && die "EVOLUTION_API_KEY não definida no .env"
-[[ -z "${BACKEND_IMAGE:-}"           ]] && die "BACKEND_IMAGE não definida no .env"
+[[ -z "${EVOLUTION_API_KEY:-}"         ]] && die "EVOLUTION_API_KEY não definida no .env"
+[[ -z "${BACKEND_IMAGE:-}"             ]] && die "BACKEND_IMAGE não definida no .env"
+[[ -z "${ASAAS_API_KEY:-}"             ]] && warn "ASAAS_API_KEY não definida — billing desativado"
+[[ -z "${ASAAS_WEBHOOK_TOKEN:-}"       ]] && warn "ASAAS_WEBHOOK_TOKEN não definida — webhooks sem validação"
+[[ -z "${METRICS_TOKEN:-}"             ]] && warn "METRICS_TOKEN não definida — endpoint /metrics sem autenticação"
+
+# Gerar METRICS_TOKEN automaticamente se ausente
+if [[ -z "${METRICS_TOKEN:-}" ]]; then
+  METRICS_TOKEN=$(openssl rand -hex 32)
+  echo "METRICS_TOKEN=${METRICS_TOKEN}" >> "${APP_DIR}/.env"
+  warn "METRICS_TOKEN gerado automaticamente e adicionado ao .env"
+fi
 
 log "Pré-verificações OK — .env válido"
 

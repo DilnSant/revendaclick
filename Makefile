@@ -4,7 +4,7 @@
         backend frontend nginx \
         migrate seed \
         dev-backend dev-frontend \
-        health lint test build-backend
+        health smoke lint test build-backend
 
 COMPOSE      = docker compose
 COMPOSE_PROD = docker compose -f docker-compose.prod.yml
@@ -100,3 +100,10 @@ health:
 	@curl -sf http://localhost/api/v1/health && echo " backend /api/v1 OK"     || echo " backend /api/v1 FAIL"
 	@curl -sf http://localhost/              > /dev/null \
 	  && echo " frontend OK" || echo " frontend FAIL"
+
+# Production smoke test — runs against live environment
+# Usage: make smoke                         (uses default https://api.revendaclick.com.br)
+#        make smoke BASE=http://localhost:8080  (custom base URL)
+BASE ?= https://api.revendaclick.com.br
+smoke:
+	@bash scripts/smoke-test.sh $(BASE)

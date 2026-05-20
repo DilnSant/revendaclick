@@ -73,6 +73,8 @@ jobs:
     environment: production
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Deploy via SSH
         run: |
           echo "${{ secrets.VPS_SSH_KEY }}" > /tmp/deploy_key
@@ -90,3 +92,8 @@ jobs:
              docker compose -f docker-compose.production.yml --env-file .env up -d --remove-orphans && \
              docker image prune -f --filter 'until=24h'"
           rm -f /tmp/deploy_key
+
+      - name: Smoke test
+        run: |
+          sleep 15
+          bash scripts/smoke-test.sh https://api.revendaclick.com.br
