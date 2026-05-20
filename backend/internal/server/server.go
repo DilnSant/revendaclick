@@ -20,6 +20,7 @@ import (
 	"revendaclick/backend/internal/financial"
 	"revendaclick/backend/internal/leads"
 	appMiddleware "revendaclick/backend/internal/middleware"
+	"revendaclick/backend/internal/observability"
 	"revendaclick/backend/internal/onboarding"
 	"revendaclick/backend/internal/plans"
 	"revendaclick/backend/internal/tenant"
@@ -34,11 +35,16 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 
 	r := gin.New()
 
+	// ── Observability collectors (background goroutines) ─────────────────────
+	go observability.StartDBCollector(pool)
+	go observability.StartBusinessCollector(pool, logger)
+
 	// ── Global middleware ─────────────────────────────────────────────────────
 	r.Use(appMiddleware.RequestID())
 	r.Use(appMiddleware.SecurityHeaders())
 	r.Use(gin.Recovery())
 	r.Use(appMiddleware.ZapLogger(logger))
+	r.Use(observability.Middleware())
 	r.Use(appMiddleware.RateLimit(20, 60)) // 20 rps sustained, 60 burst per IP
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowedOrigins,
@@ -74,6 +80,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	resolveTenant := appMiddleware.TenantResolver(pool)
 	subGate       := appMiddleware.SubscriptionGate(pool)
 	ownerAdmin    := appMiddleware.RequireRole("owner", "admin")
+
+	// ── Metrics (Prometheus text format) ─────────────────────────────────────
+	r.GET("/metrics", observability.MetricsHandler(cfg.MetricsToken))
 
 	// ── Health ───────────────────────────────────────────────────────────────
 	r.GET("/health", func(c *gin.Context) {

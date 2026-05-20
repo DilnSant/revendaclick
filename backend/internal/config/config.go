@@ -32,6 +32,7 @@ type Config struct {
 	AsaasAPIKey          string
 	AsaasEnv             string
 	AsaasWebhookToken    string
+	MetricsToken         string
 }
 
 func Load() (*Config, error) {
@@ -51,6 +52,7 @@ func Load() (*Config, error) {
 		AsaasAPIKey:       getEnv("ASAAS_API_KEY", ""),
 		AsaasEnv:          getEnv("ASAAS_ENV", "sandbox"),
 		AsaasWebhookToken: getEnv("ASAAS_WEBHOOK_TOKEN", ""),
+		MetricsToken:      getEnv("METRICS_TOKEN", ""),
 	}
 
 	// Support both EVOLUTION_API_URL and legacy EVOLUTION_BASE_URL
