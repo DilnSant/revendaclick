@@ -65,11 +65,13 @@ export default function RegisterPage() {
     startTransition(async () => {
       // 1. Create Supabase Auth user
       const supabase = createClient()
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: account.email,
         password: account.password,
         options: {
           data: { full_name: account.name },
+          emailRedirectTo: `${appUrl}/auth/callback?next=/onboarding`,
         },
       })
 
@@ -82,8 +84,8 @@ export default function RegisterPage() {
       }
 
       if (!authData.session) {
-        // Email confirmation required — shouldn't happen with local setup,
-        // but handle gracefully.
+        // Email confirmation required — user will receive email with link to
+        // /auth/callback?next=/onboarding which establishes session then redirects.
         router.push('/login?registered=1')
         return
       }
