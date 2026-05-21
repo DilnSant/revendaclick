@@ -69,34 +69,26 @@ jobs:
   deploy:
     name: Deploy to Production
     needs: build-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: production
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          debug: true
-          script: |
-            set -euo pipefail
-            cd /opt/revendaclick
-            git pull origin main
-            cp nginx.conf /etc/nginx/nginx.conf
-            nginx -t && nginx -s reload
-            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
-            IMAGE_TAG=${{ github.sha }} \
-            docker compose -f docker-compose.production.yml --env-file .env pull backend
-            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
-            IMAGE_TAG=${{ github.sha }} \
-            docker compose -f docker-compose.production.yml --env-file .env up -d --remove-orphans
-            docker image prune -f --filter "until=24h"
+      - name: Deploy
+        run: |
+          set -euo pipefail
+          cd /opt/revendaclick
+          git pull origin main
+          cp nginx.conf /etc/nginx/nginx.conf
+          nginx -t && nginx -s reload
+          BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
+          IMAGE_TAG=${{ github.sha }} \
+          docker compose -f docker-compose.production.yml --env-file .env pull backend
+          BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
+          IMAGE_TAG=${{ github.sha }} \
+          docker compose -f docker-compose.production.yml --env-file .env up -d --remove-orphans
+          docker image prune -f --filter "until=24h"
 
       - name: Smoke test
-        run: |
-          sleep 15
-          bash scripts/smoke-test.sh https://api.revendaclick.com.br
+        run: bash /opt/revendaclick/scripts/smoke-test.sh https://api.revendaclick.com.br
