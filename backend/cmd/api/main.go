@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
+	"revendaclick/backend/internal/betterstack"
 	"revendaclick/backend/internal/config"
 	"revendaclick/backend/internal/db"
 	"revendaclick/backend/internal/server"
@@ -19,7 +21,6 @@ import (
 func main() {
 	// Bootstrap logger before config so startup errors are structured.
 	logger, _ := zap.NewProduction()
-	defer logger.Sync() //nolint:errcheck
 
 	cfg, err := config.Load()
 	if err != nil {
@@ -28,8 +29,33 @@ func main() {
 
 	if !cfg.IsProd() {
 		logger, _ = zap.NewDevelopment()
-		defer logger.Sync() //nolint:errcheck
 	}
+
+	// Attach BetterStack log shipping when token is configured.
+	// Logs are tee'd: stdout (existing) + BetterStack HTTP ingestion.
+	var bsSyncer *betterstack.Syncer
+	if cfg.BetterStackToken != "" {
+		bsSyncer = betterstack.NewSyncer(cfg.BetterStackToken)
+		bsCore := zapcore.NewCore(
+			zapcore.NewJSONEncoder(betterstack.EncoderConfig()),
+			bsSyncer,
+			zapcore.InfoLevel,
+		)
+		logger = zap.New(
+			zapcore.NewTee(logger.Core(), bsCore),
+			zap.AddCaller(),
+			zap.AddStacktrace(zapcore.ErrorLevel),
+		).With(
+			zap.String("service", "revendaclick-backend"),
+			zap.String("env", cfg.Env),
+		)
+	}
+	defer func() {
+		_ = logger.Sync()
+		if bsSyncer != nil {
+			_ = bsSyncer.Sync()
+		}
+	}()
 
 	ctx := context.Background()
 	pool, err := db.New(ctx, cfg.DatabaseURL)

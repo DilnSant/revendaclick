@@ -1,3 +1,6 @@
 export async function register() {
-  // extend here for future observability (Better Stack, OpenTelemetry, etc.)
+  if (process.env.NEXT_RUNTIME === 'nodejs' && process.env.BETTER_STACK_SOURCE_TOKEN) {
+    const { logInfo } = await import('./lib/logger')
+    logInfo('frontend server started', { runtime: 'nodejs' })
+  }
 }
