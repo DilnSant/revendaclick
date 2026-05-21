@@ -48,7 +48,7 @@ check_json() {
 check_tls() {
   local label="$1" host="$2"
   local expiry days
-  expiry=$(echo | openssl s_client -servername "$host" -connect "${host}:443" 2>/dev/null \
+  expiry=$(echo | timeout 8 openssl s_client -servername "$host" -connect "${host}:443" 2>/dev/null \
     | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2 || echo "")
   if [[ -z "$expiry" ]]; then
     fail "${label} → TLS certificate not reachable"
