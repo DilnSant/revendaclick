@@ -1,5 +1,4 @@
 import type { NextConfig } from 'next'
-import { withBetterStackNextConfig } from '@logtail/next'
 
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control',    value: 'on' },
@@ -58,4 +57,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withBetterStackNextConfig(nextConfig)
+export default nextConfig
