@@ -152,6 +152,7 @@ export default function FipeSelects({
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingBrands(true)
     fetch('/api/fipe/brands')
       .then(r => r.json())
@@ -167,9 +168,9 @@ export default function FipeSelects({
     const match = brands.find(b => b.nome.toLowerCase() === brand.toLowerCase())
     if (!match) return
     initialBrandLoadedRef.current = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedBrandCode(match.codigo)
     loadModels(match.codigo)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [brand, brands, loadModels])
 
   // Edit mode: resolve model code when models load
@@ -179,9 +180,9 @@ export default function FipeSelects({
     const match = models.find(m => m.nome.toLowerCase() === model.toLowerCase())
     if (!match) return
     initialModelLoadedRef.current = true
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedModelCode(match.codigo)
     loadVersions(selectedBrandCode, match.codigo)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [model, models, selectedBrandCode, loadVersions])
 
   async function fetchFipePrice(brandCode: string, modelCode: string, versionCode: string) {

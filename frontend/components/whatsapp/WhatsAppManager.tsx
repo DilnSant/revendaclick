@@ -82,10 +82,10 @@ export default function WhatsAppManager({
   }, [])
 
   // When service is down, auto-retry health probe every 30s
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!serviceDown) {
       if (retryTimerRef.current) clearInterval(retryTimerRef.current)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRetryCountdown(null)
       return
     }
@@ -127,8 +127,8 @@ export default function WhatsAppManager({
   }, [status.status, refreshStatus])
 
   // Clear QR once connected
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (status.status === 'open') setQr(null)
   }, [status.status])
 

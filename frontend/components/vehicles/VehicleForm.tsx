@@ -117,9 +117,9 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!isEdit && form.title) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm((prev) => ({ ...prev, slug: slugify(`${prev.title}-${prev.year_model}`) }))
     }
   }, [form.title, form.year_model, isEdit])
