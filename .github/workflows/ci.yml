@@ -76,25 +76,24 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Deploy via SSH
-        env:
-          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-        run: |
-          printf '%s\n' "$VPS_SSH_KEY" | tr -d '\r' > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          ssh -o StrictHostKeyChecking=no -o BatchMode=yes -i /tmp/deploy_key \
-            ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-            "cd /opt/revendaclick && \
-             git pull origin main && \
-             cp nginx.conf /etc/nginx/nginx.conf && \
-             nginx -t && nginx -s reload && \
-             BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
-             IMAGE_TAG=${{ github.sha }} \
-             docker compose -f docker-compose.production.yml --env-file .env pull backend && \
-             BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
-             IMAGE_TAG=${{ github.sha }} \
-             docker compose -f docker-compose.production.yml --env-file .env up -d --remove-orphans && \
-             docker image prune -f --filter 'until=24h'"
-          rm -f /tmp/deploy_key
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/revendaclick
+            git pull origin main
+            cp nginx.conf /etc/nginx/nginx.conf
+            nginx -t && nginx -s reload
+            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
+            IMAGE_TAG=${{ github.sha }} \
+            docker compose -f docker-compose.production.yml --env-file .env pull backend
+            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
+            IMAGE_TAG=${{ github.sha }} \
+            docker compose -f docker-compose.production.yml --env-file .env up -d --remove-orphans
+            docker image prune -f --filter "until=24h"
 
       - name: Smoke test
         run: |
