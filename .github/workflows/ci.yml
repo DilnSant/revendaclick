@@ -90,5 +90,18 @@ jobs:
           docker compose -f docker-compose.production.yml --env-file .env up -d --remove-orphans
           docker image prune -f --filter "until=24h"
 
+      - name: Wait for containers healthy
+        run: |
+          echo "Waiting for backend to be healthy..."
+          for i in $(seq 1 24); do
+            STATUS=$(curl -sf --max-time 5 https://api.revendaclick.com.br/health 2>/dev/null | grep -o '"status":"ok"' || true)
+            if [[ "$STATUS" == '"status":"ok"' ]]; then
+              echo "Backend healthy after $((i*5))s"
+              break
+            fi
+            echo "  attempt $i/24..."
+            sleep 5
+          done
+
       - name: Smoke test
         run: bash /opt/revendaclick/scripts/smoke-test.sh https://api.revendaclick.com.br
