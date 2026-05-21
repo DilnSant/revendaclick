@@ -3,7 +3,6 @@ package billing
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -280,5 +279,5 @@ func mapPaymentStatus(s string) string {
 	if v, ok := m[s]; ok {
 		return v
 	}
-	return fmt.Sprintf("pending") // safe fallback
+	return "pending" // safe fallback
 }

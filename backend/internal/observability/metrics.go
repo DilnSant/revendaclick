@@ -159,8 +159,8 @@ func (r *Registry) Histogram(name, help string, buckets []float64, labels ...str
 	return v.(*Histogram)
 }
 
-// WriteTo writes the Prometheus text exposition format to w.
-func (r *Registry) WriteTo(w io.Writer) {
+// WritePrometheus writes the Prometheus text exposition format to w.
+func (r *Registry) WritePrometheus(w io.Writer) {
 	r.mu.RLock()
 	cNames := sortedKeys(r.counters)
 	gNames := sortedKeys(r.gauges)

@@ -53,7 +53,7 @@ func TestRegistryWriteTo(t *testing.T) {
 		c.Inc()
 
 		var buf bytes.Buffer
-		reg.WriteTo(&buf)
+		reg.WritePrometheus(&buf)
 		out := buf.String()
 
 		if !strings.Contains(out, "test_requests_total") {
@@ -74,7 +74,7 @@ func TestLabelsKey(t *testing.T) {
 		c.Inc()
 
 		var buf bytes.Buffer
-		reg.WriteTo(&buf)
+		reg.WritePrometheus(&buf)
 		out := buf.String()
 
 		// The output line should be: http_requests{method="GET",status="200"} 1

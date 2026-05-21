@@ -19,6 +19,6 @@ func MetricsHandler(metricsToken string) gin.HandlerFunc {
 			}
 		}
 		c.Header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
-		Global().WriteTo(c.Writer)
+		Global().WritePrometheus(c.Writer)
 	}
 }
