@@ -34,7 +34,7 @@ export default function RegisterPage() {
       const supabase = createClient()
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
 
-      const { error: authError } = await supabase.auth.signUp({
+      const { data, error: authError } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
@@ -49,6 +49,12 @@ export default function RegisterPage() {
             ? 'Este email já está cadastrado. Faça login.'
             : authError.message
         )
+        return
+      }
+
+      // Email confirmation disabled — session available immediately
+      if (data.session) {
+        window.location.href = '/onboarding'
         return
       }
 
