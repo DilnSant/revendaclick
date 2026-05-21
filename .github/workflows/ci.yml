@@ -83,7 +83,6 @@ jobs:
             ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
             "cd /opt/revendaclick && \
              git pull origin main && \
-             cp nginx.conf /etc/nginx/nginx.conf && nginx -t && systemctl reload nginx && \
              BACKEND_IMAGE=${{ env.BACKEND_IMAGE }} \
              IMAGE_TAG=${{ github.sha }} \
              docker compose -f docker-compose.production.yml --env-file .env pull backend && \

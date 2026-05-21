@@ -1,7 +1,12 @@
+# =============================================================================
+# RevendaClick — Staging Stack (VPS)
+# Frontend runs on Vercel — NOT dockerized here.
+# Usage: docker compose -f docker-compose.staging.yml --env-file .env up -d
+# =============================================================================
+
 services:
 
-  # ── PostgreSQL for Evolution API (self-contained — no external DB dependency) ─
-  # Evolution uses Prisma ORM which runs migrations on first startup.
+  # ── PostgreSQL local para Evolution API (staging isolado) ────────────────────
   postgres-evolution:
     image: postgres:16-alpine
     environment:
@@ -28,7 +33,6 @@ services:
     environment:
       - SERVER_URL=https://evolution.revendaclick.com.br
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
-      # Uses internal postgres-evolution container (no host.docker.internal needed)
       - DATABASE_PROVIDER=postgresql
       - DATABASE_CONNECTION_URI=postgresql://evolution:${POSTGRES_EVOLUTION_PASSWORD:-evolution_secret}@postgres-evolution:5432/evolution
       - DATABASE_CONNECTION_CLIENT_NAME=evolution_staging
@@ -44,10 +48,8 @@ services:
       - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false
       - QRCODE_LIMIT=30
       - LOG_LEVEL=WARN
-    expose:
-      - "8080"
     ports:
-      - "8081:8080"   # debug direct access
+      - "127.0.0.1:8081:8080"
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store
@@ -85,15 +87,17 @@ services:
     env_file: ./backend/.env
     environment:
       - ENV=production
-      - ALLOWED_ORIGINS=https://app.revendaclick.com.br,https://api.revendaclick.com.br,https://revendaclick.com.br,https://www.revendaclick.com.br
+      - ALLOWED_ORIGINS=https://app.revendaclick.com.br,https://revendaclick.com.br,https://www.revendaclick.com.br
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4.1-mini}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4o-mini}
       - ASAAS_API_KEY=${ASAAS_API_KEY}
       - ASAAS_ENV=${ASAAS_ENV:-production}
-    expose:
-      - "8080"
+      - ASAAS_WEBHOOK_TOKEN=${ASAAS_WEBHOOK_TOKEN}
+      - METRICS_TOKEN=${METRICS_TOKEN}
+    ports:
+      - "127.0.0.1:8080:8080"
     volumes:
       - backend_logs:/app/logs
     healthcheck:
@@ -118,78 +122,12 @@ services:
       - traefik.http.routers.rc-api-stg-http.rule=Host(`api.revendaclick.com.br`)
       - traefik.http.routers.rc-api-stg-http.entrypoints=http
       - traefik.http.routers.rc-api-stg-http.middlewares=rc-https-redirect@docker
-
-  # ── Next.js frontend ─────────────────────────────────────────────────────────
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-        NEXT_PUBLIC_API_URL: https://api.revendaclick.com.br
-        NEXT_PUBLIC_APP_URL: https://app.revendaclick.com.br
-    environment:
-      - NODE_ENV=production
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
-      - NEXT_PUBLIC_APP_URL=https://app.revendaclick.com.br
-      # Server-side (SSR) routing — bypasses public internet for data fetching
-      - INTERNAL_API_URL=http://backend:8080
-      # Server-only: used for vendor invite email redirect URLs
-      - APP_URL=https://app.revendaclick.com.br
-    expose:
-      - "3000"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 60s
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - revendaclick
-
-  # ── Nginx reverse proxy ──────────────────────────────────────────────────────
-  nginx:
-    image: nginx:1.27-alpine
-    ports:
-      - "8090:80"   # debug — Traefik routes app.revendaclick.com.br to this container:80
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      frontend:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - revendaclick
-      - coolify-proxy
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=coolify
-      - traefik.http.routers.rc-app-stg.rule=Host(`app.revendaclick.com.br`)
-      - traefik.http.routers.rc-app-stg.entrypoints=https
-      - traefik.http.routers.rc-app-stg.tls=true
-      - traefik.http.routers.rc-app-stg.tls.certresolver=letsencrypt
-      - traefik.http.routers.rc-app-stg.service=rc-app-stg-svc
-      - traefik.http.services.rc-app-stg-svc.loadbalancer.server.port=80
-      - traefik.http.routers.rc-app-stg-http.rule=Host(`app.revendaclick.com.br`)
-      - traefik.http.routers.rc-app-stg-http.entrypoints=http
-      - traefik.http.routers.rc-app-stg-http.middlewares=rc-https-redirect@docker
       - traefik.http.middlewares.rc-https-redirect.redirectscheme.scheme=https
       - traefik.http.middlewares.rc-https-redirect.redirectscheme.permanent=true
 
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
   postgres_evolution_data:
-  nginx_logs:
   backend_logs:
   evolution_instances:
   evolution_store:

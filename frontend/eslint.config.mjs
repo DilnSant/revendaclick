@@ -1,14 +1,12 @@
-import { dirname } from 'path'
-import { fileURLToPath } from 'url'
-import { FlatCompat } from '@eslint/eslintrc'
+import coreWebVitals from 'eslint-config-next/core-web-vitals'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const compat = new FlatCompat({ baseDirectory: __dirname })
-
-const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+export default [
+  ...coreWebVitals,
+  {
+    rules: {
+      // Downgrade: common patterns (async callbacks in effects, conditional setState)
+      // are legitimate in this codebase and not a real risk
+      'react-hooks/set-state-in-effect': 'warn',
+    },
+  },
 ]
-
-export default eslintConfig

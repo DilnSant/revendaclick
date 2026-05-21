@@ -35,12 +35,17 @@ interface SearchSelectProps {
 }
 
 function SearchSelect({ label, required, value, options, loading, disabled, placeholder, onChange }: SearchSelectProps) {
+  const [prevValue, setPrevValue] = useState(value)
   const [query, setQuery] = useState(value)
   const [open, setOpen] = useState(false)
   const debouncedQuery = useDebounce(query, 200)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { setQuery(value) }, [value])
+  // Sync query from prop using rendering-phase update (avoids extra effect)
+  if (prevValue !== value) {
+    setPrevValue(value)
+    setQuery(value)
+  }
 
   const filtered = debouncedQuery.length < 1
     ? options
@@ -124,39 +129,7 @@ export default function FipeSelects({
   const initialBrandLoadedRef = useRef(false)
   const initialModelLoadedRef = useRef(false)
 
-  useEffect(() => {
-    setLoadingBrands(true)
-    fetch('/api/fipe/brands')
-      .then(r => r.json())
-      .then((data: FipeItem[]) => setBrands(Array.isArray(data) ? data : []))
-      .catch(() => setBrands([]))
-      .finally(() => setLoadingBrands(false))
-  }, [])
-
-  // Edit mode: resolve brand code when brands load
-  useEffect(() => {
-    if (initialBrandLoadedRef.current) return
-    if (!brand || brands.length === 0) return
-    const match = brands.find(b => b.nome.toLowerCase() === brand.toLowerCase())
-    if (!match) return
-    initialBrandLoadedRef.current = true
-    setSelectedBrandCode(match.codigo)
-    loadModels(match.codigo)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brand, brands])
-
-  // Edit mode: resolve model code when models load
-  useEffect(() => {
-    if (initialModelLoadedRef.current) return
-    if (!model || models.length === 0 || !selectedBrandCode) return
-    const match = models.find(m => m.nome.toLowerCase() === model.toLowerCase())
-    if (!match) return
-    initialModelLoadedRef.current = true
-    setSelectedModelCode(match.codigo)
-    loadVersions(selectedBrandCode, match.codigo)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, models, selectedBrandCode])
-
+  // Declarations before effects that reference them
   const loadModels = useCallback((brandCode: string) => {
     setModels([])
     setVersions([])
@@ -178,6 +151,39 @@ export default function FipeSelects({
       .finally(() => setLoadingVersions(false))
   }, [])
 
+  useEffect(() => {
+    setLoadingBrands(true)
+    fetch('/api/fipe/brands')
+      .then(r => r.json())
+      .then((data: FipeItem[]) => setBrands(Array.isArray(data) ? data : []))
+      .catch(() => setBrands([]))
+      .finally(() => setLoadingBrands(false))
+  }, [])
+
+  // Edit mode: resolve brand code when brands load
+  useEffect(() => {
+    if (initialBrandLoadedRef.current) return
+    if (!brand || brands.length === 0) return
+    const match = brands.find(b => b.nome.toLowerCase() === brand.toLowerCase())
+    if (!match) return
+    initialBrandLoadedRef.current = true
+    setSelectedBrandCode(match.codigo)
+    loadModels(match.codigo)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brand, brands, loadModels])
+
+  // Edit mode: resolve model code when models load
+  useEffect(() => {
+    if (initialModelLoadedRef.current) return
+    if (!model || models.length === 0 || !selectedBrandCode) return
+    const match = models.find(m => m.nome.toLowerCase() === model.toLowerCase())
+    if (!match) return
+    initialModelLoadedRef.current = true
+    setSelectedModelCode(match.codigo)
+    loadVersions(selectedBrandCode, match.codigo)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [model, models, selectedBrandCode, loadVersions])
+
   async function fetchFipePrice(brandCode: string, modelCode: string, versionCode: string) {
     if (!onFipePrice) return
     try {
@@ -186,7 +192,6 @@ export default function FipeSelects({
       )
       if (!res.ok) return
       const data = await res.json()
-      // Valor is like "R$ 85.000,00" — parse it
       const raw: string = data.Valor ?? ''
       const num = parseFloat(raw.replace(/[^0-9,]/g, '').replace(',', '.'))
       if (!isNaN(num) && num > 0) onFipePrice(num)

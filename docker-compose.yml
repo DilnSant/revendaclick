@@ -1,23 +1,5 @@
 services:
 
-  # ── Nginx reverse proxy ─────────────────────────────────────────────────────
-  nginx:
-    image: nginx:1.27-alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - nginx_logs:/var/log/nginx
-    depends_on:
-      frontend:
-        condition: service_healthy
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - revendaclick
-
   # ── Go backend API (Gin + Zap) ──────────────────────────────────────────────
   backend:
     build:
@@ -25,16 +7,16 @@ services:
       dockerfile: Dockerfile
     env_file: ./backend/.env
     environment:
-      - ENV=production
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost,https://revendaclick.com.br,https://app.revendaclick.com.br,https://www.revendaclick.com.br}
+      - ENV=development
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost
       - EVOLUTION_API_URL=http://evolution:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4.1-mini}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL:-openai/gpt-4o-mini}
       - ASAAS_API_KEY=${ASAAS_API_KEY:-}
       - ASAAS_ENV=${ASAAS_ENV:-sandbox}
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"
     volumes:
       - backend_logs:/app/logs
     healthcheck:
@@ -47,45 +29,11 @@ services:
     networks:
       - revendaclick
 
-  # ── Next.js frontend ────────────────────────────────────────────────────────
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost}
-        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost}
-    environment:
-      - NODE_ENV=production
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      # Server-side SSR calls go directly to the backend over the Docker network
-      - INTERNAL_API_URL=http://backend:8080
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost}
-      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost}
-      # Server-only (not baked at build time) — used for invite email redirect URLs
-      - APP_URL=${APP_URL:-https://app.revendaclick.com.br}
-    expose:
-      - "3000"
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - revendaclick
-
   # ── Evolution API (WhatsApp) ────────────────────────────────────────────────
   evolution:
     image: atendai/evolution-api:latest
     environment:
-      - SERVER_URL=${EVOLUTION_SERVER_URL:-https://evolution.revendaclick.com.br}
+      - SERVER_URL=${EVOLUTION_SERVER_URL:-http://localhost:8081}
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY:-dev_evolution_key}
       - DATABASE_PROVIDER=postgresql
       - DATABASE_CONNECTION_URI=${EVOLUTION_DATABASE_URL:-postgresql://postgres:postgres@host.docker.internal:5432/evolution}
@@ -115,7 +63,6 @@ services:
 
 # ── Named volumes ─────────────────────────────────────────────────────────────
 volumes:
-  nginx_logs:
   backend_logs:
   evolution_instances:
   evolution_store:

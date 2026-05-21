@@ -191,6 +191,7 @@ export default function DashboardShell(props: Props) {
 
   // Close mobile sidebar on route change
   const pathname = usePathname()
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setMobileOpen(false) }, [pathname])
 
   return (

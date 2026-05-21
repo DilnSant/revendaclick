@@ -18,6 +18,7 @@ interface Props {
 
 export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete }: Props) {
   const [isPending, startTransition] = useTransition()
+  const [prevLeadId, setPrevLeadId] = useState(lead.id)
   const [notes, setNotes] = useState(lead.notes ?? '')
   const [notesDirty, setNotesDirty] = useState(false)
   const [followUpAt, setFollowUpAt] = useState(
@@ -28,6 +29,16 @@ export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete 
   const [error, setError] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
 
+  // Reset form fields when the displayed lead changes (rendering-phase pattern)
+  if (prevLeadId !== lead.id) {
+    setPrevLeadId(lead.id)
+    setNotes(lead.notes ?? '')
+    setNotesDirty(false)
+    setFollowUpAt(lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0, 16) : '')
+    setFollowUpNote(lead.follow_up_note ?? '')
+    setFollowUpDirty(false)
+  }
+
   // Close on Escape key
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -36,15 +47,6 @@ export default function LeadDetail({ lead, sellers, onClose, onUpdate, onDelete 
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
-
-  // Sync notes and follow-up when lead changes
-  useEffect(() => {
-    setNotes(lead.notes ?? '')
-    setNotesDirty(false)
-    setFollowUpAt(lead.follow_up_at ? new Date(lead.follow_up_at).toISOString().slice(0, 16) : '')
-    setFollowUpNote(lead.follow_up_note ?? '')
-    setFollowUpDirty(false)
-  }, [lead.id, lead.notes, lead.follow_up_at, lead.follow_up_note])
 
   function handleStatusChange(status: LeadStatus) {
     startTransition(async () => {
