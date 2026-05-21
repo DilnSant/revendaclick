@@ -88,7 +88,7 @@ sep "3. Backend — Security Headers"
 check_header() {
   local label="$1" url="$2" header="$3"
   local val
-  val=$(curl -sI --max-time "$TIMEOUT" "$url" 2>/dev/null | grep -i "^${header}:" | head -1 | tr -d '\r')
+  val=$(curl -sI --max-time "$TIMEOUT" "$url" 2>/dev/null | grep -i "^${header}:" | head -1 | tr -d '\r' || true)
   if [[ -n "$val" ]]; then
     ok "${label} → present"
   else
@@ -119,7 +119,7 @@ sep "6. Backend — Rate Limiting"
 RATE_STATUS=$(
   for _ in $(seq 1 70); do
     curl -so /dev/null -w "%{http_code}\n" --max-time 2 "${BASE}/health" 2>/dev/null
-  done | grep "^429" | wc -l
+  done | { grep "^429" || :; } | wc -l
 )
 if [[ "$RATE_STATUS" -gt 0 ]]; then
   ok "Rate limiting active (got ${RATE_STATUS} × 429)"
