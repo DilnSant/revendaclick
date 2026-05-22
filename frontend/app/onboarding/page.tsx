@@ -43,21 +43,26 @@ export default function OnboardingPage() {
     setError(null)
 
     startTransition(async () => {
-      const result = await setupTenant({
-        tenant_slug:    form.tenant_slug,
-        tenant_name:    form.tenant_name,
-        tenant_email:   form.tenant_email,
-        phone_whatsapp: form.phone_whatsapp,
-        user_name:      form.user_name,
-      })
+      try {
+        const result = await setupTenant({
+          tenant_slug:    form.tenant_slug,
+          tenant_name:    form.tenant_name,
+          tenant_email:   form.tenant_email,
+          phone_whatsapp: form.phone_whatsapp,
+          user_name:      form.user_name,
+        })
 
-      if (result.error) {
-        setError(result.error.message)
-        return
+        if (result.error) {
+          setError(`${result.error.code}: ${result.error.message}`)
+          return
+        }
+
+        router.push('/dashboard')
+        router.refresh()
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setError(`Erro inesperado: ${msg}`)
       }
-
-      router.push('/dashboard')
-      router.refresh()
     })
   }
 
