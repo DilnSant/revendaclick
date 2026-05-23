@@ -12,6 +12,40 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-23 — Fix: bug crítico dashboard → loop infinito /onboarding (SUPABASE_SERVICE_ROLE_KEY ausente no Vercel)
+
+**O que foi feito:**
+- Diagnosticado via Vercel runtime logs: `[getTenantForUser] users query error` em TODOS os requests de /dashboard
+- Causa raiz confirmada: `SUPABASE_SERVICE_ROLE_KEY` não configurado no Vercel → `createServiceClient()` falha → `getTenantForUser` retorna null → dashboard redireciona para /onboarding → loop infinito → formulário limpa
+- Fix: `getTenantForUser` reescrito para usar `createClient()` (anon key + JWT do usuário) em vez de `createServiceClient()` (service role). RLS via `auth_tenant_id()` garante isolamento por tenant. Não requer `SUPABASE_SERVICE_ROLE_KEY`.
+- Renomeado `middleware.ts` → `proxy.ts` para corrigir deprecation do Next.js 16
+
+**Causa raiz técnica:**
+`createServiceClient()` em `getTenantForUser` dependia de `SUPABASE_SERVICE_ROLE_KEY` que não estava no Vercel. O erro era silencioso (capturado pelo `if (userError)` com console.error). A RLS na tabela `users` (`WHERE tenant_id = auth_tenant_id()`) funciona corretamente via JWT — o claim `tenant_id` é injetado pelo backend no `app_metadata` após onboarding + `refreshSession()`.
+
+**Usuários afetados confirmados no banco:**
+- `desconto.do.dono@gmail.com` — tenant criado mas dashboard inacessível
+- `dilsant.nocode@gmail.com` — tenant criado mas dashboard inacessível
+- `dilneysantos.coprodutor@gmail.com` — sem tenant, loop no onboarding
+- `metodolimpezas@gmail.com` — sem tenant, loop no onboarding
+
+**Diagnóstico usado:**
+- Supabase MCP: query em `auth.users JOIN public.users` revelou usuários sem tenant
+- Vercel MCP: runtime logs confirmaram o erro exato `[getTenantForUser] users query error`
+- Leitura de RLS policies: `users_select_own_tenant` e `tenants_select_own` via `auth_tenant_id()`
+
+**Arquivos alterados:**
+- `frontend/lib/tenant.ts` — `getTenantForUser`: `createServiceClient()` → `await createClient()`; import adicionado
+- `frontend/proxy.ts` — criado (novo nome do middleware no Next.js 16)
+- `frontend/middleware.ts` — esvaziado (substituído por proxy.ts)
+
+**SQL executado:** nenhum
+
+**Commits:**
+- `894021d` — fix: switch getTenantForUser to session client
+
+---
+
 ## 2026-05-22 — Fix: bug crítico login → redirect incorreto para /onboarding
 
 **O que foi feito:**

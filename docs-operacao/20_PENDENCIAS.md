@@ -49,6 +49,9 @@
 | CONCLUÍDA | Next.js 16 SSR | — | App Router, Server Components |
 | CONCLUÍDA | Auth flow completo | — | Registro → confirmação → onboarding → dashboard |
 | CONCLUÍDA | Fix: login → /onboarding incorreto | — | getTenantForUser reescrito com 2 queries explícitas (sem embedded join) |
+| CONCLUÍDA | Fix: dashboard loop /onboarding (service role key) | — | getTenantForUser migrado para session client; middleware.ts → proxy.ts |
+| PENDENTE | Configurar SUPABASE_SERVICE_ROLE_KEY no Vercel | Alta | Necessário para getTenantById/getTenantBySlug (rotas públicas sem sessão) |
+| PENDENTE | Verificar usuários travados: coprodutor + metodolimpezas | Alta | Confirmar que conseguem acessar dashboard após o deploy da correção |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |

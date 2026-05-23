@@ -99,3 +99,22 @@
 **Motivo:** Decisão do produto — não será mais necessária.
 **Impacto:** `FLUTTERFLOW_MIGRATION.md` e `18_MIGRACAO_FLUTTERFLOW.md` são obsoletos.
 **Ação:** Frontend Next.js continua como stack oficial.
+
+---
+
+## D13 — getTenantForUser usa session client em vez de service role (23/05/2026)
+
+**Decisão:** `getTenantForUser` usa `createClient()` (anon key + JWT do usuário) em vez de `createServiceClient()` (service role key).
+**Por quê:** Em Vercel (serverless), `SUPABASE_SERVICE_ROLE_KEY` não estava configurado. Toda chamada ao `createServiceClient()` em `getTenantForUser` falhava silenciosamente → retornava null → dashboard redirecionava para /onboarding → loop infinito.
+**Como funciona:** A RLS na tabela `users` permite SELECT via `WHERE tenant_id = auth_tenant_id()`. A função `auth_tenant_id()` lê o claim `tenant_id` do JWT, que é injetado pelo backend via `app_metadata` após o onboarding. O `supabase.auth.refreshSession()` no server action `setupTenant` garante que o JWT atualizado chegue ao próximo request.
+**Trade-off:** Exige que o JWT tenha o claim `tenant_id`. Se `refreshSession()` falhar (raro), o usuário fica redirecionado para /onboarding mesmo com tenant criado — mas o erro é rastreável via console.error.
+**Segurança:** Mais seguro que service role — o banco aplica RLS em vez de bypass total.
+**Impacto ao alterar:** `getTenantById` e `getTenantBySlug` (rotas públicas sem sessão) ainda usam `createServiceClient()` — precisam do `SUPABASE_SERVICE_ROLE_KEY` configurado no Vercel.
+
+---
+
+## D14 — middleware.ts renomeado para proxy.ts (23/05/2026)
+
+**Decisão:** `frontend/middleware.ts` substituído por `frontend/proxy.ts`.
+**Por quê:** Next.js 16 deprecou a convenção `middleware` em favor de `proxy`. O build logava warning: "The 'middleware' file convention is deprecated. Please use 'proxy' instead." O arquivo antigo foi esvaziado para evitar conflito.
+**Impacto:** A lógica de auth (session refresh, x-user-id header, redirect para /login) continua idêntica. Apenas o nome do arquivo mudou.
