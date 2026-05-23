@@ -1,6 +1,6 @@
 import { headers } from 'next/headers'
 import { cache } from 'react'
-import { createServiceClient } from './supabaseServer'
+import { createClient, createServiceClient } from './supabaseServer'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -134,12 +134,18 @@ export const getTenantBySlug = cache(async (slug: string): Promise<Tenant | null
 
 /**
  * For dashboard server components: look up the tenant for the authenticated user.
- * Uses two explicit queries to avoid PostgREST embedded-join reliability issues.
+ * Uses the session-based client (anon key + user JWT) so RLS enforces isolation
+ * without depending on SUPABASE_SERVICE_ROLE_KEY in server environments.
+ *
+ * RLS prerequisite: JWT must carry the 'tenant_id' claim (set by backend onboarding
+ * via app_metadata + supabase.auth.refreshSession() in the setupTenant action).
+ * If the claim is absent the SELECT returns 0 rows → null → redirect to /onboarding.
  */
 export const getTenantForUser = cache(async (userId: string): Promise<TenantContext | null> => {
-  const supabase = createServiceClient()
+  const supabase = await createClient()
 
   // Step 1: resolve tenant_id from users table
+  // RLS: users_select_own_tenant — WHERE tenant_id = auth_tenant_id()
   const { data: userData, error: userError } = await supabase
     .from('users')
     .select('tenant_id')
@@ -157,6 +163,7 @@ export const getTenantForUser = cache(async (userId: string): Promise<TenantCont
   }
 
   // Step 2: fetch tenant details
+  // RLS: tenants_select_own — WHERE id = auth_tenant_id()
   const { data: tenantData, error: tenantError } = await supabase
     .from('tenants')
     .select('id, slug, name, phone_whatsapp')
