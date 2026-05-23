@@ -1,0 +1,22 @@
+RevendaClick — Resumo do Projeto
+
+  Stack
+
+  - Frontend: Next.js 16 → Vercel → app.revendaclick.com.br
+  - Backend: Go API → VPS Hostinger (2.24.67.84) → api.revendaclick.com.br
+  - Database: Supabase PostgreSQL
+  - WhatsApp: Evolution API → evolution.revendaclick.com.br
+  - CI/CD: GitHub Actions (self-hosted runner no VPS) → push em main deploya automaticamente
+
+  ---
+  O que está funcionando ✅
+
+  - CI/CD completo: test → build Docker → deploy VPS → smoke test 19/19
+  - Backend Go rodando em produção (Docker)
+  - Nginx + SSL (Let's Encrypt, válido até ago/2026)
+  - Multi-tenant RLS no Supabase
+  - Evolution API (WhatsApp) integrada
+  - OpenRouter AI integrado
+  - Asaas billing (webhook + subscription gate)
+  - Módulos: leads, CRM, Kanban, veículos, clientes, financeiro, vendas, analytics
+  - Página pública de veículo com SEO
