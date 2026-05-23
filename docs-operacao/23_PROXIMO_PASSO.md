@@ -66,6 +66,13 @@ Candidatos: queries de leads com filtros, queries de veículos com preço, queri
 
 ---
 
+## Fix Aplicado nesta Sessão
+
+- `getTenantForUser` corrigido com duas queries explícitas (sem embedded join)
+- Se o problema persistir: verificar `console.error` nos logs da Vercel para ver o erro real do Supabase
+
+---
+
 ## Decisões Tomadas nesta Sessão
 
 - FlutterFlow: **descartado** (ver D12 em `21_DECISOES_TECNICAS.md`)

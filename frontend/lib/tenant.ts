@@ -134,33 +134,50 @@ export const getTenantBySlug = cache(async (slug: string): Promise<Tenant | null
 
 /**
  * For dashboard server components: look up the tenant for the authenticated user.
- * Falls back to a DB lookup from the users table.
+ * Uses two explicit queries to avoid PostgREST embedded-join reliability issues.
  */
 export const getTenantForUser = cache(async (userId: string): Promise<TenantContext | null> => {
   const supabase = createServiceClient()
 
-  const { data, error } = await supabase
+  // Step 1: resolve tenant_id from users table
+  const { data: userData, error: userError } = await supabase
     .from('users')
-    .select('tenant_id, tenants(id, slug, name, phone_whatsapp)')
+    .select('tenant_id')
     .eq('id', userId)
     .eq('is_active', true)
-    .single()
+    .maybeSingle()
 
-  const tenantData = data as {
-    tenants?: TenantContext
-  } | null
-
-  if (error || !tenantData?.tenants) {
+  if (userError) {
+    console.error('[getTenantForUser] users query error:', userError.message, { userId })
     return null
   }
 
-  const t = tenantData.tenants
+  if (!userData?.tenant_id) {
+    return null
+  }
+
+  // Step 2: fetch tenant details
+  const { data: tenantData, error: tenantError } = await supabase
+    .from('tenants')
+    .select('id, slug, name, phone_whatsapp')
+    .eq('id', userData.tenant_id)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (tenantError) {
+    console.error('[getTenantForUser] tenants query error:', tenantError.message, { tenantId: userData.tenant_id })
+    return null
+  }
+
+  if (!tenantData) {
+    return null
+  }
 
   return {
-    id: t.id,
-    slug: t.slug,
-    name: t.name,
-    phone_whatsapp: t.phone_whatsapp,
+    id: tenantData.id,
+    slug: tenantData.slug,
+    name: tenantData.name,
+    phone_whatsapp: tenantData.phone_whatsapp,
   }
 })
 

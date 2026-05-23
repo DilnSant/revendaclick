@@ -12,6 +12,26 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-22 — Fix: bug crítico login → redirect incorreto para /onboarding
+
+**O que foi feito:**
+- Corrigido `frontend/lib/tenant.ts` → `getTenantForUser`
+- Substituído embedded Supabase join `tenants(...)` por duas queries explícitas independentes
+- Substituído `.single()` por `.maybeSingle()` para evitar erro PGRST116 quando 0 linhas retornam
+- Adicionado `console.error` para surfacing de erros futuros
+
+**Causa raiz:**
+O embedded join PostgREST `.select('tenant_id, tenants(id, slug, name, phone_whatsapp)')` falha silenciosamente em produção (schema cache, FK não reconhecido, ou erro de rede). O `if (error || ...)` captura o erro e retorna null. O dashboard interpreta como "sem tenant" e redireciona para /onboarding. O backend, consultando PostgreSQL diretamente, confirma que o tenant existe — daí o "usuário já possui uma loja cadastrada".
+
+**Arquivos alterados:**
+- `frontend/lib/tenant.ts` — `getTenantForUser` reescrito com duas queries explícitas
+
+**SQL executado:** nenhum
+
+**Commits:** ver git log
+
+---
+
 ## 2026-05-22 — Auditoria e documentação completa
 
 **O que foi feito:**

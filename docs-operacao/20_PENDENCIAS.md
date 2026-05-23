@@ -48,6 +48,7 @@
 |---|---|---|---|
 | CONCLUÍDA | Next.js 16 SSR | — | App Router, Server Components |
 | CONCLUÍDA | Auth flow completo | — | Registro → confirmação → onboarding → dashboard |
+| CONCLUÍDA | Fix: login → /onboarding incorreto | — | getTenantForUser reescrito com 2 queries explícitas (sem embedded join) |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |
