@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabaseServer'
 
-const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const _rawAPI = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
+const API = _rawAPI.startsWith('http') ? _rawAPI : `https://${_rawAPI}`
 
 type ApiOk<T> = { data: T; error: null }
 type ApiErr   = { data: null; error: { code: string; message: string } }

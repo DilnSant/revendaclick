@@ -134,18 +134,19 @@ export const getTenantBySlug = cache(async (slug: string): Promise<Tenant | null
 
 /**
  * For dashboard server components: look up the tenant for the authenticated user.
- * Uses the session-based client (anon key + user JWT) so RLS enforces isolation
- * without depending on SUPABASE_SERVICE_ROLE_KEY in server environments.
  *
- * RLS prerequisite: JWT must carry the 'tenant_id' claim (set by backend onboarding
- * via app_metadata + supabase.auth.refreshSession() in the setupTenant action).
- * If the claim is absent the SELECT returns 0 rows → null → redirect to /onboarding.
+ * Primary path: session client (anon key + user JWT) — uses RLS via `auth_tenant_id()`
+ * which reads `tenant_id` from JWT app_metadata. Requires a prior `refreshSession()`
+ * after onboarding so the new claim is present in the cookie.
+ *
+ * Fallback path: service role client — queries by `id = userId` directly, bypassing
+ * RLS. Used when the JWT lacks the claim (e.g. onboarding ran but app_metadata was
+ * not updated, or the session was not refreshed in time).
  */
 export const getTenantForUser = cache(async (userId: string): Promise<TenantContext | null> => {
   const supabase = await createClient()
 
-  // Step 1: resolve tenant_id from users table
-  // RLS: users_select_own_tenant — WHERE tenant_id = auth_tenant_id()
+  // Primary: session client — RLS enforces isolation via JWT tenant_id claim
   const { data: userData, error: userError } = await supabase
     .from('users')
     .select('tenant_id')
@@ -154,37 +155,55 @@ export const getTenantForUser = cache(async (userId: string): Promise<TenantCont
     .maybeSingle()
 
   if (userError) {
-    console.error('[getTenantForUser] users query error:', userError.message, { userId })
-    return null
+    console.error('[getTenantForUser] primary query error:', userError.message, { userId })
+  } else if (userData?.tenant_id) {
+    const { data: tenantData, error: tenantError } = await supabase
+      .from('tenants')
+      .select('id, slug, name, phone_whatsapp')
+      .eq('id', userData.tenant_id)
+      .eq('is_active', true)
+      .maybeSingle()
+
+    if (tenantError) {
+      console.error('[getTenantForUser] primary tenants query error:', tenantError.message, { tenantId: userData.tenant_id })
+    } else if (tenantData) {
+      return {
+        id: tenantData.id,
+        slug: tenantData.slug,
+        name: tenantData.name,
+        phone_whatsapp: tenantData.phone_whatsapp,
+      }
+    }
   }
 
-  if (!userData?.tenant_id) {
-    return null
-  }
+  // Fallback: JWT missing tenant_id claim — query by user ID via service role.
+  // Safe: we still filter by the authenticated user's own ID.
+  console.warn('[getTenantForUser] primary returned null for userId:', userId, '— trying service role fallback')
+  const admin = createServiceClient()
 
-  // Step 2: fetch tenant details
-  // RLS: tenants_select_own — WHERE id = auth_tenant_id()
-  const { data: tenantData, error: tenantError } = await supabase
-    .from('tenants')
-    .select('id, slug, name, phone_whatsapp')
-    .eq('id', userData.tenant_id)
+  const { data: adminUser } = await admin
+    .from('users')
+    .select('tenant_id')
+    .eq('id', userId)
     .eq('is_active', true)
     .maybeSingle()
 
-  if (tenantError) {
-    console.error('[getTenantForUser] tenants query error:', tenantError.message, { tenantId: userData.tenant_id })
-    return null
-  }
+  if (!adminUser?.tenant_id) return null
 
-  if (!tenantData) {
-    return null
-  }
+  const { data: adminTenant } = await admin
+    .from('tenants')
+    .select('id, slug, name, phone_whatsapp')
+    .eq('id', adminUser.tenant_id)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (!adminTenant) return null
 
   return {
-    id: tenantData.id,
-    slug: tenantData.slug,
-    name: tenantData.name,
-    phone_whatsapp: tenantData.phone_whatsapp,
+    id: adminTenant.id,
+    slug: adminTenant.slug,
+    name: adminTenant.name,
+    phone_whatsapp: adminTenant.phone_whatsapp,
   }
 })
 
@@ -231,10 +250,11 @@ export const getTenantUsage = cache(async (tenantId: string): Promise<PlanUsage 
 
 // ─── Backend API usage (includes feature flags) ───────────────────────────────
 
-const API =
+const _rawAPI =
   process.env.INTERNAL_API_URL ??
   process.env.NEXT_PUBLIC_API_URL ??
   'http://localhost:8080'
+const API = _rawAPI.startsWith('http') ? _rawAPI : `https://${_rawAPI}`
 
 export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> {
   if (!token) {
