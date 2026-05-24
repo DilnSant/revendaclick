@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 22/05/2026
+> Atualizado em: 23/05/2026 (sessão 2)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -50,8 +50,10 @@
 | CONCLUÍDA | Auth flow completo | — | Registro → confirmação → onboarding → dashboard |
 | CONCLUÍDA | Fix: login → /onboarding incorreto | — | getTenantForUser reescrito com 2 queries explícitas (sem embedded join) |
 | CONCLUÍDA | Fix: dashboard loop /onboarding (service role key) | — | getTenantForUser migrado para session client; middleware.ts → proxy.ts |
-| PENDENTE | Configurar SUPABASE_SERVICE_ROLE_KEY no Vercel | Alta | Necessário para getTenantById/getTenantBySlug (rotas públicas sem sessão) |
-| PENDENTE | Verificar usuários travados: coprodutor + metodolimpezas | Alta | Confirmar que conseguem acessar dashboard após o deploy da correção |
+| CONCLUÍDA | Configurar SUPABASE_SERVICE_ROLE_KEY no Vercel | — | Configurado; getTenantForUser agora tem fallback service role |
+| CONCLUÍDA | Corrigir loop /onboarding para usuários com JWT sem claim | — | SQL patch + getTenantForUser com service role fallback (commit b5685c2) |
+| PENDENTE | Testar login + dashboard em produção após deploy b5685c2 | Alta | Confirmar que dilneysantos@gmail.com acessa /dashboard sem loop |
+| PENDENTE | Investigar updateSupabaseAppMetadata no backend | Alta | Verificar se novo cadastro gera JWT claim corretamente (logs do VPS) |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |

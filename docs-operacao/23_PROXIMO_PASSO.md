@@ -1,87 +1,116 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 23/05/2026
+> Atualizado em: 23/05/2026 (sessão 2)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
 ## Estado Atual do Projeto
 
-Sistema em produção com correção crítica deployed:
+Sistema em produção com múltiplos fixes de auth deployados:
 
 - Backend Go → `https://api.revendaclick.com.br` ✓
-- Frontend Next.js → `https://app.revendaclick.com.br` ✓ (deploy automático via Vercel)
+- Frontend Next.js → `https://app.revendaclick.com.br` ✓ (Vercel, deploy automático)
 - CI/CD GitHub Actions → automático em push para `main` ✓
 - Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ✓
 - Billing Asaas → assinaturas funcionando ✓
 - Observabilidade → `/metrics` + BetterStack ✓
+- Vercel env vars → todas configuradas (SUPABASE_URL, ANON_KEY, SERVICE_ROLE_KEY, API_URL, APP_URL) ✓
+
+**Último deploy:** `b5685c2` — fix: service role fallback in getTenantForUser + protocol guard
+**Status deploy:** Em andamento (push feito nesta sessão, Vercel buildando)
 
 ---
 
-## ⚠️ AÇÃO URGENTE (Fazer Antes de Qualquer Outra Coisa)
+## Estado do Banco (23/05/2026)
 
-### Configurar SUPABASE_SERVICE_ROLE_KEY no Vercel
+| Email | auth.users | public.users | jwt_tenant_id | Situação |
+|---|---|---|---|---|
+| dilneysantos@gmail.com | ✓ confirmado | ✓ owner | ✓ fd1172f6 (patchado) | Deve acessar /dashboard após deploy |
+| admin@staging.revendaclick.com.br | ✓ confirmado | ✓ owner | ✓ e9f92ebf (patchado) | OK |
+| admin@revendaclick.staging | ✓ confirmado | ✗ | ✗ | Sem tenant (staging, irrelevante) |
 
-O fix desta sessão eliminou a dependência em `SUPABASE_SERVICE_ROLE_KEY` para o caminho crítico (`getTenantForUser`). Mas outros componentes ainda usam `createServiceClient()`:
+**Nota:** Os usuários `desconto.do.dono@gmail.com`, `dilsant.nocode@gmail.com`, `dilneysantos.coprodutor@gmail.com`, `metodolimpezas@gmail.com` mencionados em sessões anteriores **não existem mais neste projeto Supabase** (ou foram excluídos). Apenas 3 usuários encontrados no banco.
 
-- `getTenantById` — usado em rotas públicas (vitrine de veículos)
-- `getTenantBySlug` — usado em rotas públicas (vitrine de veículos)
-- `getTenantUsage` — dashboard usage/plan
-- Billing (`getSubscription`)
+---
 
-**Como configurar:**
-1. Acessar [vercel.com/dashboard](https://vercel.com/dashboard)
-2. Projeto `revendaclick` → Settings → Environment Variables
-3. Verificar/adicionar as seguintes vars (copiar de `frontend/.env.local`):
+## ⚠️ AÇÃO URGENTE (Primeira Coisa da Próxima Sessão)
+
+### 1. Confirmar deploy e testar login em produção
+
+Aguardar o Vercel concluir o deploy do commit `b5685c2` e testar:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://ibgaywezfcbbiiziaoac.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...  (anon key do .env.local)
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGci...      (service role key do .env.local)
-NEXT_PUBLIC_API_URL=https://api.revendaclick.com.br
-NEXT_PUBLIC_APP_URL=https://app.revendaclick.com.br
+1. Acessar https://app.revendaclick.com.br/login
+2. Fazer login com dilneysantos@gmail.com
+3. Deve ir para /dashboard (não mais loop /onboarding)
+4. Verificar que KPIs e módulos carregam normalmente
 ```
 
-4. Após salvar → redeploy manual (ou push de qualquer commit)
+**Se login ainda falhar com "Email ou senha inválidos":**
+- O erro `signInWithPassword` pode ser senha errada — tentar reset de senha
+- Ou verificar se `NEXT_PUBLIC_SUPABASE_ANON_KEY` no Vercel está correto (copiar do `.env.local`)
+- Verificar nos logs Vercel se há erro de auth no lado servidor
 
-### Verificar usuários travados
+### 2. Testar fluxo de novo cadastro
 
-Após configurar o Vercel e redeploy, verificar se estes usuários conseguem acessar o dashboard:
+```
+1. Acessar https://app.revendaclick.com.br/register
+2. Criar nova conta com email novo
+3. Deve ir para /onboarding (email confirmation está DESABILITADO no Supabase)
+4. Preencher formulário de onboarding → Criar loja
+5. Deve ir para /dashboard
+6. Verificar que raw_app_meta_data tem tenant_id no Supabase
+```
 
-- `dilneysantos.coprodutor@gmail.com` — sem tenant, deve conseguir completar onboarding
-- `metodolimpezas@gmail.com` — sem tenant, deve conseguir completar onboarding
-- `desconto.do.dono@gmail.com` — tem tenant, deve conseguir acessar /dashboard diretamente
-- `dilsant.nocode@gmail.com` — tem tenant, deve conseguir acessar /dashboard diretamente
+**Atenção:** Email confirmation está desabilitado → não vai enviar email → usuário vai direto para /onboarding. Isso é comportamento correto dado a configuração atual. Se quiser habilitar email confirmation, configurar em Supabase → Auth → Settings → "Confirm email".
+
+### 3. Investigar por que updateSupabaseAppMetadata falha silenciosamente
+
+Se o novo cadastro no passo 2 NÃO gerar `tenant_id` em `raw_app_meta_data` no Supabase:
+
+```bash
+# No VPS — verificar logs do backend no momento do onboarding
+docker compose -f docker-compose.production.yml logs backend --tail=100 | grep -i "supabase\|metadata\|app_meta"
+```
+
+Possíveis causas:
+- `SUPABASE_URL` no backend `.env` tem trailing slash → URL fica `...co//auth/v1/admin/users/...`
+- `SUPABASE_SERVICE_ROLE_KEY` no backend `.env` está incorreto
+- Supabase Admin API retornando 4xx
 
 ---
 
 ## Próximos Passos (por prioridade)
 
-### 1. Testar o fluxo completo de auth pós-deploy (Alta prioridade)
+### 1. Testar fluxo completo auth (Alta — fazer agora)
 
-Testar com cada usuário afetado:
+Descrito acima na seção URGENTE.
 
-```
-1. login → /dashboard (usuários com tenant)
-2. register → onboarding → dashboard (novo usuário)
-3. logout → login → dashboard
-4. verificar que não há mais loops /onboarding
-```
+### 2. Corrigir updateSupabaseAppMetadata no backend (Alta — se confirmado falho)
 
-### 2. Verificar rotas públicas (Média prioridade)
+Se o teste 2 mostrar que `raw_app_meta_data` não recebe `tenant_id`:
 
-Testar vitrine pública após configurar `SUPABASE_SERVICE_ROLE_KEY`:
-
-```
-https://app.revendaclick.com.br/desccontocar
-https://app.revendaclick.com.br/nocode-car
+```bash
+# Verificar .env do backend no VPS
+grep "SUPABASE_URL\|SUPABASE_SERVICE" /path/to/.env
 ```
 
-### 3. Backup S3 (Média prioridade)
+O fix pode ser:
+- Remover trailing slash de `SUPABASE_URL`
+- Corrigir o `SUPABASE_SERVICE_ROLE_KEY`
+- Ou tornar o `updateSupabaseAppMetadata` fatal (panic em startup se credenciais inválidas)
 
-O container `backup` está configurado no `docker-compose.prod.yml` mas S3 é opcional.
+### 3. Verificar rotas públicas de vitrine (Média)
 
-Para ativar:
+```
+https://app.revendaclick.com.br/<slug-de-tenant>
+```
+
+Depende de `getTenantBySlug` (usa service role) — deve funcionar agora que `SUPABASE_SERVICE_ROLE_KEY` está no Vercel.
+
+### 4. Backup S3 (Média — opcional)
+
 ```bash
 # No VPS — adicionar ao .env
 BACKUP_S3_BUCKET=meu-bucket-s3
@@ -90,48 +119,76 @@ AWS_SECRET_ACCESS_KEY=...
 AWS_DEFAULT_REGION=sa-east-1
 ```
 
-Ver `11_DOCKER.md` para detalhes do container de backup.
+Ver `11_DOCKER.md`.
+
+### 5. Uptime Monitoring (Baixa)
+
+Configurar UptimeRobot ou BetterStack Uptime para `https://api.revendaclick.com.br/health`.
+
+### 6. Rotação de Secrets (Baixa)
+
+Definir política semestral: `ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN`.
+
+### 7. Review de Indexes (Baixa)
+
+`EXPLAIN ANALYZE` nas queries mais frequentes após 30 dias com carga real.
 
 ---
 
-### 4. Uptime Monitoring (Baixa prioridade)
+## Diagnóstico desta Sessão
 
-Configurar monitor externo para `https://api.revendaclick.com.br/health`.
+**O que foi investigado:**
 
-Opções gratuitas: UptimeRobot, BetterStack Uptime, Freshping.
+Bug report com 3 sintomas:
+1. Novo cadastro não envia email de confirmação — vai direto para /onboarding
+2. Login existente retorna "email/senha incorretos"
+3. Onboarding: inputs limpam, fica na página, sem erro visível, sem redirect
 
----
+**Causa raiz identificada:**
 
-### 5. Rotação de Secrets (Baixa prioridade)
+`updateSupabaseAppMetadata` (Go backend) falha silenciosamente → `raw_app_meta_data` sem `tenant_id` → JWT emitido sem claim → `getTenantForUser` (session client + RLS `auth_tenant_id()`) retorna 0 linhas → `null` → dashboard redireciona para /onboarding → loop.
 
-Definir política semestral para rotação de:
-- `ASAAS_API_KEY`
-- `EVOLUTION_API_KEY`
-- `METRICS_TOKEN`
+**Sequência real do bug no onboarding:**
+1. Usuário submete formulário → `setupTenant` server action é chamada
+2. `fetch(API + '/api/onboarding/setup')` → backend cria tenant + user no DB (transação OK)
+3. Backend chama `updateSupabaseAppMetadata` → **falha silenciosamente**
+4. Backend retorna 201 → `setupTenant` retorna `{ data: ..., error: null }`
+5. `refreshSession()` é chamado → JWT refreshado **sem** `tenant_id` (pois `app_metadata` não foi atualizado)
+6. `router.push('/dashboard')` → dashboard → `getTenantForUser` → null → redirect /onboarding
+7. Usuário vê form limpo — parece que "nada aconteceu"
 
----
+**Sintoma 1 (sem email):** Comportamento correto — email confirmation está desabilitado no Supabase. Quando desabilitado, `signUp` retorna `data.session` imediatamente e o código faz `window.location.href = '/onboarding'`.
 
-### 6. Review de Indexes (Baixa prioridade)
+**Sintoma 2 (login falha):** Não totalmente investigado — pode ser senha errada ou anon key incorreto no build anterior. O novo deploy com env vars corretas deve resolver se for questão de key.
 
-Executar `EXPLAIN ANALYZE` nas queries mais frequentes após 30 dias em produção com carga real.
+**Sintoma 3 (onboarding loop):** Causa raiz confirmada e corrigida (ver acima).
 
----
+**Fixes aplicados:**
+- `getTenantForUser`: session client primeiro → service role fallback (unbloqueia qualquer usuário com tenant no DB, independente do JWT)
+- SQL patch: `raw_app_meta_data` corrigido retroativamente para todos os usuários com tenant sem claim
+- Protocol guard: `API.startsWith('http')` garante que URL sem protocolo nunca gera TypeError
 
-## Diagnóstico desta Sessão (para referência)
+**SQL executado:**
+```sql
+UPDATE auth.users au
+SET raw_app_meta_data = au.raw_app_meta_data 
+  || jsonb_build_object('tenant_id', pu.tenant_id::text, 'user_role', pu.role)
+FROM public.users pu
+WHERE au.id = pu.id
+  AND pu.tenant_id IS NOT NULL
+  AND pu.is_active = TRUE
+  AND (au.raw_app_meta_data ->> 'tenant_id') IS NULL;
+-- Afetados: dilneysantos@gmail.com, admin@staging.revendaclick.com.br
+```
 
-**Como confirmamos o bug via ferramentas:**
-1. Supabase MCP → `SELECT auth.users JOIN public.users` → revelou 4 usuários sem tenant
-2. Vercel MCP → runtime logs → `[getTenantForUser] users query error` em 100% dos requests /dashboard
-3. Vercel MCP → build logs → warning "middleware deprecated, use proxy instead"
-4. RLS policies → `users_select_own_tenant: WHERE tenant_id = auth_tenant_id()` confirmou que session client funciona
-
-**Usuários no banco (estado em 23/05/2026):**
-| Email | auth.users | public.users | Tenant |
-|---|---|---|---|
-| desconto.do.dono@gmail.com | ✓ | ✓ owner | desccontocar |
-| dilsant.nocode@gmail.com | ✓ | ✓ owner | nocode-car |
-| dilneysantos.coprodutor@gmail.com | ✓ | ✗ | ✗ |
-| metodolimpezas@gmail.com | ✓ | ✗ | ✗ |
+**Commits desta sessão:**
+- `1436f8a` — debug: show exact error code+message on onboarding submit failure
+- `de7c02b` — fix: redirect to /onboarding immediately when email confirmation is disabled
+- `4e76ced` — fix: simplify register to account-only — store config moves to /onboarding after email confirmation
+- `9f3b7e0` — fix: add emailRedirectTo in signUp to route confirmation through /auth/callback
+- `c3beeb6` — fix: wait for backend healthy before smoke test
+- `606ebd9` — fix: remove middleware.ts (conflicted with proxy.ts in Next.js 16)
+- `b5685c2` — fix: service role fallback in getTenantForUser + protocol guard on API URL
 
 ---
 

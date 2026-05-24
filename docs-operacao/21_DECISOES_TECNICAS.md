@@ -102,7 +102,15 @@
 
 ---
 
-## D13 — getTenantForUser usa session client em vez de service role (23/05/2026)
+## D13 — getTenantForUser usa abordagem híbrida: session client + service role fallback (23/05/2026)
+
+**Decisão:** `getTenantForUser` tenta session client primeiro (RLS via JWT `tenant_id` claim). Se retornar null (JWT sem claim), faz fallback para service role consultando por `id = userId` diretamente.
+**Por quê:** `updateSupabaseAppMetadata` no backend Go é non-fatal. Se falhar, o JWT fica sem o claim `tenant_id`. Com session client puro, o RLS `WHERE tenant_id = auth_tenant_id()` retorna 0 linhas → null → loop /onboarding. O fallback garante que usuários com tenant no banco sempre chegam ao dashboard, independentemente do estado do JWT.
+**Segurança:** Fallback filtra por `id = userId` (autenticado via proxy.ts). Nunca expõe dados de outro tenant.
+**Trade-off:** O fallback faz 2 queries extras (service role) quando JWT não tem claim. Frequência baixa (apenas usuários com JWT stale).
+**Patch retroativo:** SQL executado em 23/05/2026 corrige `raw_app_meta_data` para usuários existentes com tenant mas sem claim.
+
+## D13 (anterior) — getTenantForUser usa session client em vez de service role (23/05/2026)
 
 **Decisão:** `getTenantForUser` usa `createClient()` (anon key + JWT do usuário) em vez de `createServiceClient()` (service role key).
 **Por quê:** Em Vercel (serverless), `SUPABASE_SERVICE_ROLE_KEY` não estava configurado. Toda chamada ao `createServiceClient()` em `getTenantForUser` falhava silenciosamente → retornava null → dashboard redirecionava para /onboarding → loop infinito.

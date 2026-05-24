@@ -12,6 +12,43 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-23 (sessão 2) — Fix: getTenantForUser com service role fallback + protocol guard + patch JWT claims
+
+**O que foi feito:**
+- Diagnosticado que `updateSupabaseAppMetadata` falha silenciosamente no backend → `raw_app_meta_data` dos usuários fica sem `tenant_id` → JWT sem claim → `getTenantForUser` (session client + RLS `auth_tenant_id()`) retorna 0 linhas → loop /onboarding.
+- `getTenantForUser` reescrito com fallback em service role: tenta session client (RLS) primeiro; se retornar null, consulta via service role filtrando por `id = userId` (seguro — não expõe dados cross-tenant).
+- Patch direto via SQL no Supabase: `UPDATE auth.users SET raw_app_meta_data = raw_app_meta_data || jsonb_build_object('tenant_id', ..., 'user_role', ...)` para todos os usuários com tenant em `public.users` mas sem claim no JWT. Afetados: `dilneysantos@gmail.com`, `admin@staging.revendaclick.com.br`.
+- Protocol guard adicionado em `actions.ts` e `tenant.ts`: se `NEXT_PUBLIC_API_URL` vier sem `https://`, `fetch()` não joga `TypeError: Failed to parse URL`.
+
+**Causa raiz técnica:**
+`updateSupabaseAppMetadata` em `backend/internal/onboarding/onboarding.go` é não-fatal (`_ = h.updateSupabaseAppMetadata(...)`). Quando falha (credenciais erradas, timeout, etc.), a transação do banco já foi commitada mas o JWT nunca recebe o claim. Com `getTenantForUser` dependendo de `auth_tenant_id()` (lê do JWT), o dashboard entra em loop para esses usuários mesmo com tenant no banco.
+
+**Solução definitiva:**
+1. `getTenantForUser`: session client primeiro → se null, service role fallback por `userId`. Unbloqueia todos os casos sem depender de JWT claim.
+2. SQL patch: corrige JWT claims retroativamente para usuários afetados.
+3. Protocol guard: garante que URL malformada nunca gera TypeError em produção.
+
+**Arquivos alterados:**
+- `frontend/lib/tenant.ts` — `getTenantForUser` reescrito com fallback; `API` constant com protocol guard
+- `frontend/app/onboarding/actions.ts` — `API` constant com protocol guard
+
+**SQL executado:**
+```sql
+UPDATE auth.users au
+SET raw_app_meta_data = au.raw_app_meta_data 
+  || jsonb_build_object('tenant_id', pu.tenant_id::text, 'user_role', pu.role)
+FROM public.users pu
+WHERE au.id = pu.id
+  AND pu.tenant_id IS NOT NULL
+  AND pu.is_active = TRUE
+  AND (au.raw_app_meta_data ->> 'tenant_id') IS NULL;
+```
+
+**Commits:**
+- `b5685c2` — fix: service role fallback in getTenantForUser + protocol guard on API URL
+
+---
+
 ## 2026-05-23 — Fix: bug crítico dashboard → loop infinito /onboarding (SUPABASE_SERVICE_ROLE_KEY ausente no Vercel)
 
 **O que foi feito:**
