@@ -12,6 +12,53 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-25 (sessão 4) — Fix 6 bugs críticos de produção: vendedores, billing, WhatsApp, settings/plan, settings/users
+
+**O que foi feito:**
+
+### BUG 1 — Vendedores: "Error sending invite email" + UX
+- **Causa raiz:** `inviteUserByEmail` depende de SMTP do Supabase (rate limit severo no free tier). Gerava erro "Error sending invite email" sempre que o limite era atingido.
+- **Fix:** Trocado `inviteUserByEmail` → `generateLink({ type: 'invite' })`. Gera URL de convite sem enviar email. Admin compartilha o link manualmente (WhatsApp, SMS, etc.).
+- **UX:** Botão "Convidar membro" → "Novo vendedor". Modal título atualizado. Role Admin removido do dropdown (só Vendedor e Visualizador). Sucesso mostra o link copiável.
+- Cleanup automático do auth user se o backend falhar ao registrar o usuário.
+
+### BUG 2 — Billing: 403 not_allowed_ip
+- **Causa raiz:** IP do VPS não whitelisted na API Asaas (sandbox ou produção).
+- **Fix código:** `asaasUserErr()` em `billing/service.go` detecta `not_allowed_ip` e retorna mensagem amigável ao usuário em vez do erro raw do Asaas.
+- **Fix configuração (requer ação manual):** Ver "AÇÃO URGENTE" em `23_PROXIMO_PASSO.md`.
+
+### BUG 3 — WhatsApp: botões sem efeito visível
+- **Causa raiz código:** `refreshStatus()` (botão "Atualizar Status") falhava silenciosamente — sem toast, sem feedback ao usuário.
+- **Fix:** Separado em dois handlers: `refreshStatus` (auto-poll silencioso) e `handleRefreshStatusManual` (botão manual com toast de feedback e loading state).
+- **Causa raiz infra (requer diagnóstico no VPS):** Evolution API pode estar down. Ver diagnóstico em `23_PROXIMO_PASSO.md`.
+
+### BUG 4 — Settings/Plan: botões Renovar/Assinar mortos
+- **Causa raiz:** `handleSubscribe` em `PlanTab` não tinha estado de erro. Se `subscribePlan` retornava erro, nada acontecia — botão voltava ao normal sem feedback.
+- **Fix:** Adicionados `planError` e `planSuccess` states com display no JSX. Banner informativo para usuários em trial.
+
+### BUG 5 — Settings/Users: "disponível em breve"
+- **Causa raiz:** Feature incompleta. Placeholder sem funcionalidade.
+- **Fix:** `UsersTab` reescrita com modal "+ Convidar Membro". Roles: Administrador (admin) e Gerente (seller). Usa mesmo `inviteVendor` action com `generateLink`. Botão oculto para trial/sem plano com mensagem clara. `router.refresh()` após invite para atualizar a lista.
+
+### Geral
+- `ROLE_LABELS.admin`: `'Admin'` → `'Administrador'` (toda a aplicação).
+
+**Arquivos alterados:**
+- `frontend/app/(dashboard)/vendors/actions.ts` — `inviteUserByEmail` → `generateLink`, retorna `inviteLink`
+- `frontend/app/(dashboard)/vendors/_components/VendorsClient.tsx` — UX: "Novo vendedor", roles, link copiável
+- `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx` — PlanTab com error/success/trial; UsersTab com invite modal
+- `frontend/components/whatsapp/WhatsAppManager.tsx` — `handleRefreshStatusManual` com toast
+- `frontend/lib/users.ts` — `ROLE_LABELS.admin: 'Administrador'`
+- `backend/internal/billing/service.go` — `asaasUserErr()` para mensagem amigável de IP whitelist
+
+**SQL executado:** nenhum
+
+**Configuração externa necessária (não código):**
+1. Asaas IP Whitelist — ver `23_PROXIMO_PASSO.md`
+2. Evolution API diagnóstico VPS — ver `23_PROXIMO_PASSO.md`
+
+---
+
 ## 2026-05-25 (sessão 3) — Fix: updateSupabaseAppMetadata com retry + logging; runbook de incidentes; docs completos
 
 **O que foi feito:**

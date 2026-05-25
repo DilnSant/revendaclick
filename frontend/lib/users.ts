@@ -13,7 +13,7 @@ export type User = {
 
 export const ROLE_LABELS: Record<string, string> = {
   owner:  'Proprietário',
-  admin:  'Admin',
+  admin:  'Administrador',
   seller: 'Vendedor',
   viewer: 'Visualizador',
 }

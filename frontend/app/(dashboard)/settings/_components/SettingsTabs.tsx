@@ -1,14 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { updateTenantProfile, subscribePlan } from '../actions'
 import type { SubscriptionData } from '../actions'
+import { inviteVendor } from '@/app/(dashboard)/vendors/actions'
 import type { User } from '@/lib/users'
 import { ROLE_LABELS, ROLE_COLORS, userInitials } from '@/lib/users'
 import type { ToastMessage } from '@/components/ui/Toast'
 import ToastContainer from '@/components/ui/Toast'
-import { useRef } from 'react'
 
 interface TenantData {
   id: string
@@ -63,7 +64,7 @@ export default function SettingsTabs({ tab, tenant, users, subscription }: Props
 
       {/* Tab content */}
       {tab === 'store'  && <StoreTab tenant={tenant} onToast={addToast} />}
-      {tab === 'users'  && <UsersTab users={users} />}
+      {tab === 'users'  && <UsersTab users={users} subscription={subscription} />}
       {tab === 'plan'   && <PlanTab initialSubscription={subscription} />}
 
       <ToastContainer toasts={toasts} onDismiss={id => setToasts(p => p.filter(t => t.id !== id))} />
@@ -183,7 +184,47 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
 
 // ─── Users Tab ────────────────────────────────────────────────────────────────
 
-function UsersTab({ users }: { users: User[] }) {
+const MEMBER_ROLES = [
+  { value: 'admin',  label: 'Administrador' },
+  { value: 'seller', label: 'Gerente' },
+]
+
+function UsersTab({ users, subscription }: { users: User[]; subscription: SubscriptionData | null }) {
+  const router = useRouter()
+  const [showModal, setShowModal] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [role, setRole] = useState('admin')
+  const [pending, startTransition] = useTransition()
+  const [formError, setFormError] = useState<string | null>(null)
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [inviteSuccess, setInviteSuccess] = useState(false)
+
+  const isBlocked = subscription?.status === 'trialing' || !subscription
+
+  function openModal() {
+    setName(''); setEmail(''); setPhone(''); setRole('admin')
+    setFormError(null); setInviteLink(null); setInviteSuccess(false)
+    setShowModal(true)
+  }
+
+  function closeModal() {
+    setShowModal(false)
+  }
+
+  function handleInvite(e: React.FormEvent) {
+    e.preventDefault()
+    setFormError(null)
+    startTransition(async () => {
+      const res = await inviteVendor(email.trim(), name.trim(), role, phone.trim() || undefined)
+      if (res.error) { setFormError(res.error); return }
+      setInviteLink(res.inviteLink ?? null)
+      setInviteSuccess(true)
+      router.refresh()
+    })
+  }
+
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
@@ -192,9 +233,19 @@ function UsersTab({ users }: { users: User[] }) {
             Equipe
             <span className="ml-2 text-sm font-normal text-gray-400">{users.length} usuário{users.length !== 1 ? 's' : ''}</span>
           </h2>
-          <Link href="/vendors" className="text-xs font-medium text-red-600 hover:text-red-700">
-            Gerenciar vendedores →
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/vendors" className="text-xs font-medium text-red-600 hover:text-red-700">
+              Vendedores →
+            </Link>
+            {!isBlocked && (
+              <button
+                onClick={openModal}
+                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+              >
+                + Convidar Membro
+              </button>
+            )}
+          </div>
         </div>
 
         {users.length === 0 ? (
@@ -219,9 +270,79 @@ function UsersTab({ users }: { users: User[] }) {
           </div>
         )}
       </div>
-      <p className="text-xs text-gray-400">
-        Convidar e remover usuários disponível em breve.
-      </p>
+
+      {isBlocked && (
+        <p className="text-xs text-gray-400">
+          Convites para administradores e gerentes estarão disponíveis após a ativação do plano.
+        </p>
+      )}
+
+      {/* Invite modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/30" onClick={closeModal} />
+          <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="font-bold text-gray-900">Convidar Membro</h3>
+
+            {inviteSuccess ? (
+              <div className="mt-4 space-y-3">
+                <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                  Membro cadastrado com sucesso.
+                </div>
+                {inviteLink && (
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-700">Link de acesso — compartilhe com o membro:</p>
+                    <p className="text-xs text-gray-500 break-all font-mono">{inviteLink}</p>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(inviteLink)}
+                      className="rounded-lg bg-gray-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-gray-700"
+                    >
+                      Copiar link
+                    </button>
+                  </div>
+                )}
+                <button onClick={closeModal} className="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-700">
+                  Fechar
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleInvite} className="mt-4 space-y-3">
+                <div>
+                  <label className="label">Nome completo <span className="text-red-500">*</span></label>
+                  <input type="text" required value={name} onChange={e => setName(e.target.value)} className="input" placeholder="Maria Silva" />
+                </div>
+                <div>
+                  <label className="label">E-mail <span className="text-red-500">*</span></label>
+                  <input type="email" required value={email} onChange={e => setEmail(e.target.value)} className="input" placeholder="maria@loja.com.br" />
+                </div>
+                <div>
+                  <label className="label">Telefone</label>
+                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className="input" placeholder="(11) 99999-0000" />
+                </div>
+                <div>
+                  <label className="label">Função <span className="text-red-500">*</span></label>
+                  <select value={role} onChange={e => setRole(e.target.value)} className="input">
+                    {MEMBER_ROLES.map(r => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))}
+                  </select>
+                </div>
+                {formError && (
+                  <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">{formError}</div>
+                )}
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={closeModal} className="flex-1 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                    Cancelar
+                  </button>
+                  <button type="submit" disabled={pending} className="flex-1 rounded-lg bg-primary py-2.5 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50">
+                    {pending ? 'Cadastrando…' : 'Cadastrar membro'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -273,17 +394,26 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
   const [pending, startTransition] = useTransition()
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
   const [subscription, setSubscription] = useState<SubscriptionData | null>(initialSubscription)
+  const [planError, setPlanError] = useState<string | null>(null)
+  const [planSuccess, setPlanSuccess] = useState<string | null>(null)
 
   function handleSubscribe(planName: string) {
     setPendingPlan(planName)
+    setPlanError(null)
+    setPlanSuccess(null)
     startTransition(async () => {
       try {
         const result = await subscribePlan(planName, cycle)
         if (!result.error) {
           setSubscription(result.data)
           if (result.data.asaas_payment_link) {
+            setPlanSuccess('Assinatura criada! Redirecionando para pagamento…')
             window.open(result.data.asaas_payment_link, '_blank')
+          } else {
+            setPlanSuccess('Assinatura ativada com sucesso.')
           }
+        } else {
+          setPlanError(result.error.message)
         }
       } finally {
         setPendingPlan(null)
@@ -291,8 +421,33 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
     })
   }
 
+  const isTrialing = subscription?.status === 'trialing'
+
   return (
     <div className="space-y-6">
+      {/* Trial banner */}
+      {isTrialing && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4">
+          <p className="text-sm font-semibold text-blue-900">Você está no período de teste gratuito.</p>
+          <p className="mt-1 text-xs text-blue-700">
+            Aproveite todos os recursos sem restrições. A cobrança inicia somente após você assinar um plano.
+            Renovação e cobrança ficam disponíveis após a ativação.
+          </p>
+        </div>
+      )}
+
+      {/* Error / success feedback */}
+      {planError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">
+          {planError}
+        </div>
+      )}
+      {planSuccess && (
+        <div className="rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm text-green-700">
+          {planSuccess}
+        </div>
+      )}
+
       {/* Current subscription */}
       {subscription && (
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">

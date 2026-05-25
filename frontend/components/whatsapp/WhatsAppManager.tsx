@@ -73,11 +73,14 @@ export default function WhatsAppManager({
     setTimeout(() => setToast(null), 4000)
   }
 
+  // Used by auto-polls (silent — no toast on error)
   const refreshStatus = useCallback(async () => {
     const result = await apiFetch<InstanceStatus>('GET', '/api/evolution/status')
     if (result.data) {
       setStatus(result.data)
       if (result.data.status === 'open') setServiceDown(false)
+    } else if (result.unavailable) {
+      setServiceDown(true)
     }
   }, [])
 
@@ -182,6 +185,21 @@ export default function WhatsAppManager({
     }
   }
 
+  function handleRefreshStatusManual() {
+    startTransition(async () => {
+      const result = await apiFetch<InstanceStatus>('GET', '/api/evolution/status')
+      if (result.error) {
+        if (result.unavailable) { setServiceDown(true) } else { showToast('Erro ao verificar status: ' + result.error) }
+        return
+      }
+      if (result.data) {
+        setStatus(result.data)
+        if (result.data.status === 'open') setServiceDown(false)
+        showToast('Status atualizado: ' + (result.data.status === 'open' ? 'Conectado' : result.data.status === 'connecting' ? 'Conectando…' : 'Desconectado'))
+      }
+    })
+  }
+
   function handleDisconnect() {
     if (!confirm('Desconectar WhatsApp? Você precisará escanear o QR code novamente.')) return
     startTransition(async () => {
@@ -252,11 +270,11 @@ export default function WhatsAppManager({
 
           <div className="flex gap-2">
             <button
-              onClick={refreshStatus}
+              onClick={handleRefreshStatusManual}
               disabled={pending}
               className="btn-secondary text-xs py-1.5 px-3"
             >
-              Atualizar status
+              {pending ? 'Verificando…' : 'Atualizar status'}
             </button>
             {isConnected ? (
               <button

@@ -8,6 +8,14 @@ import (
 	"unicode"
 )
 
+// asaasUserErr translates raw Asaas API error strings into user-friendly messages.
+func asaasUserErr(raw string) string {
+	if strings.Contains(raw, "not_allowed_ip") {
+		return "IP do servidor não autorizado no Asaas. Acesse o painel Asaas → API → Whitelist de IPs e adicione o IP do servidor."
+	}
+	return raw
+}
+
 type Service struct {
 	repo  *Repository
 	asaas *asaasClient
@@ -61,7 +69,7 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 	if asaasCustomerID == "" {
 		customer, cerr := s.asaas.createCustomer(name, email, "", req.CPFOrCNPJ, tenantID)
 		if cerr != nil {
-			return nil, fmt.Errorf("asaas create customer: %w", cerr)
+			return nil, fmt.Errorf("%s", asaasUserErr(cerr.Error()))
 		}
 		asaasCustomerID = customer.ID
 		if err = s.repo.SaveAsaasCustomerID(ctx, tenantID, asaasCustomerID); err != nil {
@@ -74,7 +82,7 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 	desc := fmt.Sprintf("RevendaClick — Plano %s (%s)", capitalize(req.PlanName), capitalize(req.BillingCycle))
 	sub, err := s.asaas.createSubscription(asaasCustomerID, value, cycle, billingType, desc, tenantID)
 	if err != nil {
-		return nil, fmt.Errorf("asaas create subscription: %w", err)
+		return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
 	}
 
 	paymentLink := sub.PaymentLink

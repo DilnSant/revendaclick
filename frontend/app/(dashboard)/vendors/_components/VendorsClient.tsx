@@ -5,7 +5,7 @@ import type { User } from '@/lib/users'
 import { ROLE_LABELS, ROLE_COLORS, userInitials } from '@/lib/users'
 import { inviteVendor, updateVendor, deleteVendor } from '../actions'
 
-type Role = 'admin' | 'seller' | 'viewer'
+type Role = 'seller' | 'viewer'
 
 interface ModalState {
   mode: 'invite' | 'edit'
@@ -31,6 +31,7 @@ export default function VendorsClient({ users: initialUsers, currentUserId }: Pr
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [role, setRole] = useState<Role>('seller')
+  const [inviteLink, setInviteLink] = useState<string | null>(null)
 
   const filtered = search.trim()
     ? users.filter(u =>
@@ -41,14 +42,15 @@ export default function VendorsClient({ users: initialUsers, currentUserId }: Pr
 
   function openInvite() {
     setName(''); setEmail(''); setPhone(''); setRole('seller')
-    setFormError(null); setSuccessMsg(null)
+    setFormError(null); setSuccessMsg(null); setInviteLink(null)
     setModal({ mode: 'invite' })
   }
 
   function openEdit(u: User) {
     setName(u.name); setEmail(u.email)
-    setPhone(u.phone ?? ''); setRole(u.role === 'owner' ? 'admin' : (u.role as Role))
-    setFormError(null); setSuccessMsg(null)
+    setPhone(u.phone ?? '')
+    setRole((u.role === 'owner' || u.role === 'admin') ? 'seller' : (u.role as Role))
+    setFormError(null); setSuccessMsg(null); setInviteLink(null)
     setModal({ mode: 'edit', user: u })
   }
 
@@ -62,7 +64,13 @@ export default function VendorsClient({ users: initialUsers, currentUserId }: Pr
     startTransition(async () => {
       const res = await inviteVendor(email.trim(), name.trim(), role, phone.trim() || undefined)
       if (res.error) { setFormError(res.error); return }
-      setSuccessMsg(`Convite enviado para ${email}. O usuário receberá um e-mail para configurar a senha.`)
+      setInviteLink(res.inviteLink ?? null)
+      setSuccessMsg(`Vendedor ${name.trim()} cadastrado com sucesso.`)
+      setUsers(prev => [...prev, {
+        id: crypto.randomUUID(), tenant_id: '', role, name: name.trim(),
+        email: email.trim(), phone: phone.trim() || null, avatar_url: null,
+        is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
+      }])
     })
   }
 
@@ -110,7 +118,7 @@ export default function VendorsClient({ users: initialUsers, currentUserId }: Pr
           </p>
         </div>
         <button onClick={openInvite} className="btn-primary shrink-0">
-          + Convidar membro
+          + Novo vendedor
         </button>
       </div>
 
@@ -248,17 +256,29 @@ export default function VendorsClient({ users: initialUsers, currentUserId }: Pr
           <div className="absolute inset-0 bg-black/30" onClick={closeModal} />
           <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <h3 className="font-bold text-gray-900">
-              {modal.mode === 'invite' ? 'Convidar membro' : 'Editar usuário'}
+              {modal.mode === 'invite' ? 'Novo vendedor' : 'Editar vendedor'}
             </h3>
 
             {successMsg ? (
-              <div className="mt-4 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
-                {successMsg}
-                <div className="mt-3">
-                  <button onClick={closeModal} className="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-700">
-                    Fechar
-                  </button>
+              <div className="mt-4 space-y-3">
+                <div className="rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                  {successMsg}
                 </div>
+                {inviteLink && (
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
+                    <p className="text-xs font-medium text-gray-700">Link de acesso — compartilhe com o vendedor:</p>
+                    <p className="text-xs text-gray-500 break-all font-mono">{inviteLink}</p>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(inviteLink); }}
+                      className="rounded-lg bg-gray-800 px-3 py-1.5 text-xs font-semibold text-white hover:bg-gray-700"
+                    >
+                      Copiar link
+                    </button>
+                  </div>
+                )}
+                <button onClick={closeModal} className="rounded-lg bg-green-600 px-4 py-2 text-xs font-semibold text-white hover:bg-green-700">
+                  Fechar
+                </button>
               </div>
             ) : (
               <form onSubmit={modal.mode === 'invite' ? handleInvite : handleUpdate} className="mt-4 space-y-3">
@@ -302,7 +322,6 @@ export default function VendorsClient({ users: initialUsers, currentUserId }: Pr
                 <div>
                   <label className="label">Função <span className="text-red-500">*</span></label>
                   <select value={role} onChange={e => setRole(e.target.value as Role)} className="input">
-                    <option value="admin">Admin</option>
                     <option value="seller">Vendedor</option>
                     <option value="viewer">Visualizador</option>
                   </select>

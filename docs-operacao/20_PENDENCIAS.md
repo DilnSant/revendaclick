@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 25/05/2026 (sessão 3)
+> Atualizado em: 25/05/2026 (sessão 4)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -55,6 +55,13 @@
 | CONCLUÍDA | Fix updateSupabaseAppMetadata no backend | — | Retry 3x + logging estruturado (zap) + leitura do body de erro (sessão 3) |
 | PENDENTE | Testar login + dashboard em produção após deploy | Alta | Confirmar que dilneysantos@gmail.com acessa /dashboard sem loop |
 | PENDENTE | Verificar SUPABASE_SERVICE_ROLE_KEY no .env do VPS | Alta | Confirmar que a chave está correta — ver logs pós-deploy: `docker compose logs backend \| grep updateSupabase` |
+| CONCLUÍDA | Fix BUG 1: Vendedores invite | — | inviteUserByEmail → generateLink; UX "Novo vendedor"; roles só Vendedor/Visualizador |
+| CONCLUÍDA | Fix BUG 2 (código): Billing Asaas 403 mensagem | — | asaasUserErr() em billing/service.go |
+| PENDENTE | Fix BUG 2 (config): Asaas IP Whitelist | **CRÍTICO** | Adicionar IP do VPS no painel Asaas — bloqueia todo billing |
+| CONCLUÍDA | Fix BUG 3 (código): WhatsApp refreshStatus silencioso | — | handleRefreshStatusManual com toast |
+| PENDENTE | Fix BUG 3 (infra): Diagnosticar Evolution API no VPS | Alta | `docker ps`, logs evolution, verificar EVOLUTION_API_KEY |
+| CONCLUÍDA | Fix BUG 4: Settings/Plan botões mortos | — | planError/planSuccess states; banner trial |
+| CONCLUÍDA | Fix BUG 5: Settings/Users invite modal | — | + Convidar Membro com roles Administrador/Gerente |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |

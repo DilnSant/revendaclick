@@ -16,20 +16,26 @@ export async function inviteVendor(
   name: string,
   role: string,
   phone?: string,
-): Promise<{ success?: true; error?: string }> {
+): Promise<{ success?: true; inviteLink?: string; error?: string }> {
   if (!email || !name || !role) return { error: 'Preencha todos os campos obrigatórios.' }
 
-  // APP_URL is a server-only runtime var; fallback to production URL
   const appUrl = process.env.APP_URL ?? 'https://app.revendaclick.com.br'
-  const redirectTo = `${appUrl}/auth/callback`
 
   const admin = createServiceClient()
-  const { data, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo,
-    data: { name },
+
+  // generateLink does NOT send email — returns the invite URL for the admin to share manually.
+  // This avoids Supabase SMTP rate limits and works regardless of email confirmation settings.
+  const { data, error: linkErr } = await admin.auth.admin.generateLink({
+    type: 'invite',
+    email,
+    options: {
+      data: { name },
+      redirectTo: `${appUrl}/auth/callback`,
+    },
   })
-  if (inviteErr || !data?.user) {
-    return { error: inviteErr?.message ?? 'Falha ao convidar usuário no Supabase.' }
+
+  if (linkErr || !data?.user) {
+    return { error: linkErr?.message ?? 'Falha ao gerar convite.' }
   }
 
   const token = await getToken()
@@ -40,11 +46,14 @@ export async function inviteVendor(
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
+    // Cleanup orphan auth user so the email can be re-invited
+    await admin.auth.admin.deleteUser(data.user.id).catch(() => {})
     return { error: err.error?.message ?? 'Falha ao registrar usuário no sistema.' }
   }
 
   revalidatePath('/vendors')
-  return { success: true }
+  const inviteLink = (data as { properties?: { action_link?: string } }).properties?.action_link ?? ''
+  return { success: true, inviteLink }
 }
 
 export async function updateVendor(

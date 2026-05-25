@@ -1,25 +1,91 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 25/05/2026 (sessão 3)
+> Atualizado em: 25/05/2026 (sessão 4)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto
+## Estado Atual do Projeto (sessão 4)
 
-Sistema em produção com fixes de auth e onboarding deployados:
+6 bugs críticos corrigidos no código. Deploy pendente. 2 ações de configuração manual obrigatórias:
 
 - Backend Go → `https://api.revendaclick.com.br` ✓
 - Frontend Next.js → `https://app.revendaclick.com.br` ✓ (Vercel, deploy automático)
 - CI/CD GitHub Actions → automático em push para `main` ✓
-- Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ✓
-- Billing Asaas → assinaturas funcionando ✓
+- Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ✓ (status infra desconhecido)
+- Billing Asaas → **BLOQUEADO por IP whitelist** — ver ação urgente abaixo
 - Observabilidade → `/metrics` + BetterStack ✓
-- Vercel env vars → todas configuradas (SUPABASE_URL, ANON_KEY, SERVICE_ROLE_KEY, API_URL, APP_URL) ✓
-- Runbook de incidentes → `24_RUNBOOK_INCIDENTES.md` ✓ (10 cenários)
 
-**Último commit local (a deployar):** fix updateSupabaseAppMetadata (retry 3x + logging)
-**Deploy anterior:** `b5685c2` — fix: service role fallback in getTenantForUser + protocol guard
+---
+
+## ⚠️ AÇÕES URGENTES (Fazer Agora)
+
+### AÇÃO 1 — Whitelist IP do VPS no Asaas (BUG 2 — BLOQUEIO de BILLING)
+
+**Sem esta configuração:** Nenhum usuário consegue assinar um plano. O erro `not_allowed_ip` bloqueia toda criação de customer/subscription no Asaas.
+
+**Como resolver:**
+
+```bash
+# 1. No VPS — descobrir o IP público
+curl ifconfig.me
+# Exemplo: 185.204.1.234
+```
+
+```
+2. Acessar https://www.asaas.com (ou https://sandbox.asaas.com se ASAAS_ENV=sandbox)
+3. Fazer login
+4. Menu: Configurações → Integrações → API
+5. Seção: "Whitelist de IPs"
+6. Adicionar o IP do VPS
+7. Salvar
+```
+
+**Verificar qual ambiente está ativo:**
+```bash
+# No VPS
+grep ASAAS_ENV /opt/revendaclick/.env
+# Se sandbox → whitelist em sandbox.asaas.com
+# Se production → whitelist em www.asaas.com
+```
+
+**Após whitelist:** Testar em `/billing/plans` → clicar "Assinar" → deve processar sem erro 403.
+
+---
+
+### AÇÃO 2 — Diagnosticar Evolution API (BUG 3 — WhatsApp)
+
+```bash
+# No VPS — verificar se Evolution está rodando
+docker compose -f docker-compose.production.yml ps evolution
+
+# Ver logs recentes
+docker compose -f docker-compose.production.yml logs evolution --tail=50
+
+# Verificar se responde
+curl -H "apikey: $(grep EVOLUTION_API_KEY /opt/revendaclick/.env | cut -d= -f2)" http://localhost:8081/instance/fetchInstances
+```
+
+**Se Evolution estiver down:**
+```bash
+docker compose -f docker-compose.production.yml up -d evolution
+```
+
+**Se retornar 401 (EVOLUTION_API_KEY errada):**
+```bash
+# Verificar no .env
+grep EVOLUTION_API_KEY /opt/revendaclick/.env
+```
+
+---
+
+### AÇÃO 3 — Testar login em produção (pendente desde sessão 3)
+
+```
+1. Acessar https://app.revendaclick.com.br/login
+2. Login com dilneysantos@gmail.com
+3. Deve ir para /dashboard sem loop
+```
 
 ---
 
