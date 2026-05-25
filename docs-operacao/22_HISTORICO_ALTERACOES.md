@@ -12,6 +12,35 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-25 (sessão 3) — Fix: updateSupabaseAppMetadata com retry + logging; runbook de incidentes; docs completos
+
+**O que foi feito:**
+- `updateSupabaseAppMetadata` reescrito com retry de 3 tentativas (backoff 500ms), leitura do body de erro HTTP para logging estruturado (zap), e distinção entre erros retryable (network/5xx/429) e não-retryable (4xx config errors).
+- Logger injetado no `Handler` de onboarding — agora `updateSupabaseAppMetadata` loga `Warn` em cada tentativa falha, `Error` ao esgotar todas as tentativas, e `Info` no sucesso.
+- `NewHandler` de onboarding recebe `*zap.Logger` — `server.go` atualizado para passar o logger existente.
+- Risco R15 documentado em `19_RISCOS.md`: `updateSupabaseAppMetadata` falha silenciosa no onboarding.
+- `24_RUNBOOK_INCIDENTES.md` criado com 10 cenários de incidente: 502, loop onboarding, WhatsApp desconectado, webhooks Asaas, CI/CD travado, SSL expirado, dashboard lento, erro 500 frontend, login falhando, IA retornando 500.
+- `20_PENDENCIAS.md` atualizado: fix updateSupabaseAppMetadata marcado como CONCLUÍDO; runbook marcado como CONCLUÍDO; Banco/indexes já existentes (migration 009) confirmados.
+- `23_PROXIMO_PASSO.md` atualizado com estado atual.
+
+**Causa raiz que motivou o fix:**
+`updateSupabaseAppMetadata` era `_ = h.update...` — erros completamente ignorados. Agora: 3 tentativas + logs estruturados com status HTTP e body exato da resposta do Supabase Admin API. Facilita diagnóstico imediato via `docker compose logs backend | grep updateSupabase`.
+
+**Arquivos alterados:**
+- `backend/internal/onboarding/onboarding.go` — retry 3x, zap logging, io.ReadAll do body de erro, logger injetado no Handler
+- `backend/internal/server/server.go` — passa `logger` para `onboarding.NewHandler`
+- `docs-operacao/19_RISCOS.md` — R15 adicionado
+- `docs-operacao/20_PENDENCIAS.md` — atualizado
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` — este registro
+- `docs-operacao/23_PROXIMO_PASSO.md` — atualizado
+- `docs-operacao/24_RUNBOOK_INCIDENTES.md` — criado (novo)
+- `docs-operacao/README.md` — referência ao runbook adicionada
+
+**Commits:**
+- A commitar nesta sessão
+
+---
+
 ## 2026-05-23 (sessão 2) — Fix: getTenantForUser com service role fallback + protocol guard + patch JWT claims
 
 **O que foi feito:**

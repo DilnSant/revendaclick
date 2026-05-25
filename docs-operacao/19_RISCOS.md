@@ -135,6 +135,17 @@
 
 ---
 
+### R15 — updateSupabaseAppMetadata falha silenciosa no onboarding
+
+**O que é:** `POST /api/onboarding/setup` cria o tenant no banco (transação OK), depois chama `updateSupabaseAppMetadata` para gravar `tenant_id` + `user_role` em `auth.users.raw_app_meta_data`. Se essa chamada falhar, o backend retorna 201 normalmente — mas o JWT emitido nunca carrega o claim.
+**Impacto:** Novo usuário faz onboarding, o formulário parece ter funcionado, mas no redirecionamento para /dashboard o `getTenantForUser` com RLS retorna null e redireciona de volta para /onboarding. Sintoma: formulário limpa e "nada acontece".
+**Mitigação ativa:** `getTenantForUser` tem fallback via service role (procura por `id = userId`), então o usuário chega ao dashboard mesmo sem o JWT claim. Porém, features que dependem de `auth_tenant_id()` diretamente no Supabase (Storage RLS, por exemplo) podem não funcionar corretamente.
+**Como diagnosticar:** Ver logs do backend: `docker compose logs backend | grep -i "updateSupabaseAppMetadata\|app_meta"`.
+**Causas conhecidas:** `SUPABASE_SERVICE_ROLE_KEY` incorreta no `.env` do VPS; `SUPABASE_URL` com trailing slash (já tratado com `strings.TrimRight`); timeout de rede para o Supabase Admin API.
+**Fix permanente:** Corrigir `SUPABASE_SERVICE_ROLE_KEY` no VPS se incorreta. O código agora retenta 3 vezes com 500ms de backoff e loga o status HTTP e body de erro exato.
+
+---
+
 ## Tabela Resumo de Riscos
 
 | Código | Risco | Severidade | Probabilidade |
@@ -153,3 +164,4 @@
 | R12 | OpenRouter sem chave | Médio | Média |
 | R13 | Memory limit Evolution | Médio | Baixa |
 | R14 | Cache Nginx desatualizado | Baixo | Alta (esperado) |
+| R15 | updateSupabaseAppMetadata falha silenciosa | Médio | Média (dependente de config VPS) |

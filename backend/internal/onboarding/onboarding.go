@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"regexp"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 	"revendaclick/backend/internal/middleware"
 	"revendaclick/backend/internal/response"
 )
@@ -82,13 +84,14 @@ type SetupResult struct {
 }
 
 type Handler struct {
-	pool         *pgxpool.Pool
-	supabaseURL  string
-	serviceKey   string
+	pool        *pgxpool.Pool
+	supabaseURL string
+	serviceKey  string
+	logger      *zap.Logger
 }
 
-func NewHandler(pool *pgxpool.Pool, supabaseURL, serviceKey string) *Handler {
-	return &Handler{pool: pool, supabaseURL: supabaseURL, serviceKey: serviceKey}
+func NewHandler(pool *pgxpool.Pool, supabaseURL, serviceKey string, logger *zap.Logger) *Handler {
+	return &Handler{pool: pool, supabaseURL: supabaseURL, serviceKey: serviceKey, logger: logger}
 }
 
 // POST /api/onboarding/setup  (JWT auth only — no tenant resolution required)
@@ -137,9 +140,15 @@ func (h *Handler) Setup(c *gin.Context) {
 	}
 
 	// Update Supabase app_metadata so the JWT carries tenant_id + user_role.
-	// This is required for Storage RLS and for direct Supabase client calls.
-	// Non-fatal: the DB fallback in TenantResolver still works if this fails.
-	_ = h.updateSupabaseAppMetadata(c.Request.Context(), userID, result.TenantID, "owner")
+	// Non-fatal: getTenantForUser in the frontend has a service-role fallback, so
+	// the user reaches /dashboard even if this fails. Still log clearly for ops.
+	if err := h.updateSupabaseAppMetadata(c.Request.Context(), userID, result.TenantID, "owner"); err != nil {
+		h.logger.Warn("Setup: updateSupabaseAppMetadata failed — JWT will lack tenant_id claim until next session refresh",
+			zap.String("user_id", userID),
+			zap.String("tenant_id", result.TenantID),
+			zap.Error(err),
+		)
+	}
 
 	response.JSON(c, http.StatusCreated, result)
 }
@@ -188,40 +197,85 @@ func (h *Handler) setupTenantTx(ctx context.Context, userID string, req *SetupRe
 }
 
 // updateSupabaseAppMetadata patches app_metadata on the Supabase Auth user so that
-// subsequent JWTs include tenant_id and user_role at the top level — required for
-// Storage RLS policies that use auth.jwt() ->> 'tenant_id'.
+// subsequent JWTs include tenant_id and user_role — required for Storage RLS.
+// Retries up to 3 times on network errors and 5xx responses.
+// Never retries on 4xx (except 429 rate-limit) because those indicate a config problem.
 func (h *Handler) updateSupabaseAppMetadata(ctx context.Context, userID, tenantID, role string) error {
 	if h.supabaseURL == "" || h.serviceKey == "" {
 		return fmt.Errorf("supabase credentials not configured")
 	}
 
-	body, _ := json.Marshal(map[string]any{
+	payload, _ := json.Marshal(map[string]any{
 		"app_metadata": map[string]string{
 			"tenant_id": tenantID,
 			"user_role": role,
 		},
 	})
 
-	url := strings.TrimRight(h.supabaseURL, "/") + "/auth/v1/admin/users/" + userID
-	req, err := http.NewRequestWithContext(ctx, http.MethodPut, url, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+h.serviceKey)
-	req.Header.Set("apikey", h.serviceKey)
+	apiURL := strings.TrimRight(h.supabaseURL, "/") + "/auth/v1/admin/users/" + userID
+	client := &http.Client{Timeout: 8 * time.Second}
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	var lastErr error
+	for attempt := 1; attempt <= 3; attempt++ {
+		if attempt > 1 {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-time.After(time.Duration(attempt-1) * 500 * time.Millisecond):
+			}
+		}
 
-	if resp.StatusCode >= 400 {
-		return fmt.Errorf("supabase admin API returned %d", resp.StatusCode)
+		req, err := http.NewRequestWithContext(ctx, http.MethodPut, apiURL, bytes.NewReader(payload))
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+h.serviceKey)
+		req.Header.Set("apikey", h.serviceKey)
+
+		resp, err := client.Do(req)
+		if err != nil {
+			lastErr = err
+			h.logger.Warn("updateSupabaseAppMetadata: request error",
+				zap.String("user_id", userID),
+				zap.Int("attempt", attempt),
+				zap.Error(err),
+			)
+			continue
+		}
+
+		respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		resp.Body.Close()
+
+		if resp.StatusCode < 400 {
+			h.logger.Info("updateSupabaseAppMetadata: success",
+				zap.String("user_id", userID),
+				zap.String("tenant_id", tenantID),
+				zap.Int("attempt", attempt),
+			)
+			return nil
+		}
+
+		lastErr = fmt.Errorf("supabase admin API returned %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
+		h.logger.Warn("updateSupabaseAppMetadata: non-2xx response",
+			zap.String("user_id", userID),
+			zap.Int("attempt", attempt),
+			zap.Int("status", resp.StatusCode),
+			zap.String("body", string(respBody)),
+		)
+
+		// 4xx (except 429 rate-limit) are config errors — retrying won't help
+		if resp.StatusCode != http.StatusTooManyRequests && resp.StatusCode < 500 {
+			return lastErr
+		}
 	}
-	return nil
+
+	h.logger.Error("updateSupabaseAppMetadata: all retries exhausted",
+		zap.String("user_id", userID),
+		zap.String("tenant_id", tenantID),
+		zap.Error(lastErr),
+	)
+	return lastErr
 }
 
 // GET /api/onboarding

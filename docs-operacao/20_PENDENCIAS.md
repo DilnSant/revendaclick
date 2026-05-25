@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 23/05/2026 (sessão 2)
+> Atualizado em: 25/05/2026 (sessão 3)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -52,8 +52,9 @@
 | CONCLUÍDA | Fix: dashboard loop /onboarding (service role key) | — | getTenantForUser migrado para session client; middleware.ts → proxy.ts |
 | CONCLUÍDA | Configurar SUPABASE_SERVICE_ROLE_KEY no Vercel | — | Configurado; getTenantForUser agora tem fallback service role |
 | CONCLUÍDA | Corrigir loop /onboarding para usuários com JWT sem claim | — | SQL patch + getTenantForUser com service role fallback (commit b5685c2) |
-| PENDENTE | Testar login + dashboard em produção após deploy b5685c2 | Alta | Confirmar que dilneysantos@gmail.com acessa /dashboard sem loop |
-| PENDENTE | Investigar updateSupabaseAppMetadata no backend | Alta | Verificar se novo cadastro gera JWT claim corretamente (logs do VPS) |
+| CONCLUÍDA | Fix updateSupabaseAppMetadata no backend | — | Retry 3x + logging estruturado (zap) + leitura do body de erro (sessão 3) |
+| PENDENTE | Testar login + dashboard em produção após deploy | Alta | Confirmar que dilneysantos@gmail.com acessa /dashboard sem loop |
+| PENDENTE | Verificar SUPABASE_SERVICE_ROLE_KEY no .env do VPS | Alta | Confirmar que a chave está correta — ver logs pós-deploy: `docker compose logs backend \| grep updateSupabase` |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |
@@ -91,8 +92,8 @@ Frontend Next.js continua como stack oficial.
 |---|---|---|---|
 | CONCLUÍDA | Prometheus metrics | — | endpoint /metrics |
 | CONCLUÍDA | BetterStack logs | — | Tee zap |
-| PENDENTE | Uptime monitoring | Baixa | Configurar monitor externo (UptimeRobot ou similar) apontando para /health |
-| PENDENTE | Alertas automáticos | Baixa | Configurar alerta no BetterStack para erros 5xx |
+| PENDENTE | Uptime monitoring | Baixa | Cadastrar monitor em UptimeRobot/BetterStack Uptime → URL: `https://api.revendaclick.com.br/health` → alerta por email |
+| PENDENTE | Alertas automáticos | Baixa | BetterStack: criar alerta para status >= 500 nos logs do backend |
 
 ---
 
@@ -104,7 +105,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Rate limiting Nginx | — | Por zona (api, evo, webhook) |
 | CONCLUÍDA | Métricas protegidas | — | Bearer token + IP restriction |
 | CONCLUÍDA | Input validation | — | MaxBodySize + slug/email regex |
-| PENDENTE | Rotação de secrets | Baixa | Definir política de rotação semestral para ASAAS_API_KEY, EVOLUTION_API_KEY |
+| PENDENTE | Rotação de secrets | Baixa | Política semestral: ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN — atualizar no .env do VPS + no Asaas Dashboard + reiniciar containers |
 
 ---
 
@@ -112,6 +113,6 @@ Frontend Next.js continua como stack oficial.
 
 | Status | Tarefa | Prioridade | Detalhes |
 |---|---|---|---|
-| CONCLUÍDA | docs-operacao/ (24 arquivos) | — | Memória viva do projeto |
+| CONCLUÍDA | docs-operacao/ (25 arquivos) | — | Memória viva do projeto |
 | CONCLUÍDA | FLUTTERFLOW_MIGRATION.md | — | Guia completo de migração |
-| PENDENTE | Runbook de incidentes | Baixa | Passo a passo para cada cenário de falha |
+| CONCLUÍDA | Runbook de incidentes | — | `24_RUNBOOK_INCIDENTES.md` — 10 cenários com diagnóstico e solução |

@@ -34,6 +34,7 @@ Memória viva do projeto. Atualizada ao final de cada sessão de trabalho.
 | [21_DECISOES_TECNICAS.md](21_DECISOES_TECNICAS.md) | Por que cada tecnologia foi escolhida |
 | [22_HISTORICO_ALTERACOES.md](22_HISTORICO_ALTERACOES.md) | Registro de toda mudança feita no projeto |
 | [23_PROXIMO_PASSO.md](23_PROXIMO_PASSO.md) | Próxima ação recomendada — atualizar a cada sessão |
+| [24_RUNBOOK_INCIDENTES.md](24_RUNBOOK_INCIDENTES.md) | Passo a passo para 10 cenários de incidente em produção |
 
 ---
 

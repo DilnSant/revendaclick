@@ -63,7 +63,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	userH       := users.NewHandler(users.NewService(users.NewRepository(pool)))
 	planH       := plans.NewHandler(plans.NewService(plans.NewRepository(pool)))
 	financialH  := financial.NewHandler(financial.NewService(financial.NewRepository(pool)))
-	onboardingH := onboarding.NewHandler(pool, cfg.SupabaseURL, cfg.SupabaseServiceKey)
+	onboardingH := onboarding.NewHandler(pool, cfg.SupabaseURL, cfg.SupabaseServiceKey, logger)
 	evolutionH  := evolution.NewHandler(
 		evolution.NewService(pool, logger, cfg.EvolutionAPIURL, cfg.EvolutionAPIKey),
 		cfg.EvolutionAPIKey,

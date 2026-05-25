@@ -1,13 +1,13 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 23/05/2026 (sessão 2)
+> Atualizado em: 25/05/2026 (sessão 3)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
 ## Estado Atual do Projeto
 
-Sistema em produção com múltiplos fixes de auth deployados:
+Sistema em produção com fixes de auth e onboarding deployados:
 
 - Backend Go → `https://api.revendaclick.com.br` ✓
 - Frontend Next.js → `https://app.revendaclick.com.br` ✓ (Vercel, deploy automático)
@@ -16,9 +16,10 @@ Sistema em produção com múltiplos fixes de auth deployados:
 - Billing Asaas → assinaturas funcionando ✓
 - Observabilidade → `/metrics` + BetterStack ✓
 - Vercel env vars → todas configuradas (SUPABASE_URL, ANON_KEY, SERVICE_ROLE_KEY, API_URL, APP_URL) ✓
+- Runbook de incidentes → `24_RUNBOOK_INCIDENTES.md` ✓ (10 cenários)
 
-**Último deploy:** `b5685c2` — fix: service role fallback in getTenantForUser + protocol guard
-**Status deploy:** Em andamento (push feito nesta sessão, Vercel buildando)
+**Último commit local (a deployar):** fix updateSupabaseAppMetadata (retry 3x + logging)
+**Deploy anterior:** `b5685c2` — fix: service role fallback in getTenantForUser + protocol guard
 
 ---
 
@@ -36,9 +37,31 @@ Sistema em produção com múltiplos fixes de auth deployados:
 
 ## ⚠️ AÇÃO URGENTE (Primeira Coisa da Próxima Sessão)
 
-### 1. Confirmar deploy e testar login em produção
+### 1. Fazer deploy do fix de onboarding e verificar logs
 
-Aguardar o Vercel concluir o deploy do commit `b5685c2` e testar:
+```bash
+# O fix já está no código — fazer commit e push
+git add backend/internal/onboarding/onboarding.go backend/internal/server/server.go
+git commit -m "fix: retry + logging on updateSupabaseAppMetadata in onboarding"
+git push
+```
+
+Após o deploy (CI/CD automático), verificar nos logs do VPS se `updateSupabaseAppMetadata` está funcionando:
+
+```bash
+# No VPS — durante ou após um novo cadastro de teste
+docker compose -f docker-compose.production.yml logs backend --tail=100 | grep -i "updateSupabase"
+
+# Resultado esperado se OK:
+# {"level":"info","msg":"updateSupabaseAppMetadata: success","user_id":"...","tenant_id":"...","attempt":1}
+
+# Resultado se ainda falha:
+# {"level":"warn","msg":"updateSupabaseAppMetadata: non-2xx response","status":401,"body":"..."}
+# → Se 401: SUPABASE_SERVICE_ROLE_KEY incorreta no .env do VPS
+# → Se 404: SUPABASE_URL incorreta no .env do VPS
+```
+
+### 2. Testar login em produção
 
 ```
 1. Acessar https://app.revendaclick.com.br/login
@@ -48,36 +71,21 @@ Aguardar o Vercel concluir o deploy do commit `b5685c2` e testar:
 ```
 
 **Se login ainda falhar com "Email ou senha inválidos":**
-- O erro `signInWithPassword` pode ser senha errada — tentar reset de senha
-- Ou verificar se `NEXT_PUBLIC_SUPABASE_ANON_KEY` no Vercel está correto (copiar do `.env.local`)
-- Verificar nos logs Vercel se há erro de auth no lado servidor
+- Tentar reset de senha: Supabase Dashboard → Authentication → Users → Reset Password
+- Verificar `NEXT_PUBLIC_SUPABASE_ANON_KEY` no Vercel (deve ser igual ao projeto Supabase atual)
 
-### 2. Testar fluxo de novo cadastro
+### 3. Testar fluxo de novo cadastro
 
 ```
 1. Acessar https://app.revendaclick.com.br/register
 2. Criar nova conta com email novo
-3. Deve ir para /onboarding (email confirmation está DESABILITADO no Supabase)
-4. Preencher formulário de onboarding → Criar loja
-5. Deve ir para /dashboard
-6. Verificar que raw_app_meta_data tem tenant_id no Supabase
+3. Deve ir para /onboarding (email confirmation está DESABILITADO)
+4. Preencher formulário → Criar loja → deve ir para /dashboard
+5. Verificar no Supabase: raw_app_meta_data tem tenant_id?
+   Supabase Dashboard → Authentication → Users → selecionar usuário → Raw Metadata
 ```
 
-**Atenção:** Email confirmation está desabilitado → não vai enviar email → usuário vai direto para /onboarding. Isso é comportamento correto dado a configuração atual. Se quiser habilitar email confirmation, configurar em Supabase → Auth → Settings → "Confirm email".
-
-### 3. Investigar por que updateSupabaseAppMetadata falha silenciosamente
-
-Se o novo cadastro no passo 2 NÃO gerar `tenant_id` em `raw_app_meta_data` no Supabase:
-
-```bash
-# No VPS — verificar logs do backend no momento do onboarding
-docker compose -f docker-compose.production.yml logs backend --tail=100 | grep -i "supabase\|metadata\|app_meta"
-```
-
-Possíveis causas:
-- `SUPABASE_URL` no backend `.env` tem trailing slash → URL fica `...co//auth/v1/admin/users/...`
-- `SUPABASE_SERVICE_ROLE_KEY` no backend `.env` está incorreto
-- Supabase Admin API retornando 4xx
+Se `raw_app_meta_data` ainda não tiver `tenant_id`, verificar logs do VPS (passo 1 acima).
 
 ---
 
