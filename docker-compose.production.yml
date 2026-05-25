@@ -93,6 +93,7 @@ services:
       CACHE_REDIS_SAVE_INSTANCES:         "true"
       QRCODE_LIMIT:                       "30"
       LOG_LEVEL:                          "ERROR"
+      NODE_OPTIONS:                       "--max-old-space-size=400"
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store
@@ -113,9 +114,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512m
+          memory: 768m
         reservations:
-          memory: 128m
+          memory: 256m
 
   # ── Daily backup (03:00 UTC) ──────────────────────────────────────────────────
   backup:
