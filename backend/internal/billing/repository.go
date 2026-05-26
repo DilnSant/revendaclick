@@ -81,15 +81,15 @@ func (r *Repository) UpsertBillingCustomer(ctx context.Context, tenantID, asaasI
 func (r *Repository) UpdateSubscriptionAsaas(ctx context.Context, tenantID, asaasSubID, paymentLink, cycle, planID string) error {
 	_, err := r.pool.Exec(ctx, `
 		UPDATE subscriptions SET
-			plan_id               = $3,
-			asaas_subscription_id = $4,
-			asaas_payment_link    = $5,
-			billing_cycle         = $6,
+			plan_id               = $2,
+			asaas_subscription_id = $3,
+			asaas_payment_link    = $4,
+			billing_cycle         = $5,
 			status                = 'trialing',
 			current_period_end    = NOW() + INTERVAL '7 days',
 			trial_ends_at         = NOW() + INTERVAL '7 days'
 		WHERE tenant_id = $1`,
-		tenantID, tenantID, planID, asaasSubID, paymentLink, cycle,
+		tenantID, planID, asaasSubID, paymentLink, cycle,
 	)
 	return err
 }
