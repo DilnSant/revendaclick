@@ -121,6 +121,17 @@
 
 ---
 
+## D15 — Redis adicionado ao stack de produção para cache da Evolution API (25/05/2026)
+
+**Decisão:** `redis:7-alpine` adicionado ao `docker-compose.production.yml` como cache da Evolution API.
+**Por quê:** Evolution API atingia OOM (container sendo morto pelo kernel). Análise: parte do consumo excessivo de memória vinha de dados de instâncias sendo mantidos apenas em memória no processo Node.js da Evolution. Redis offloads esse cache, liberando heap.
+**Configuração:** `CACHE_REDIS_ENABLED=true`, `CACHE_REDIS_URI=redis://rc_redis:6379`, `CACHE_REDIS_SAVE_INSTANCES=true`. Redis com `maxmemory 128mb` e política `allkeys-lru`.
+**Complemento:** `NODE_OPTIONS=--max-old-space-size=400` limita o heap V8 da Evolution a 400MB, criando margem de segurança antes do container limit de 768m.
+**Trade-off:** Mais um serviço no stack. Redis não tem volume persistente — cache é volátil, mas as instâncias WhatsApp persistem no volume `evolution_instances`.
+**Impacto ao alterar:** Remover Redis sem ajustar `CACHE_REDIS_ENABLED=false` faz a Evolution falhar ao tentar conectar em `rc_redis`.
+
+---
+
 ## D14 — middleware.ts renomeado para proxy.ts (23/05/2026)
 
 **Decisão:** `frontend/middleware.ts` substituído por `frontend/proxy.ts`.

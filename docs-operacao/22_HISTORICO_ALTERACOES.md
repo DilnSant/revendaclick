@@ -12,6 +12,43 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-25 (sessão 5) — Auditoria completa docs-operacao + sync documentação ↔ código
+
+**O que foi feito:**
+
+### Auditoria
+- Leitura integral de todos os 25 arquivos de `docs-operacao/` (00 a 24 + README)
+- Identificadas divergências entre documentação e código introduzidas pelo commit `d17025e`
+
+### Divergências identificadas e corrigidas
+
+**1. Evolution memory limit:** Documentação dizia `512m`; código (`docker-compose.production.yml` linha 117) tem `768m`. Corrigido em `11_DOCKER.md` e `16_EVOLUTION.md`.
+
+**2. Redis adicionado ao stack de produção:** Commit `d17025e` adicionou serviço `redis:7-alpine` (`rc_redis`) ao `docker-compose.production.yml`. Não estava documentado em lugar algum. Corrigido em `11_DOCKER.md`, `16_EVOLUTION.md`, `21_DECISOES_TECNICAS.md` (nova decisão D15).
+
+**3. NODE_OPTIONS na Evolution:** `NODE_OPTIONS: "--max-old-space-size=400"` adicionado ao container Evolution. Não documentado. Corrigido em `16_EVOLUTION.md`.
+
+**4. Runbook I3:** Texto "se memory > 512m: aumentar para 768m" ficou obsoleto (768m já é o valor atual). Corrigido para "se > 768m: aumentar para 1024m".
+
+**5. Risco R13:** Severidade/mitigação atualizados para refletir 768m + NODE_OPTIONS + Redis.
+
+### Sem alterações de código
+Nenhum arquivo de código foi alterado nesta sessão. Apenas sincronização de documentação.
+
+**Arquivos alterados:**
+- `docs-operacao/11_DOCKER.md` — Evolution 512m→768m; seção Redis adicionada
+- `docs-operacao/16_EVOLUTION.md` — 512m→768m; NODE_OPTIONS; Redis documentados
+- `docs-operacao/19_RISCOS.md` — R13 atualizado (768m + mitigações)
+- `docs-operacao/20_PENDENCIAS.md` — Evolution OOM CONCLUÍDA; sync docs CONCLUÍDA; diagnóstico VPS atualizado
+- `docs-operacao/21_DECISOES_TECNICAS.md` — D15 adicionada (Redis para Evolution)
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` — este registro
+- `docs-operacao/23_PROXIMO_PASSO.md` — próximos passos atualizados
+- `docs-operacao/24_RUNBOOK_INCIDENTES.md` — I3 atualizado (512m→768m→1024m)
+
+**Commits desta sessão:** nenhum (somente docs — a commitar)
+
+---
+
 ## 2026-05-25 (sessão 4) — Fix 6 bugs críticos de produção: vendedores, billing, WhatsApp, settings/plan, settings/users
 
 **O que foi feito:**

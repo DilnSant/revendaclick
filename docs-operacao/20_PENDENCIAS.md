@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 25/05/2026 (sessão 4)
+> Atualizado em: 25/05/2026 (sessão 5)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -23,6 +23,7 @@
 | CONCLUÍDA | SSL Let's Encrypt | — | api + evolution com renovação automática |
 | CONCLUÍDA | Nginx reverse proxy | — | rate limiting, cache, security headers |
 | CONCLUÍDA | Self-hosted runner | — | Runner ativo no VPS |
+| CONCLUÍDA | Evolution OOM fix | — | NODE_OPTIONS heap + 768m + Redis cache (commit d17025e) |
 | PENDENTE | Backup S3 | Média | `BACKUP_S3_BUCKET` opcional — configurar bucket S3 e credenciais |
 
 ---
@@ -59,7 +60,7 @@
 | CONCLUÍDA | Fix BUG 2 (código): Billing Asaas 403 mensagem | — | asaasUserErr() em billing/service.go |
 | PENDENTE | Fix BUG 2 (config): Asaas IP Whitelist | **CRÍTICO** | Adicionar IP do VPS no painel Asaas — bloqueia todo billing |
 | CONCLUÍDA | Fix BUG 3 (código): WhatsApp refreshStatus silencioso | — | handleRefreshStatusManual com toast |
-| PENDENTE | Fix BUG 3 (infra): Diagnosticar Evolution API no VPS | Alta | `docker ps`, logs evolution, verificar EVOLUTION_API_KEY |
+| PENDENTE | Diagnosticar Evolution API no VPS pós-OOM fix | Alta | Verificar se container está healthy após d17025e: `docker compose ps evolution`, logs, `curl localhost:8081` |
 | CONCLUÍDA | Fix BUG 4: Settings/Plan botões mortos | — | planError/planSuccess states; banner trial |
 | CONCLUÍDA | Fix BUG 5: Settings/Users invite modal | — | + Convidar Membro com roles Administrador/Gerente |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
@@ -123,3 +124,4 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | docs-operacao/ (25 arquivos) | — | Memória viva do projeto |
 | CONCLUÍDA | FLUTTERFLOW_MIGRATION.md | — | Guia completo de migração |
 | CONCLUÍDA | Runbook de incidentes | — | `24_RUNBOOK_INCIDENTES.md` — 10 cenários com diagnóstico e solução |
+| CONCLUÍDA | Sync docs ↔ código (sessão 5) | — | 11_DOCKER.md, 16_EVOLUTION.md, 19_RISCOS.md, 24_RUNBOOK atualizados para refletir commit d17025e (Redis + 768m + NODE_OPTIONS) |

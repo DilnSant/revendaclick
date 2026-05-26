@@ -110,7 +110,7 @@ docker compose -f docker-compose.production.yml logs evolution --tail=50
 | Causa | Solução |
 |---|---|
 | Container parado | `docker compose -f docker-compose.production.yml up -d evolution` |
-| OOM (limite 512m atingido) | `docker stats` → se memory > 512m: aumentar em `docker-compose.production.yml` → `mem_limit: 768m` → `docker compose up -d evolution` |
+| OOM (limite 768m atingido) | `docker stats` → se memory > 768m: aumentar em `docker-compose.production.yml` → `memory: 1024m` → `docker compose up -d evolution` |
 | Porta errada em `EVOLUTION_DATABASE_URL` | Verificar `.env` — deve ser porta **5432** (não 6543) |
 | Volume de instâncias removido | **RECUPERAÇÃO IMPOSSÍVEL** — todos os tenants precisam reconectar via QR code |
 

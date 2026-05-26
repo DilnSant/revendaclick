@@ -1,24 +1,52 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 25/05/2026 (sessão 4)
+> Atualizado em: 25/05/2026 (sessão 5)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 4)
+## Estado Atual do Projeto (sessão 5 — 25/05/2026)
 
-6 bugs críticos corrigidos no código. Deploy pendente. 2 ações de configuração manual obrigatórias:
+Todos os bugs críticos de código corrigidos. Deploys realizados. Documentação sincronizada com código.
+3 ações de configuração manual ainda bloqueiam funcionalidades:
 
 - Backend Go → `https://api.revendaclick.com.br` ✓
-- Frontend Next.js → `https://app.revendaclick.com.br` ✓ (Vercel, deploy automático)
+- Frontend Next.js → `https://app.revendaclick.com.br` ✓ (Coolify no VPS)
 - CI/CD GitHub Actions → automático em push para `main` ✓
-- Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ✓ (status infra desconhecido)
+- Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ⚠️ (OOM fix deployado — verificar VPS)
 - Billing Asaas → **BLOQUEADO por IP whitelist** — ver ação urgente abaixo
+- Redis (cache Evolution) → deployado com commit d17025e — verificar VPS
 - Observabilidade → `/metrics` + BetterStack ✓
+- Docs → ✓ sincronizadas com código (sessão 5)
 
 ---
 
 ## ⚠️ AÇÕES URGENTES (Fazer Agora)
+
+### AÇÃO 0 — Verificar Evolution + Redis pós-deploy (commit d17025e)
+
+```bash
+# No VPS — verificar se Redis e Evolution subiram corretamente
+docker compose -f docker-compose.production.yml ps
+
+# Verificar se Evolution está healthy
+docker compose -f docker-compose.production.yml logs evolution --tail=30
+
+# Verificar se Redis está respondendo
+docker compose -f docker-compose.production.yml exec redis redis-cli ping
+# Esperado: PONG
+
+# Verificar se Evolution conecta no Redis
+docker compose -f docker-compose.production.yml logs evolution --tail=20 | grep -i redis
+```
+
+**Se Evolution não subir (ex: não encontra rc_redis):**
+```bash
+docker compose -f docker-compose.production.yml up -d redis
+docker compose -f docker-compose.production.yml up -d evolution
+```
+
+---
 
 ### AÇÃO 1 — Whitelist IP do VPS no Asaas (BUG 2 — BLOQUEIO de BILLING)
 
@@ -157,7 +185,11 @@ Se `raw_app_meta_data` ainda não tiver `tenant_id`, verificar logs do VPS (pass
 
 ## Próximos Passos (por prioridade)
 
-### 1. Testar fluxo completo auth (Alta — fazer agora)
+### 0. Verificar Evolution + Redis no VPS (Alta — primeiro passo)
+
+Descrito acima em AÇÃO 0.
+
+### 1. Testar fluxo completo auth (Alta — depois de AÇÃO 0)
 
 Descrito acima na seção URGENTE.
 

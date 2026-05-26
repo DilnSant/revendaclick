@@ -119,10 +119,11 @@
 
 ### R13 — Memory limit do Evolution atingido
 
-**O que é:** Evolution tem limite de 512m em produção.
+**O que é:** Evolution tem limite de 768m em produção (aumentado de 512m em 25/05/2026).
+**Mitigação ativa:** `NODE_OPTIONS=--max-old-space-size=400` limita o heap do Node.js a 400m, dando margem de segurança antes de atingir 768m. Redis cache reduz pressão de memória.
 **Impacto:** OOM Killer mata o container. Tenants perdem WhatsApp temporariamente.
-**Como detectar:** `docker stats` mostrando Evolution próximo de 512m.
-**Solução:** Aumentar limite no `docker-compose.production.yml` (se VPS tiver memória).
+**Como detectar:** `docker stats` mostrando Evolution próximo de 768m.
+**Solução:** Aumentar limite no `docker-compose.production.yml` para 1024m (se VPS tiver memória).
 
 ---
 
@@ -162,6 +163,6 @@
 | R10 | Grace period não aplicado | Alto | Baixa |
 | R11 | Pool DB esgotado | Médio | Baixa |
 | R12 | OpenRouter sem chave | Médio | Média |
-| R13 | Memory limit Evolution | Médio | Baixa |
+| R13 | Memory limit Evolution (768m) | Médio | Baixa (mitigado com NODE_OPTIONS + Redis) |
 | R14 | Cache Nginx desatualizado | Baixo | Alta (esperado) |
 | R15 | updateSupabaseAppMetadata falha silenciosa | Médio | Média (dependente de config VPS) |

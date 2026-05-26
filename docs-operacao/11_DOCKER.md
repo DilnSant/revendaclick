@@ -66,7 +66,7 @@ restart: unless-stopped
 
 ---
 
-## Produção (`docker-compose.prod.yml`)
+## Produção (`docker-compose.production.yml`)
 
 ### Diferenças em relação ao dev
 
@@ -75,10 +75,35 @@ restart: unless-stopped
 | Porta backend | `8080:8080` (pública) | `127.0.0.1:8080:8080` (local only) |
 | Porta evolution | `8081:8080` (pública) | `127.0.0.1:8081:8080` (local only) |
 | Imagem backend | Build local | `${BACKEND_IMAGE}:${IMAGE_TAG}` GHCR |
-| Limites memória | — | Backend: max 256m / Evolution: max 512m |
+| Limites memória | — | Backend: max 256m / Evolution: max **768m** |
 | ENV | development | production |
 | Evolution SERVER_URL | localhost | `https://evolution.revendaclick.com.br` |
 | QRCODE_LIMIT | — | 30 |
+| NODE_OPTIONS (Evolution) | — | `--max-old-space-size=400` |
+| Redis | — | `redis:7-alpine` (cache Evolution) |
+
+### Redis (só em produção)
+
+```yaml
+redis:
+  image: redis:7-alpine
+  container_name: rc_redis
+  command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+  restart: unless-stopped
+  networks:
+    - revendaclick
+  deploy:
+    resources:
+      limits:
+        memory: 160m
+```
+
+Usado pela Evolution API como cache de instâncias:
+- `CACHE_REDIS_ENABLED: "true"`
+- `CACHE_REDIS_URI: "redis://rc_redis:6379"`
+- `CACHE_REDIS_SAVE_INSTANCES: "true"`
+
+Redis não tem porta exposta — apenas acessível pela rede interna Docker.
 
 ### backup (só em produção)
 
@@ -121,6 +146,8 @@ Todos os serviços estão na mesma rede `revendaclick`. Comunicação interna:
 | `backend_logs` | Logs do servidor Go | Apenas logs históricos |
 | `evolution_instances` | Instâncias WhatsApp ativas | **GRAVE** — reconexão necessária para todos |
 | `evolution_store` | Store de mensagens | Histórico de mensagens |
+
+Redis não tem volume persistente — os dados de cache são perdidos ao reiniciar (comportamento esperado e seguro).
 
 **Nunca remover `evolution_instances` em produção** sem avisar os clientes sobre reconexão do WhatsApp.
 

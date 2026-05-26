@@ -166,14 +166,21 @@ evolution:
     AUTHENTICATION_API_KEY: $EVOLUTION_API_KEY
     QRCODE_LIMIT: "30"
     LOG_LEVEL: ERROR
+    NODE_OPTIONS: "--max-old-space-size=400"   # heap limit — evita OOM do Node.js
+    CACHE_REDIS_ENABLED: "true"
+    CACHE_REDIS_URI: "redis://rc_redis:6379"
+    CACHE_REDIS_SAVE_INSTANCES: "true"
   volumes:
     - evolution_instances:/evolution/instances
     - evolution_store:/evolution/store
-  memory limit: 512m
+  memory limit: 768m   # aumentado de 512m em 25/05/2026 — fix OOM (commit d17025e)
+  depends_on: [redis]
 ```
 
 **CRÍTICO:** Evolution usa porta 5432 (session pooler), não 6543 (transaction mode).
 Prisma (usado internamente pela Evolution) requer advisory locks que não funcionam com PgBouncer.
+
+**Redis (novo em d17025e):** A Evolution usa Redis como cache de instâncias. O serviço `rc_redis` deve estar UP antes da Evolution inicializar. O cache Redis é volátil (sem volume persistente) — perda de cache ao reiniciar é segura, as instâncias em si continuam em `evolution_instances`.
 
 ---
 
