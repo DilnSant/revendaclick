@@ -1,29 +1,32 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 25/05/2026 (sessão 5)
+> Atualizado em: 26/05/2026 (sessão 6)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 5 — 25/05/2026)
+## Estado Atual do Projeto (sessão 6 — 26/05/2026)
 
-Todos os bugs críticos de código corrigidos. Deploys realizados. Documentação sincronizada com código.
-3 ações de configuração manual ainda bloqueiam funcionalidades:
+Todos os bugs de código corrigidos nesta sessão. 3 commits deployados. Supabase sem advisors WARN.
+Pendências restantes são todas de configuração manual no VPS ou em dashboards externos.
 
 - Backend Go → `https://api.revendaclick.com.br` ✓
 - Frontend Next.js → `https://app.revendaclick.com.br` ✓ (Coolify no VPS)
 - CI/CD GitHub Actions → automático em push para `main` ✓
-- Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ⚠️ (OOM fix deployado — verificar VPS)
+- Analytics → ✓ corrigido (revenue não retorna mais R$0) — commit 0b32a6d
+- Nginx webhooks → ✓ rate limiting agora funciona — commit 39b5a38
+- Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ⚠️ (verificar VPS)
 - Billing Asaas → **BLOQUEADO por IP whitelist** — ver ação urgente abaixo
-- Redis (cache Evolution) → deployado com commit d17025e — verificar VPS
+- Redis (cache Evolution) → depends_on healthcheck configurado — verificar VPS
+- Supabase → ✓ migrations 011/012/013 aplicadas, 0 advisors WARN
 - Observabilidade → `/metrics` + BetterStack ✓
-- Docs → ✓ sincronizadas com código (sessão 5)
+- Docs → ✓ sincronizadas com código (sessão 6)
 
 ---
 
 ## ⚠️ AÇÕES URGENTES (Fazer Agora)
 
-### AÇÃO 0 — Verificar Evolution + Redis pós-deploy (commit d17025e)
+### AÇÃO 0 — Verificar Evolution + Redis pós-deploy (commits d17025e + 0b32a6d)
 
 ```bash
 # No VPS — verificar se Redis e Evolution subiram corretamente
@@ -117,13 +120,33 @@ grep EVOLUTION_API_KEY /opt/revendaclick/.env
 
 ---
 
-## Estado do Banco (23/05/2026)
+### AÇÃO 4 — Ativar Leaked Password Protection (Supabase Dashboard)
+
+Não é acessível via SQL nem MCP. Requer acesso direto ao Supabase Dashboard:
+
+```
+1. Acessar https://supabase.com/dashboard
+2. Selecionar o projeto RevendaClick
+3. Authentication → Settings → Security
+4. Ativar "Leaked Password Protection"
+5. Salvar
+```
+
+---
+
+## Estado do Banco (26/05/2026 — sessão 6)
 
 | Email | auth.users | public.users | jwt_tenant_id | Situação |
 |---|---|---|---|---|
 | dilneysantos@gmail.com | ✓ confirmado | ✓ owner | ✓ fd1172f6 (patchado) | Deve acessar /dashboard após deploy |
 | admin@staging.revendaclick.com.br | ✓ confirmado | ✓ owner | ✓ e9f92ebf (patchado) | OK |
 | admin@revendaclick.staging | ✓ confirmado | ✗ | ✗ | Sem tenant (staging, irrelevante) |
+
+**Banco Supabase — Migrations aplicadas:**
+- `20260526145045` — migration 011 (performance indexes + RLS optimization)
+- `20260526145129` — migration 012 (SECURITY DEFINER REVOKE from PUBLIC)
+- `20260526165633` — migration 013 (leads_public_insert + storage listing)
+- Advisor WARN: 0 pendentes
 
 **Nota:** Os usuários `desconto.do.dono@gmail.com`, `dilsant.nocode@gmail.com`, `dilneysantos.coprodutor@gmail.com`, `metodolimpezas@gmail.com` mencionados em sessões anteriores **não existem mais neste projeto Supabase** (ou foram excluídos). Apenas 3 usuários encontrados no banco.
 
@@ -215,7 +238,11 @@ https://app.revendaclick.com.br/<slug-de-tenant>
 
 Depende de `getTenantBySlug` (usa service role) — deve funcionar agora que `SUPABASE_SERVICE_ROLE_KEY` está no Vercel.
 
-### 4. Backup S3 (Média — opcional)
+### 4. Leaked Password Protection (Baixa — Supabase Dashboard)
+
+Ver AÇÃO 4 acima. Não pode ser feito via SQL/MCP.
+
+### 5. Backup S3 (Média — opcional)
 
 ```bash
 # No VPS — adicionar ao .env
@@ -227,17 +254,17 @@ AWS_DEFAULT_REGION=sa-east-1
 
 Ver `11_DOCKER.md`.
 
-### 5. Uptime Monitoring (Baixa)
+### 6. Uptime Monitoring (Baixa)
 
 Configurar UptimeRobot ou BetterStack Uptime para `https://api.revendaclick.com.br/health`.
 
-### 6. Rotação de Secrets (Baixa)
+### 7. Rotação de Secrets (Baixa)
 
 Definir política semestral: `ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN`.
 
-### 7. Review de Indexes (Baixa)
+### 8. Review de Indexes (Baixa)
 
-`EXPLAIN ANALYZE` nas queries mais frequentes após 30 dias com carga real.
+`EXPLAIN ANALYZE` nas queries mais frequentes após 30 dias com carga real. Migrations 011 já cobrem os casos mais críticos.
 
 ---
 

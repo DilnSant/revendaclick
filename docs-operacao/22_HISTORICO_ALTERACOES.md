@@ -12,6 +12,65 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-26 (sessão 6) — Fix analytics, nginx, segurança Supabase, infra, smoke test
+
+**O que foi feito:**
+
+### 1. Fix analytics revenue zerado (`backend/internal/analytics/repository.go`)
+- **Causa raiz:** Duas queries SQL usavam colunas inexistentes: `final_value` (não existe em `sales`) e `completed_at` (não existe — coluna correta é `sold_at`).
+- **Fix:** `final_value` → `sale_price`; `completed_at` → `sold_at`. Confirmado via Supabase MCP (`\d sales`).
+- **Impacto:** Analytics retornava receita R$0 para todos os tenants silenciosamente.
+
+### 2. Fix nginx webhook rate limiting silencioso (`nginx.conf`)
+- **Causa raiz:** `location ~ ^/api/v1/webhooks/` nunca casava com as rotas reais `/api/webhooks/evolution` e `/api/webhooks/asaas` (sem "v1"). Os webhooks recebiam o `api_limit` geral (30rps) em vez do `webhook_limit` restrito (5rps/burst=10).
+- **Fix:** `^/api/v1/webhooks/` → `^/api/webhooks/`. Comentário com rotas adicionado.
+
+### 3. Migrations 011 e 012 rastreadas no git
+- **Migration 011** (`database/migrations/011_performance_rls_indexes.sql`): Já estava aplicada no Supabase (`20260526145045`) mas sem arquivo local. Criado. Contém 14 indexes de performance + otimização de políticas RLS (wrap `auth.function()` em `SELECT`).
+- **Migration 012** (`database/migrations/012_fix_security_definer_revoke.sql`): Recuperada do `supabase_migrations.schema_migrations`. REVOKE de `complete_sale()`, `get_tenant_invoices()`, `get_tenant_usage()` de PUBLIC/anon/authenticated; GRANT só para service_role.
+
+### 4. Migration 013 aplicada (segurança)
+- **`leads_public_insert`:** Era `FOR ALL ROLES WITH CHECK (true)` — qualquer role podia inserir leads para qualquer tenant. Fixado para `TO anon WITH CHECK (tenant_id IN (SELECT id FROM tenants WHERE is_active = TRUE))`.
+- **`vehicles_public_read` (storage):** Política removida. Bucket é `public=true` — URLs diretas funcionam sem policy. A policy habilitava listagem SDK de todos os arquivos do bucket.
+- Aplicado diretamente via Supabase MCP antes de criar o arquivo local.
+- Resolve 2 advisors de nível WARN no Supabase Advisor.
+
+### 5. Infra: Docker Compose melhorias (`docker-compose.production.yml`)
+- Redis healthcheck adicionado: `test: ["CMD", "redis-cli", "ping"]`
+- Evolution agora aguarda Redis healthy antes de iniciar (`depends_on: redis: condition: service_healthy`)
+- `BETTER_STACK_SOURCE_TOKEN` adicionado ao backend (estava faltando para BetterStack log ingestion)
+- Backup scheduler reescrito em bash puro (eliminada dependência de `python3` que não existe no `alpine` base image)
+- Variáveis S3 adicionadas ao serviço backup: `BACKUP_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`
+
+### 6. Backup UTC + S3 (`backup.sh`)
+- `date` → `date -u` (timestamp UTC consistente)
+- Bloco S3 upload opcional: se `BACKUP_S3_BUCKET` definido, instala `aws-cli` via `apk add` e faz upload
+
+### 7. Smoke test: Frontend adicionado (`scripts/smoke-test.sh`)
+- Seção #11 adicionada: testa `https://app.revendaclick.com.br` e `https://revendaclick.com.br`
+- Também testa `/api/health` no frontend Next.js
+
+### Decisões técnicas registradas
+- D16: `public_vehicle_listings` mantém SECURITY DEFINER (converter exporia emails de tenants via PostgREST)
+- D17: `leads_public_insert` restrito a anon + tenant ativo
+
+**Arquivos alterados:**
+- `backend/internal/analytics/repository.go` — `final_value`→`sale_price`, `completed_at`→`sold_at`
+- `nginx.conf` — `^/api/v1/webhooks/` → `^/api/webhooks/`
+- `database/migrations/011_performance_rls_indexes.sql` — criado (rastreamento git)
+- `database/migrations/012_fix_security_definer_revoke.sql` — criado (recuperado do Supabase)
+- `database/migrations/013_security_leads_insert_storage_listing.sql` — criado + aplicado
+- `docker-compose.production.yml` — Redis healthcheck, Evolution depends_on, backup scheduler, BETTER_STACK_SOURCE_TOKEN
+- `backup.sh` — UTC timestamps, S3 upload block
+- `scripts/smoke-test.sh` — check #11 frontend
+
+**Commits desta sessão:**
+- `0b32a6d` — analytics fix + migrations 011/012 + infra improvements
+- `39b5a38` — nginx webhook location bug fix
+- `c981b0b` — security migration 013 (leads_public_insert + storage listing)
+
+---
+
 ## 2026-05-25 (sessão 5) — Auditoria completa docs-operacao + sync documentação ↔ código
 
 **O que foi feito:**

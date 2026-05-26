@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 25/05/2026 (sessão 5)
+> Atualizado em: 26/05/2026 (sessão 6)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -22,6 +22,7 @@
 | CONCLUÍDA | CI/CD GitHub Actions | — | test → build → deploy → smoke-test |
 | CONCLUÍDA | SSL Let's Encrypt | — | api + evolution com renovação automática |
 | CONCLUÍDA | Nginx reverse proxy | — | rate limiting, cache, security headers |
+| CONCLUÍDA | Fix nginx webhook location | — | `^/api/v1/webhooks/` → `^/api/webhooks/` — rate limit estava sendo ignorado (commit 39b5a38) |
 | CONCLUÍDA | Self-hosted runner | — | Runner ativo no VPS |
 | CONCLUÍDA | Evolution OOM fix | — | NODE_OPTIONS heap + 768m + Redis cache (commit d17025e) |
 | PENDENTE | Backup S3 | Média | `BACKUP_S3_BUCKET` opcional — configurar bucket S3 e credenciais |
@@ -40,6 +41,7 @@
 | CONCLUÍDA | Prometheus metrics | — | Custom registry, coleta DB+negócio |
 | CONCLUÍDA | BetterStack logging | — | Tee zap → stdout + HTTP |
 | CONCLUÍDA | Onboarding setup | — | Transação + idempotência |
+| CONCLUÍDA | Fix analytics revenue zero | — | Colunas erradas no SQL: `final_value`→`sale_price`, `completed_at`→`sold_at` (commit 0b32a6d) |
 
 ---
 
@@ -83,7 +85,9 @@
 | CONCLUÍDA | Schema completo | — | Todas as tabelas com RLS |
 | CONCLUÍDA | Migrations 001-008 | — | Billing, vendors, auditoria |
 | CONCLUÍDA | Triggers | — | Grace period, limites de plano, trial automático |
-| PENDENTE | Indexes de performance | Média | Revisar EXPLAIN ANALYZE em queries lentas |
+| CONCLUÍDA | Indexes de performance | — | Migration 011: 14 indexes + RLS policy optimization (SELECT auth.function()) aplicados (26/05/2026) |
+| CONCLUÍDA | Migration 012: SECURITY DEFINER revoke | — | REVOKE de PUBLIC/anon/authenticated; GRANT só para service_role (26/05/2026) |
+| CONCLUÍDA | Migration 013: leads insert + storage | — | leads_public_insert restrito a anon + tenant ativo; vehicles_public_read removida (26/05/2026) |
 
 ---
 
@@ -113,6 +117,8 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Rate limiting Nginx | — | Por zona (api, evo, webhook) |
 | CONCLUÍDA | Métricas protegidas | — | Bearer token + IP restriction |
 | CONCLUÍDA | Input validation | — | MaxBodySize + slug/email regex |
+| CONCLUÍDA | Supabase advisor warnings (WARN) | — | Todos 3 advisors: migration 011 (RLS), 012 (functions), 013 (leads insert + storage) |
+| PENDENTE | Leaked password protection | Baixa | Ativar via Supabase Dashboard → Auth → Security Settings (não acessível via SQL/MCP) |
 | PENDENTE | Rotação de secrets | Baixa | Política semestral: ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN — atualizar no .env do VPS + no Asaas Dashboard + reiniciar containers |
 
 ---

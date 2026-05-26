@@ -132,6 +132,24 @@
 
 ---
 
+## D16 — public_vehicle_listings view mantém SECURITY DEFINER (26/05/2026)
+
+**Decisão:** A view `public_vehicle_listings` (usada nas páginas de vitrine pública) permanece com `SECURITY DEFINER`.
+**Por quê:** Converter para `SECURITY INVOKER` exigiria adicionar uma política SELECT pública na tabela `tenants`. Isso exporia colunas como `email`, `asaas_customer_id` e outras via PostgREST para qualquer request anônimo. O `SECURITY DEFINER` na view controla exatamente quais colunas são expostas (somente `slug`, `name`, `logo_url`, `phone_whatsapp`).
+**Trade-off:** O Supabase Advisor reporta `SECURITY DEFINER` como aviso. Aceitável — a view é explicitamente projetada para acesso público controlado.
+**Impacto ao alterar:** Converter sem adicionar política pública em `tenants` quebra a vitrine (403 em rotas `/<slug>`). Converter com política pública expõe emails de todos os tenants.
+
+---
+
+## D17 — leads_public_insert restrito a anon + validação de tenant ativo (26/05/2026)
+
+**Decisão:** `leads_public_insert` aplica apenas para role `anon`, com `WITH CHECK (tenant_id IN (SELECT id FROM public.tenants WHERE is_active = TRUE))`.
+**Por quê:** A política anterior era `FOR ALL ROLES WITH CHECK (true)` — qualquer role autenticada podia inserir leads para qualquer `tenant_id`, incluindo tenants inativos ou inexistentes. Isso abria vetor de spam/abuse nos formulários de captação de leads.
+**Como funciona:** Visitantes anônimos das páginas de vitrine pública enviam leads via `/api/public/leads`. A policy permite apenas tenants ativos, bloqueando submissões para tenants cancelados/suspensos.
+**Trade-off:** Nenhum — usuários autenticados não precisam inserir leads via PostgREST direto (fazem via backend Go que usa service_role).
+
+---
+
 ## D14 — middleware.ts renomeado para proxy.ts (23/05/2026)
 
 **Decisão:** `frontend/middleware.ts` substituído por `frontend/proxy.ts`.
