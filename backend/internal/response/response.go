@@ -2,14 +2,28 @@ package response
 
 import (
 	"net/http"
+	"reflect"
 
 	"github.com/gin-gonic/gin"
 )
 
+// normalizeSlice converts nil slices to empty slices so JSON output is []
+// instead of null. Non-slice values are returned unchanged.
+func normalizeSlice(v any) any {
+	if v == nil {
+		return v
+	}
+	rv := reflect.ValueOf(v)
+	if rv.Kind() == reflect.Slice && rv.IsNil() {
+		return reflect.MakeSlice(rv.Type(), 0, 0).Interface()
+	}
+	return v
+}
+
 // ── Envelope ─────────────────────────────────────────────────────────────────
 
 type Envelope struct {
-	Data  any    `json:"data,omitempty"`
+	Data  any    `json:"data"`
 	Error *Error `json:"error,omitempty"`
 	Meta  *Meta  `json:"meta,omitempty"`
 }
@@ -30,11 +44,11 @@ type Meta struct {
 // ── Response helpers ─────────────────────────────────────────────────────────
 
 func JSON(c *gin.Context, status int, data any) {
-	c.JSON(status, Envelope{Data: data})
+	c.JSON(status, Envelope{Data: normalizeSlice(data)})
 }
 
 func JSONWithMeta(c *gin.Context, status int, data any, meta *Meta) {
-	c.JSON(status, Envelope{Data: data, Meta: meta})
+	c.JSON(status, Envelope{Data: normalizeSlice(data), Meta: meta})
 }
 
 func Err(c *gin.Context, status int, code, message string) {

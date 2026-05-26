@@ -78,6 +78,15 @@ type ListFilter struct {
 	Offset   int
 }
 
+var validLeadSources = map[string]bool{
+	"marketplace": true,
+	"whatsapp":    true,
+	"referral":    true,
+	"direct":      true,
+	"social":      true,
+	"other":       true,
+}
+
 func (r *CreateRequest) Validate() error {
 	switch {
 	case r.Name == "":
@@ -92,6 +101,8 @@ func (r *CreateRequest) Validate() error {
 		return validationErr("message too long")
 	case r.Email != nil && len(*r.Email) > 254:
 		return validationErr("email too long")
+	case r.Source != "" && !validLeadSources[r.Source]:
+		return validationErr("source inválido: use marketplace, whatsapp, referral, direct, social ou other")
 	}
 	return nil
 }
