@@ -12,6 +12,76 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-26 (sessão 7) — Validação de produção completa + fix lead source + fix nil slice
+
+**O que foi feito:**
+
+### Testes de produção executados (smoke test + CRUD completo)
+
+**Infraestrutura: 22/22 PASS**
+- TLS válido 76 dias em ambos os domínios ✓
+- Backend `/health` → `{status:ok, db:ok}` ✓
+- Frontend `https://app.revendaclick.com.br` → 200 ✓
+- Evolution API → 200 ✓
+- Auth enforcement (401 sem JWT) ✓
+- Rate limiting via X-Request-ID ✓
+- Nginx cache `/api/public/*` → HIT ✓
+- Webhook Asaas rejeitando sem token → 401 ✓
+- Metrics bloqueado por nginx → 403 ✓
+- SSL/TLS em api + evolution ✓
+
+**Auth/Login:**
+- Supabase auth API: erro 400 com `invalid_credentials` para credenciais inválidas ✓
+- Signup → Onboarding → JWT com `app_metadata.tenant_id` ✓
+- Backend lê JWT de `app_metadata` (não top-level) — correto ✓
+- Estado banco: 6 tenants ativos, todos com `jwt_tenant_id` correto ✓
+
+**CRUDs testados com usuário de teste real:**
+- Lead CREATE(✓), GET(✓), UPDATE(✓), ADD Activity(✓), DELETE(✓)
+- Customer CREATE(✓), GET(✓), UPDATE(✓), DELETE(✓)
+- Vehicle CREATE(✓), GET(✓), UPDATE(✓), DELETE(✓)
+- Public API `/api/public/:slug/leads` (anon) ✓
+- Public API `/api/public/:slug/vehicles` ✓
+- Sales list ✓, Financial entries ✓
+- Analytics bloqueado por plan gate (starter) — correto ✓
+- Vendors: GET `/api/users` ✓, invite via `POST /api/users` requer UUID Supabase ✓
+- Audit log ✓
+
+### Bugs encontrados e corrigidos
+
+**Bug A: Lead CREATE com `source` inválido → `internal_error` opaco**
+- Causa: `source: "manual"` não existe no enum `lead_source` → pgx DB error → `internal_error`
+- Fix: Adicionado `validLeadSources` map + validação em `CreateRequest.Validate()`
+- Enum válido: `marketplace`, `whatsapp`, `referral`, `direct`, `social`, `other`
+- Arquivo: `backend/internal/leads/model.go`
+
+**Bug B: Listas vazias retornam `null` em vez de `[]`**
+- Causa: `var list []*T` nil em Go serializa como `null` com `json:"data,omitempty"`
+- Fix: `response.normalizeSlice()` converte nil slices para `make([]T, 0)` via reflect
+- Removido `omitempty` de `Envelope.Data` para garantir `data` sempre presente
+- Frontend já usa `json.data ?? []` — seguro
+- Arquivo: `backend/internal/response/response.go`
+
+### Riscos identificados (não corrigidos — exigem decisão)
+
+**CRÍTICO: Trials expiram em 4 dias**
+- `santos-car` (dilneysantos@gmail.com): trial_ends_at = 2026-05-31
+- `devecar` (dilneysantos.developer@gmail.com): trial_ends_at = 2026-05-31
+- `testecar`, `teste-02`, `teste03`: trial_ends_at = 2026-06-01
+- Impacto: sem Asaas whitelist, usuários não podem assinar; `SubscriptionGate` checa apenas `status` (não `trial_ends_at`) → acesso continua mesmo expirado
+- Ação: resolver Asaas whitelist ANTES de 2026-05-31
+
+**staging-admin**: trial expirado em 2026-05-20 — conta de staging, sem impacto real
+
+**Arquivos alterados:**
+- `backend/internal/leads/model.go` — source validation
+- `backend/internal/response/response.go` — normalizeSlice + remove omitempty
+
+**Commits:**
+- `43c65ee` — fix: lead source validation + nil slice → [] in API responses
+
+---
+
 ## 2026-05-26 (sessão 6) — Fix analytics, nginx, segurança Supabase, infra, smoke test
 
 **O que foi feito:**

@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 26/05/2026 (sessão 6)
+> Atualizado em: 26/05/2026 (sessão 7)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -42,6 +42,8 @@
 | CONCLUÍDA | BetterStack logging | — | Tee zap → stdout + HTTP |
 | CONCLUÍDA | Onboarding setup | — | Transação + idempotência |
 | CONCLUÍDA | Fix analytics revenue zero | — | Colunas erradas no SQL: `final_value`→`sale_price`, `completed_at`→`sold_at` (commit 0b32a6d) |
+| CONCLUÍDA | Fix lead source validation | — | `source` inválido causava `internal_error` opaco; validação adicionada (commit 43c65ee) |
+| CONCLUÍDA | Fix nil slice → null em respostas | — | `response.normalizeSlice()` + remove omitempty de Data; listas vazias retornam `[]` (commit 43c65ee) |
 
 ---
 
@@ -60,7 +62,7 @@
 | PENDENTE | Verificar SUPABASE_SERVICE_ROLE_KEY no .env do VPS | Alta | Confirmar que a chave está correta — ver logs pós-deploy: `docker compose logs backend \| grep updateSupabase` |
 | CONCLUÍDA | Fix BUG 1: Vendedores invite | — | inviteUserByEmail → generateLink; UX "Novo vendedor"; roles só Vendedor/Visualizador |
 | CONCLUÍDA | Fix BUG 2 (código): Billing Asaas 403 mensagem | — | asaasUserErr() em billing/service.go |
-| PENDENTE | Fix BUG 2 (config): Asaas IP Whitelist | **CRÍTICO** | Adicionar IP do VPS no painel Asaas — bloqueia todo billing |
+| PENDENTE | Fix BUG 2 (config): Asaas IP Whitelist | **URGENTE** | Adicionar IP do VPS no painel Asaas — bloqueia todo billing; trials expiram em 4 dias (2026-05-31) |
 | CONCLUÍDA | Fix BUG 3 (código): WhatsApp refreshStatus silencioso | — | handleRefreshStatusManual com toast |
 | PENDENTE | Diagnosticar Evolution API no VPS pós-OOM fix | Alta | Verificar se container está healthy após d17025e: `docker compose ps evolution`, logs, `curl localhost:8081` |
 | CONCLUÍDA | Fix BUG 4: Settings/Plan botões mortos | — | planError/planSuccess states; banner trial |

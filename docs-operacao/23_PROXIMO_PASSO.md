@@ -1,32 +1,35 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 26/05/2026 (sessão 6)
+> Atualizado em: 26/05/2026 (sessão 7)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 6 — 26/05/2026)
+## Estado Atual do Projeto (sessão 7 — 26/05/2026)
 
-Todos os bugs de código corrigidos nesta sessão. 3 commits deployados. Supabase sem advisors WARN.
-Pendências restantes são todas de configuração manual no VPS ou em dashboards externos.
+Validação completa de produção executada (sessão 7). Smoke test 22/22 PASS. CRUDs testados com JWT real.
+2 bugs de código corrigidos e deployados. Pendências restantes são de configuração externa.
 
-- Backend Go → `https://api.revendaclick.com.br` ✓
-- Frontend Next.js → `https://app.revendaclick.com.br` ✓ (Coolify no VPS)
-- CI/CD GitHub Actions → automático em push para `main` ✓
-- Analytics → ✓ corrigido (revenue não retorna mais R$0) — commit 0b32a6d
-- Nginx webhooks → ✓ rate limiting agora funciona — commit 39b5a38
-- Evolution API (WhatsApp) → `https://evolution.revendaclick.com.br` ⚠️ (verificar VPS)
-- Billing Asaas → **BLOQUEADO por IP whitelist** — ver ação urgente abaixo
-- Redis (cache Evolution) → depends_on healthcheck configurado — verificar VPS
-- Supabase → ✓ migrations 011/012/013 aplicadas, 0 advisors WARN
-- Observabilidade → `/metrics` + BetterStack ✓
-- Docs → ✓ sincronizadas com código (sessão 6)
+**ALERTA: trials expiram em 4 dias (2026-05-31) para santos-car e devecar**
+
+- Backend Go → `https://api.revendaclick.com.br` ✓ (22/22 smoke test)
+- Frontend Next.js → `https://app.revendaclick.com.br` ✓ (200 OK)
+- CI/CD GitHub Actions → automático ✓
+- Analytics → ✓ (revenue corrigido, plan gate OK)
+- Nginx webhooks → ✓ rate limiting OK
+- Evolution API → `https://evolution.revendaclick.com.br` ✓ (200 + 401 sem key)
+- Billing Asaas → **BLOQUEADO por IP whitelist — urgente resolver antes de 2026-05-31**
+- Redis → ✓ (evolution depende_on healthcheck)
+- Auth/Onboarding → ✓ signup → onboarding → JWT OK
+- CRUDs → ✓ leads, vehicles, customers, users, sales, financial, audit
+- Supabase → ✓ 0 advisors WARN
+- Docs → ✓ sincronizadas
 
 ---
 
 ## ⚠️ AÇÕES URGENTES (Fazer Agora)
 
-### AÇÃO 0 — Verificar Evolution + Redis pós-deploy (commits d17025e + 0b32a6d)
+### AÇÃO 0 — Verificar Evolution + Redis no VPS ✓ (Evolution respondendo 200 e 401)
 
 ```bash
 # No VPS — verificar se Redis e Evolution subiram corretamente
@@ -51,8 +54,9 @@ docker compose -f docker-compose.production.yml up -d evolution
 
 ---
 
-### AÇÃO 1 — Whitelist IP do VPS no Asaas (BUG 2 — BLOQUEIO de BILLING)
+### AÇÃO 1 — Whitelist IP do VPS no Asaas (BUG 2 — BLOQUEIO DE BILLING)
 
+**⚠️ URGENTE: trials de santos-car e devecar expiram em 2026-05-31 (4 dias).**
 **Sem esta configuração:** Nenhum usuário consegue assinar um plano. O erro `not_allowed_ip` bloqueia toda criação de customer/subscription no Asaas.
 
 **Como resolver:**
@@ -110,8 +114,13 @@ grep EVOLUTION_API_KEY /opt/revendaclick/.env
 
 ---
 
-### AÇÃO 3 — Testar login em produção (pendente desde sessão 3)
+### AÇÃO 3 — Testar login em produção (validado via API — confirmar no browser)
 
+**Validado via API (sessão 7):**
+- Signup → Onboarding → JWT com tenant_id em app_metadata ✓
+- `auth.users` confirmados: todos os owners com jwt_tenant_id correto ✓
+
+**Confirmar no browser:**
 ```
 1. Acessar https://app.revendaclick.com.br/login
 2. Login com dilneysantos@gmail.com
