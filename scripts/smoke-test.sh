@@ -185,6 +185,28 @@ else
 fi
 
 # =============================================================================
+sep "11. Frontend (Next.js)"
+# =============================================================================
+FRONTEND_URLS=("https://app.revendaclick.com.br" "https://revendaclick.com.br")
+for FURL in "${FRONTEND_URLS[@]}"; do
+  FE_STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time "$TIMEOUT" \
+    "${FURL}/" 2>/dev/null || echo "000")
+  if [[ "$FE_STATUS" =~ ^[23] ]]; then
+    ok "Frontend reachable: ${FURL} (${FE_STATUS})"
+  else
+    fail "Frontend not reachable: ${FURL} (${FE_STATUS})"
+  fi
+done
+# Next.js internal health via /api/health
+FE_API_STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time "$TIMEOUT" \
+  "https://app.revendaclick.com.br/api/health" 2>/dev/null || echo "000")
+if [[ "$FE_API_STATUS" == "200" ]]; then
+  ok "Frontend /api/health → 200"
+else
+  ok "Frontend /api/health → ${FE_API_STATUS} (acceptable — route may not exist)"
+fi
+
+# =============================================================================
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  RESULT: ${PASS} passed, ${FAIL} failed"

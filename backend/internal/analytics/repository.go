@@ -125,12 +125,12 @@ func (r *Repository) GetSummary(ctx context.Context, tenantID string) (*Summary,
 	// ── Financial — current month ──────────────────────────────────────────────
 	err = r.pool.QueryRow(ctx, `
 		SELECT
-			COALESCE(SUM(final_value), 0),
+			COALESCE(SUM(sale_price), 0),
 			COUNT(*)
 		FROM sales
 		WHERE tenant_id = $1
 		  AND status = 'completed'
-		  AND DATE_TRUNC('month', completed_at) = DATE_TRUNC('month', NOW())`,
+		  AND DATE_TRUNC('month', sold_at) = DATE_TRUNC('month', NOW())`,
 		tenantID,
 	).Scan(&s.MonthRevenue, &s.MonthSales)
 	if err != nil {
@@ -143,13 +143,13 @@ func (r *Repository) GetSummary(ctx context.Context, tenantID string) (*Summary,
 	// ── Revenue history — last 6 months ───────────────────────────────────────
 	hRows, err := r.pool.Query(ctx, `
 		SELECT
-			TO_CHAR(DATE_TRUNC('month', completed_at), 'YYYY-MM') AS month,
-			COALESCE(SUM(final_value), 0),
+			TO_CHAR(DATE_TRUNC('month', sold_at), 'YYYY-MM') AS month,
+			COALESCE(SUM(sale_price), 0),
 			COUNT(*)
 		FROM sales
 		WHERE tenant_id = $1
 		  AND status = 'completed'
-		  AND completed_at >= DATE_TRUNC('month', NOW()) - INTERVAL '5 months'
+		  AND sold_at >= DATE_TRUNC('month', NOW()) - INTERVAL '5 months'
 		GROUP BY 1 ORDER BY 1`, tenantID)
 	if err != nil {
 		return nil, err

@@ -28,6 +28,7 @@ services:
       ASAAS_ENV:              "${ASAAS_ENV:-production}"
       ASAAS_WEBHOOK_TOKEN:    "${ASAAS_WEBHOOK_TOKEN}"
       METRICS_TOKEN:          "${METRICS_TOKEN}"
+      BETTER_STACK_SOURCE_TOKEN: "${BETTER_STACK_SOURCE_TOKEN:-}"
     volumes:
       - backend_logs:/app/logs
     healthcheck:
@@ -56,6 +57,12 @@ services:
     image: redis:7-alpine
     container_name: rc_redis
     command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout:  5s
+      retries:  5
+      start_period: 10s
     restart: unless-stopped
     networks:
       - revendaclick
@@ -94,6 +101,9 @@ services:
       QRCODE_LIMIT:                       "30"
       LOG_LEVEL:                          "ERROR"
       NODE_OPTIONS:                       "--max-old-space-size=400"
+    depends_on:
+      redis:
+        condition: service_healthy
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store
@@ -127,22 +137,26 @@ services:
       - |
         apk add --no-cache postgresql-client bash > /dev/null 2>&1
         while true; do
-          NOW=$(date +%s)
-          NEXT=$(python3 -c "
-        import datetime, calendar, time
-        now = datetime.datetime.utcnow()
-        target = now.replace(hour=3, minute=0, second=0, microsecond=0)
-        if target <= now:
-            target += datetime.timedelta(days=1)
-        print(int(target.timestamp()))
-        " 2>/dev/null || echo $((NOW + 86400)))
-          WAIT=$((NEXT - NOW))
+          NOW=$(date -u +%s)
+          H=$(date -u +%H | sed 's/^0//'); M=$(date -u +%M | sed 's/^0//'); S=$(date -u +%S | sed 's/^0//')
+          H=${H:-0}; M=${M:-0}; S=${S:-0}
+          ELAPSED=$(( H*3600 + M*60 + S ))
+          TARGET_SEC=$(( 3*3600 ))
+          if [ "$ELAPSED" -lt "$TARGET_SEC" ]; then
+            WAIT=$(( TARGET_SEC - ELAPSED ))
+          else
+            WAIT=$(( 86400 - ELAPSED + TARGET_SEC ))
+          fi
           echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: next run in ${WAIT}s"
           sleep "$WAIT"
           bash /scripts/backup.sh || echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: ERROR — check logs"
         done
     environment:
-      DATABASE_URL: "${DATABASE_URL}"
+      DATABASE_URL:            "${DATABASE_URL}"
+      BACKUP_S3_BUCKET:        "${BACKUP_S3_BUCKET:-}"
+      AWS_ACCESS_KEY_ID:       "${AWS_ACCESS_KEY_ID:-}"
+      AWS_SECRET_ACCESS_KEY:   "${AWS_SECRET_ACCESS_KEY:-}"
+      AWS_DEFAULT_REGION:      "${AWS_DEFAULT_REGION:-sa-east-1}"
     volumes:
       - /opt/revendaclick/backups:/opt/revendaclick/backups
       - /opt/revendaclick/backup.sh:/scripts/backup.sh:ro
