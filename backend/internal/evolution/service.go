@@ -108,26 +108,40 @@ func (s *Service) GetInstanceStatus(ctx context.Context, tenantSlug string) (*In
 	}
 	defer resp.Body.Close()
 
-	var list []struct {
-		Instance struct {
-			InstanceName string `json:"instanceName"`
-			Status       string `json:"connectionStatus"`
-		} `json:"instance"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
+	// v2.3.7+ returns a flat list; v2.2.3 wrapped each item under "instance"
+	var rawList []json.RawMessage
+	if err := json.NewDecoder(resp.Body).Decode(&rawList); err != nil {
 		return nil, err
 	}
 
-	for _, item := range list {
-		if item.Instance.InstanceName == tenantSlug {
-			status := item.Instance.Status
+	for _, raw := range rawList {
+		// Try flat format (v2.3.7+): {name, connectionStatus}
+		var flat struct {
+			Name   string `json:"name"`
+			Status string `json:"connectionStatus"`
+		}
+		// Try nested format (v2.2.3): {instance: {instanceName, connectionStatus}}
+		var nested struct {
+			Instance struct {
+				Name   string `json:"instanceName"`
+				Status string `json:"connectionStatus"`
+			} `json:"instance"`
+		}
+		_ = json.Unmarshal(raw, &flat)
+		_ = json.Unmarshal(raw, &nested)
+
+		name := flat.Name
+		status := flat.Status
+		if name == "" {
+			name = nested.Instance.Name
+			status = nested.Instance.Status
+		}
+
+		if name == tenantSlug {
 			if status == "close" {
 				status = "disconnected"
 			}
-			return &InstanceStatus{
-				InstanceName: item.Instance.InstanceName,
-				Status:       status,
-			}, nil
+			return &InstanceStatus{InstanceName: name, Status: status}, nil
 		}
 	}
 	return &InstanceStatus{InstanceName: tenantSlug, Status: "disconnected"}, nil
