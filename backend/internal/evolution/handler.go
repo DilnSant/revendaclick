@@ -2,6 +2,7 @@ package evolution
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -21,16 +22,13 @@ func NewHandler(svc *Service, apiKey string, logger *zap.Logger) *Handler {
 // POST /api/webhooks/evolution
 func (h *Handler) Webhook(c *gin.Context) {
 	incomingKey := c.GetHeader("apikey")
-	if h.apiKey != "" && incomingKey != h.apiKey {
-		h.logger.Warn("evolution webhook: invalid apikey",
-			zap.String("ip", c.ClientIP()),
-			zap.String("got_key_prefix", func() string {
-				if len(incomingKey) > 8 {
-					return incomingKey[:8] + "..."
-				}
-				return incomingKey
-			}()),
-		)
+	ip := c.ClientIP()
+	// Evolution API (Docker network) may not include an apikey header.
+	// Trust requests from RFC-1918 addresses inside the container network;
+	// only enforce the key for requests that arrive from outside.
+	internalIP := strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "172.") || strings.HasPrefix(ip, "192.168.")
+	if !internalIP && h.apiKey != "" && incomingKey != h.apiKey {
+		h.logger.Warn("evolution webhook: invalid apikey", zap.String("ip", ip))
 		c.Status(http.StatusUnauthorized)
 		return
 	}
