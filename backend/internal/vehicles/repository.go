@@ -51,9 +51,24 @@ func (r *Repository) List(ctx context.Context, tenantID string, f ListFilter) ([
 		args = append(args, *f.MaxPrice)
 		i++
 	}
+	if f.Fuel != "" {
+		where = append(where, "fuel = $"+itoa(i))
+		args = append(args, f.Fuel)
+		i++
+	}
+	if f.Transmission != "" {
+		where = append(where, "transmission = $"+itoa(i))
+		args = append(args, f.Transmission)
+		i++
+	}
 	if f.Condition != "" {
 		where = append(where, "condition = $"+itoa(i))
 		args = append(args, f.Condition)
+		i++
+	}
+	if f.Search != "" {
+		where = append(where, "(title ILIKE $"+itoa(i)+" OR brand ILIKE $"+itoa(i)+" OR model ILIKE $"+itoa(i)+")")
+		args = append(args, "%"+f.Search+"%")
 		i++
 	}
 
@@ -71,8 +86,20 @@ func (r *Repository) List(ctx context.Context, tenantID string, f ListFilter) ([
 		f.Limit = 20
 	}
 
+	orderBy := " ORDER BY is_featured DESC, created_at DESC"
+	switch f.Sort {
+	case "price_asc":
+		orderBy = " ORDER BY price ASC"
+	case "price_desc":
+		orderBy = " ORDER BY price DESC"
+	case "year_desc":
+		orderBy = " ORDER BY year_model DESC, year_manufacture DESC"
+	case "newest":
+		orderBy = " ORDER BY created_at DESC"
+	}
+
 	query := "SELECT " + selectCols + " FROM vehicles WHERE " + whereStr +
-		" ORDER BY is_featured DESC, created_at DESC" +
+		orderBy +
 		" LIMIT $" + itoa(i) + " OFFSET $" + itoa(i+1)
 	args = append(args, f.Limit, f.Offset)
 

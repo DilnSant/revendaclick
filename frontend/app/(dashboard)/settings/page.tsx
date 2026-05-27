@@ -56,6 +56,9 @@ export default async function SettingsPage({ searchParams }: Props) {
           description:     tenant.description ?? null,
           seo_title:       tenant.seo_title ?? null,
           seo_description: tenant.seo_description ?? null,
+          logo_url:        tenant.logo_url ?? null,
+          theme:           (tenant.theme as { primary_color?: string } | null) ?? null,
+          address:         (tenant.address as { city?: string; state?: string; street?: string } | null) ?? null,
         }}
         users={users}
         subscription={subscription}

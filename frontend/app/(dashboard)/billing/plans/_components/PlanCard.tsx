@@ -2,15 +2,16 @@
 
 import { useState } from 'react'
 import { formatCurrency } from '@/lib/billing-utils'
-import type { Plan } from '@/lib/billing-utils'
+import type { Plan, Subscription } from '@/lib/billing-utils'
 
 interface Props {
   plan: Plan
   currentPlanName?: string
   currentCycle: string
+  subscription?: Subscription | null
 }
 
-export default function PlanCard({ plan, currentPlanName, currentCycle }: Props) {
+export default function PlanCard({ plan, currentPlanName, currentCycle, subscription }: Props) {
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>(currentCycle as 'monthly' | 'yearly')
   const [billingType, setBillingType] = useState<'BOLETO' | 'PIX' | 'CREDIT_CARD'>('BOLETO')
   const [loading, setLoading] = useState(false)
@@ -170,18 +171,33 @@ export default function PlanCard({ plan, currentPlanName, currentCycle }: Props)
         disabled={isCurrent || loading}
         className={`mt-4 w-full rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
           isCurrent
-            ? 'bg-gray-100 text-gray-400 cursor-default'
+            ? 'bg-primary/10 text-primary border border-primary/30 cursor-default'
             : isPro
             ? 'bg-primary text-white hover:bg-primary/90 disabled:opacity-60'
             : 'bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60'
         }`}
       >
-        {isCurrent ? 'Plano atual' : loading ? 'Processando…' : 'Assinar'}
+        {isCurrent ? 'Plano atual ✓' : loading ? 'Processando…' : 'Assinar'}
       </button>
 
-      <p className="mt-2 text-center text-xs text-gray-400">
-        {isCurrent ? '7 dias de trial gratuito incluídos' : '7 dias de trial gratuito'}
-      </p>
+      {isCurrent && subscription && (
+        <div className="mt-2 text-center text-xs text-gray-400 space-y-0.5">
+          {subscription.is_trialing && subscription.trial_days_left != null && (
+            <p className="text-blue-600 font-medium">
+              {subscription.trial_days_left} dia{subscription.trial_days_left !== 1 ? 's' : ''} de trial restante{subscription.trial_days_left !== 1 ? 's' : ''}
+            </p>
+          )}
+          {!subscription.is_trialing && subscription.current_period_end && (
+            <p>Renova em {new Date(subscription.current_period_end).toLocaleDateString('pt-BR')}</p>
+          )}
+          {subscription.is_trialing && subscription.trial_ends_at && (
+            <p>Trial até {new Date(subscription.trial_ends_at).toLocaleDateString('pt-BR')}</p>
+          )}
+        </div>
+      )}
+      {!isCurrent && (
+        <p className="mt-2 text-center text-xs text-gray-400">7 dias de trial gratuito</p>
+      )}
     </div>
   )
 }

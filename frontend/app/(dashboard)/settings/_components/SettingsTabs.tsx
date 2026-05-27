@@ -20,6 +20,9 @@ interface TenantData {
   description: string | null
   seo_title: string | null
   seo_description: string | null
+  logo_url: string | null
+  theme: { primary_color?: string } | null
+  address: { city?: string; state?: string; street?: string } | null
 }
 
 interface Props {
@@ -75,14 +78,40 @@ export default function SettingsTabs({ tab, tenant, users, subscription }: Props
 // ─── Store Tab ────────────────────────────────────────────────────────────────
 
 function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<ToastMessage, 'id'>) => void }) {
+  const logoInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({
     name:            tenant.name,
     phone_whatsapp:  tenant.phone_whatsapp,
     description:     tenant.description ?? '',
+    city:            tenant.address?.city ?? '',
+    state:           tenant.address?.state ?? '',
+    primary_color:   tenant.theme?.primary_color ?? '#E53935',
     seo_title:       tenant.seo_title ?? '',
     seo_description: tenant.seo_description ?? '',
   })
-  const [pending, startTransition] = useTransition()
+  const [logoUrl, setLogoUrl]         = useState<string | null>(tenant.logo_url)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [pending, startTransition]    = useTransition()
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setLogoUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/upload/logo', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) { onToast({ type: 'error', text: data.error ?? 'Erro no upload' }); return }
+      setLogoUrl(data.url)
+      onToast({ type: 'success', text: 'Logo carregada. Clique em Salvar para confirmar.' })
+    } catch {
+      onToast({ type: 'error', text: 'Erro ao enviar logo.' })
+    } finally {
+      setLogoUploading(false)
+      if (logoInputRef.current) logoInputRef.current.value = ''
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -93,6 +122,11 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
         description:     form.description.trim() || undefined,
         seo_title:       form.seo_title.trim() || undefined,
         seo_description: form.seo_description.trim() || undefined,
+        logo_url:        logoUrl ?? undefined,
+        theme:           { primary_color: form.primary_color },
+        address:         (form.city || form.state)
+                           ? { city: form.city.trim(), state: form.state.trim() }
+                           : undefined,
       })
       if (result.error) {
         onToast({ type: 'error', text: result.error.message })
@@ -104,6 +138,72 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Logo + identidade */}
+      <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-5">
+        <h2 className="text-base font-semibold text-gray-900">Identidade visual</h2>
+
+        {/* Logo upload */}
+        <div>
+          <label className="label">Logo da loja</label>
+          <div className="flex items-center gap-4">
+            <div
+              className="relative flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 overflow-hidden hover:border-red-400 transition-colors"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              {logoUploading ? (
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+              ) : logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={logoUrl} alt="Logo" className="h-full w-full object-contain p-1" />
+              ) : (
+                <span className="text-2xl text-gray-300">+</span>
+              )}
+            </div>
+            <div>
+              <button
+                type="button"
+                disabled={logoUploading}
+                onClick={() => logoInputRef.current?.click()}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {logoUploading ? 'Enviando…' : 'Alterar logo'}
+              </button>
+              <p className="mt-1 text-xs text-gray-400">PNG, JPG ou WebP — máx 2 MB</p>
+            </div>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              className="hidden"
+              onChange={handleLogoChange}
+            />
+          </div>
+        </div>
+
+        {/* Primary color */}
+        <div>
+          <label className="label">Cor principal da loja</label>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={form.primary_color}
+              onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
+              className="h-9 w-14 cursor-pointer rounded-lg border border-gray-200 p-0.5"
+            />
+            <input
+              type="text"
+              value={form.primary_color}
+              onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
+              maxLength={7}
+              className="input w-32 font-mono text-sm"
+              placeholder="#E53935"
+            />
+            <span className="text-xs text-gray-400">Afeta botões e destaques na vitrine pública</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Dados básicos */}
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
         <h2 className="text-base font-semibold text-gray-900">Dados da loja</h2>
 
@@ -129,8 +229,31 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
           </div>
         </div>
 
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">Cidade</label>
+            <input
+              value={form.city}
+              onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+              maxLength={80}
+              className="input"
+              placeholder="Florianópolis"
+            />
+          </div>
+          <div>
+            <label className="label">Estado</label>
+            <input
+              value={form.state}
+              onChange={e => setForm(f => ({ ...f, state: e.target.value }))}
+              maxLength={2}
+              className="input"
+              placeholder="SC"
+            />
+          </div>
+        </div>
+
         <div>
-          <label className="label">Endereço da loja</label>
+          <label className="label">Endereço da vitrine</label>
           <div className="flex items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">
             revendaclick.com.br/<span className="font-medium text-gray-700">{tenant.slug}</span>
           </div>
@@ -138,17 +261,18 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
         </div>
 
         <div>
-          <label className="label">Descrição da loja</label>
+          <label className="label">Slogan / Descrição da loja</label>
           <textarea
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             rows={3} maxLength={500}
             className="input resize-none"
-            placeholder="Descreva sua loja para os clientes..."
+            placeholder="Ex: Os melhores seminovos de Santa Catarina"
           />
         </div>
       </div>
 
+      {/* SEO */}
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
         <h2 className="text-base font-semibold text-gray-900">SEO</h2>
         <div>
@@ -174,7 +298,7 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
       </div>
 
       <div className="flex justify-end">
-        <button type="submit" disabled={pending} className="btn-primary">
+        <button type="submit" disabled={pending || logoUploading} className="btn-primary">
           {pending ? 'Salvando…' : 'Salvar alterações'}
         </button>
       </div>

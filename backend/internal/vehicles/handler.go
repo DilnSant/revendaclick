@@ -145,11 +145,25 @@ func (h *Handler) ListPublic(c *gin.Context) {
 	tenantID := middleware.TenantIDFromGin(c)
 
 	f := ListFilter{
-		Status:    "available",
-		Brand:     c.Query("brand"),
-		Condition: c.Query("condition"),
-		Limit:     queryInt(c.Query("limit"), 20),
-		Offset:    queryInt(c.Query("offset"), 0),
+		Status:       "available",
+		Brand:        c.Query("brand"),
+		Fuel:         c.Query("fuel"),
+		Transmission: c.Query("transmission"),
+		Condition:    c.Query("condition"),
+		Sort:         c.Query("sort"),
+		Search:       c.Query("search"),
+		Limit:        queryInt(c.Query("limit"), 20),
+		Offset:       queryInt(c.Query("offset"), 0),
+	}
+	if v := c.Query("min_price"); v != "" {
+		if p, err := strconv.ParseFloat(v, 64); err == nil {
+			f.MinPrice = &p
+		}
+	}
+	if v := c.Query("max_price"); v != "" {
+		if p, err := strconv.ParseFloat(v, 64); err == nil {
+			f.MaxPrice = &p
+		}
 	}
 
 	list, total, err := h.svc.List(c.Request.Context(), tenantID, f)

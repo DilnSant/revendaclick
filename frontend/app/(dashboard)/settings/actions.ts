@@ -37,6 +37,9 @@ export interface TenantUpdatePayload {
   description?: string
   seo_title?: string
   seo_description?: string
+  logo_url?: string
+  theme?: { primary_color?: string }
+  address?: { city?: string; state?: string; street?: string }
 }
 
 export async function updateTenantProfile(payload: TenantUpdatePayload): Promise<ApiResult<{ id: string; name: string }>> {

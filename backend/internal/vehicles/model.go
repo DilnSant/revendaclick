@@ -103,13 +103,17 @@ type UpdateRequest struct {
 }
 
 type ListFilter struct {
-	Status    string
-	Brand     string
-	MinPrice  *float64
-	MaxPrice  *float64
-	Condition string
-	Limit     int
-	Offset    int
+	Status       string
+	Brand        string
+	Fuel         string
+	Transmission string
+	MinPrice     *float64
+	MaxPrice     *float64
+	Condition    string
+	Sort         string // price_asc | price_desc | year_desc | newest
+	Search       string
+	Limit        int
+	Offset       int
 }
 
 func (r *CreateRequest) Validate() error {
