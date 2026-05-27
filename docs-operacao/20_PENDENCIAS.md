@@ -66,7 +66,8 @@
 | CONCLUÍDA | Fix billing: UpdateSubscriptionAsaas SQL bug | — | tenantID duplicado nos args, $2 nunca usado — commit 71d6ba6 |
 | CONCLUÍDA | Confirmar billing subscribe end-to-end | — | Confirmado sessão 9: santos-car subscribe → cus_000178518508 (com CPF) → sub_nrprg7wb1iyf0szo → PAYMENT_CONFIRMED webhook → status active (2026-05-27) |
 | CONCLUÍDA | Fix re-subscribe duplicado (guard service.go) | — | Guard inserido em billing/service.go:Subscribe — retorna subscription existente se status active/trialing com asaas_subscription_id preenchido |
-| PENDENTE | Deploy guard re-subscribe | Alta | git push origin main → CI/CD → smoke test |
+| CONCLUÍDA | Deploy guard re-subscribe | — | commit 4cd5dee deployado via CI/CD |
+| CONCLUÍDA | Fix WhatsApp QR Code não aparecia | — | 3 bugs corrigidos: condição frontend + handleRefreshQR + normalização "close"→"disconnected" backend (commit 3248b30) |
 | PENDENTE | devecar subscribe antes de 2026-05-31 | Alta | Trial expira 31/05 — fazer login com dilneysantos.developer@gmail.com e assinar starter |
 | CONCLUÍDA | Fix BUG 3 (código): WhatsApp refreshStatus silencioso | — | handleRefreshStatusManual com toast |
 | CONCLUÍDA | Diagnosticar Evolution API no VPS pós-OOM fix | — | Evolution respondendo 200 + 401 sem key — confirmado sessão 7 |

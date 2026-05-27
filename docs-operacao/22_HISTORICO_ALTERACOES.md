@@ -12,6 +12,40 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-27 (sessão 10) — Fix WhatsApp QR Code não aparecia após status poll
+
+**O que foi feito:**
+
+### Diagnóstico completo da cadeia WhatsApp (ETAPAs 1-9)
+
+**Root causes identificados:**
+
+**Bug 1 — Frontend: condição `{qr && isConnecting}` (WhatsAppManager.tsx:301)**
+- QR só renderizava quando status === 'connecting' E qr !== null simultaneamente
+- Poll de status a cada 5s: se Evolution retornava 'disconnected' ou 'close' (nome real do estado no Evolution API v2), o status era atualizado e o QR sumia imediatamente
+- Fix: alterado para `{qr && !isConnected}` — QR permanece visível enquanto não houver conexão `open`
+
+**Bug 2 — Frontend: `handleRefreshQR` não atualizava status**
+- Ao clicar "Gerar novo QR code", o QR era atualizado mas o status permanecia 'disconnected'
+- Com a condição antiga isso causava QR invisível após refresh manual
+- Fix: adicionado `setStatus(prev => ({ ...prev, status: 'connecting' }))` após receber QR
+
+**Bug 3 — Backend: Evolution API usa `"close"` para instância desconectada**
+- `GetInstanceStatus` passava `connectionStatus` raw do Evolution para o frontend
+- Evolution API v2 usa `"close"`, não `"disconnected"`, para estado desconectado
+- Frontend só conhecia 'disconnected' → badge exibia `"close"` literal sem tradução
+- Fix: normalização `"close"` → `"disconnected"` em `GetInstanceStatus` (service.go)
+- Fallback de segurança: adicionado `close` em STATUS_COLORS e STATUS_LABELS no frontend
+
+### Arquivos alterados
+- `frontend/components/whatsapp/WhatsAppManager.tsx` — condição QR, handleRefreshQR, STATUS_COLORS, STATUS_LABELS
+- `backend/internal/evolution/service.go` — normalização "close" → "disconnected" em GetInstanceStatus
+
+### Commit
+- `3248b30` — commitado e deployado via CI/CD
+
+---
+
 ## 2026-05-27 (sessão 9) — Billing end-to-end concluído + fix re-subscribe guard
 
 **O que foi feito:**

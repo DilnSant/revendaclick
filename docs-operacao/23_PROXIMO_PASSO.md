@@ -1,13 +1,13 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 27/05/2026 (sessão 9)
+> Atualizado em: 27/05/2026 (sessão 10)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 9 — 27/05/2026)
+## Estado Atual do Projeto (sessão 10 — 27/05/2026)
 
-Billing end-to-end **concluído**. santos-car: subscribe → customer com CPF (cus_000178518508) → subscription (sub_nrprg7wb1iyf0szo) → PAYMENT_CONFIRMED webhook → status `active`. Guard de re-subscribe adicionado em service.go — aguardando deploy via CI/CD.
+Billing e WhatsApp QR Code **corrigidos e deployados**. Commit `3248b30` em CI/CD.
 
 **ALERTA: devecar trial expira 2026-05-31 (4 dias)**
 
@@ -17,7 +17,8 @@ Billing end-to-end **concluído**. santos-car: subscribe → customer com CPF (c
 - Analytics → ✓ (revenue corrigido, plan gate OK)
 - Nginx webhooks → ✓ rate limiting OK
 - Evolution API → `https://evolution.revendaclick.com.br` ✓ (200 + 401 sem key)
-- Billing Asaas → ✓ whitelist OK (production) | ✓ API key `$$` OK | ✓ SQL bug fixado | ⏳ subscribe end-to-end pendente
+- Billing Asaas → ✓ whitelist OK | ✓ API key OK | ✓ SQL bug fixado | ✓ subscribe end-to-end confirmado | ✓ guard re-subscribe OK
+- WhatsApp QR → ✓ 3 bugs corrigidos: condição frontend, handleRefreshQR, normalização "close"→"disconnected"
 - Redis → ✓ (evolution depends_on healthcheck)
 - Auth/Onboarding → ✓ signup → onboarding → JWT OK
 - CRUDs → ✓ leads, vehicles, customers, users, sales, financial, audit
@@ -28,70 +29,35 @@ Billing end-to-end **concluído**. santos-car: subscribe → customer com CPF (c
 
 ## ⚠️ AÇÃO PRIORITÁRIA (Primeira Coisa da Próxima Sessão)
 
-### AÇÃO 1 — Confirmar billing subscribe end-to-end
+### AÇÃO 1 — Assinar devecar antes de 2026-05-31 (URGENTE)
 
-O SQL bug (`UpdateSubscriptionAsaas`) foi corrigido e deployado (commit `71d6ba6`). O customer Asaas foi criado com CPF (`cus_000178453189`). Precisa de uma confirmação final com token fresco.
+Trial de `dilneysantos.developer@gmail.com` expira **2026-05-31**. Sem `asaas_customer_id` — será criado no primeiro subscribe.
 
-```bash
-# 1. Fazer login com o usuário de teste (ou criar novo)
-# O usuário billing-val-1779826935@revendaclick.dev existe no Supabase
-# mas a senha não está salva — use dilneysantos@gmail.com ou crie novo usuário
-
-# 2. Via API:
-TOKEN="<jwt-fresco>"
-curl -s -X POST \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"plan_name":"pro","billing_cycle":"monthly","billing_type":"PIX","cpf_or_cnpj":"24971563792"}' \
-  "https://api.revendaclick.com.br/api/billing/subscribe"
-
-# Esperado: {"data": {"asaas_subscription_id": "sub_...", "asaas_payment_link": "..."}}
-```
-
-**IMPORTANTE:** O tenant de teste (`4d7845ac-7a15-4334-b49c-3d61eb3ee8cb`) já tem `asaas_customer_id = "cus_000178453189"`. O próximo subscribe vai direto para criação da subscription (sem recriar o customer).
-
-Se retornar `asaas_subscription_id` preenchido → billing 100% funcional.
-
----
-
-### AÇÃO 2 — Testar webhook Asaas (pós-subscribe)
-
-Após confirmar subscribe, simular evento de pagamento para validar transição trial → active:
-
-```bash
-# Obter ASAAS_WEBHOOK_TOKEN no VPS
-grep ASAAS_WEBHOOK_TOKEN /opt/revendaclick/.env
-
-# Simular PAYMENT_CONFIRMED
-WEBHOOK_TOKEN="<valor acima>"
-ASAAS_SUB_ID="<asaas_subscription_id retornado no subscribe>"
-
-curl -s -X POST \
-  -H "Content-Type: application/json" \
-  -H "asaas-access-token: $WEBHOOK_TOKEN" \
-  -d "{\"event\":\"PAYMENT_CONFIRMED\",\"payment\":{\"subscription\":\"$ASAAS_SUB_ID\",\"status\":\"CONFIRMED\",\"value\":97.00}}" \
-  "https://api.revendaclick.com.br/api/webhooks/asaas"
-
-# Verificar transição
-curl -s -H "Authorization: Bearer $TOKEN" \
-  "https://api.revendaclick.com.br/api/billing/subscription" | python3 -m json.tool
-# Esperado: "status": "active"
-```
-
----
-
-### AÇÃO 3 — Testar trials prestes a expirar (URGENTE — antes de 2026-05-31)
-
-Tenants em risco:
-- `santos-car` (dilneysantos@gmail.com): trial_ends_at = 2026-05-31
-- `devecar` (dilneysantos.developer@gmail.com): trial_ends_at = 2026-05-31
-
-Com billing agora funcional, estes usuários podem assinar. Confirmar no browser:
 ```
 1. https://app.revendaclick.com.br/login
-2. Login com dilneysantos@gmail.com
-3. Menu → Billing/Planos → Assinar plano
-4. Deve processar sem erro
+2. Login com dilneysantos.developer@gmail.com
+3. Menu → Billing/Planos → Assinar Starter → PIX → informar CPF
+4. Esperado: subscription criada, status trialing/active
+```
+
+### AÇÃO 2 — Validar QR Code WhatsApp no browser (pós-deploy commit 3248b30)
+
+Após CI/CD deployar:
+```
+1. https://app.revendaclick.com.br/whatsapp
+2. Clicar "Conectar WhatsApp"
+3. QR deve aparecer e permanecer visível (não sumir após 5s)
+4. Badge deve mostrar "Conectando…"
+5. Escanear com WhatsApp → status muda para "Conectado"
+```
+
+### AÇÃO 3 — Verificar VPS Evolution (diagnóstico complementar, se QR ainda não aparecer)
+
+```bash
+# No VPS:
+docker logs rc_evolution --tail 100 | grep -i "santos-car\|error\|qr"
+curl -s http://localhost:8081/instance/fetchInstances -H "apikey: $EVOLUTION_API_KEY" | python3 -m json.tool
+curl -s http://localhost:8081/instance/connect/santos-car -H "apikey: $EVOLUTION_API_KEY" | python3 -m json.tool
 ```
 
 ---
