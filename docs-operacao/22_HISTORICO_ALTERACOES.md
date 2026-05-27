@@ -12,6 +12,62 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-27 (sessão 11) — Fix definitivo Evolution API: QR gerando + upgrade v2.3.7
+
+**O que foi feito:**
+
+### Diagnóstico completo da falha silenciosa de Baileys em rc_evolution
+
+**Root cause identificado:** `atendai/evolution-api:latest` tinha imagem de 14 meses atrás (build 2025-02-03). Baileys inicializava mas não gerava QR (count=0 silencioso). `evoapicloud/evolution-api:v2.3.7` (já rodando no beautynow no mesmo VPS) funciona corretamente.
+
+**Bug 4 — Evolution API: imagem 14 meses defasada**
+- `atendai/evolution-api:latest` buildado em 2025-02-03 com Baileys quebrado para protocolo atual do WhatsApp
+- `GET /instance/connect/santos-car` sempre retornava `{"count":0}` sem erro no log
+- Comparação com `evoapicloud/evolution-api:v2.3.7` (beautynow, mesmo VPS): count=1, base64_len=13214
+- Fix: alterar imagem no docker-compose.production.yml para `evoapicloud/evolution-api:v2.3.7`
+
+**Bug 5 — Evolution API: `DATABASE_ENABLED=true` ausente**
+- beautynow-evolution tem `DATABASE_ENABLED=true`; rc_evolution não tinha
+- Sem essa flag, integração DB pode não ser inicializada corretamente em v2.3.7
+- Fix: adicionado `DATABASE_ENABLED: "true"` no docker-compose.production.yml
+
+**Bug 6 — EVOLUTION_DATABASE_URL sem porta e database**
+- VPS `.env` tinha `EVOLUTION_DATABASE_URL=...@supabase.com` (faltava `:5432/postgres`)
+- Corrigido para igual a `DATABASE_URL` (`:5432/postgres` incluído)
+
+**Bug 7 — Backend: parser `fetchInstances` incompatível com v2.3.7**
+- v2.2.3 retornava: `[{instance: {instanceName, connectionStatus}}]`
+- v2.3.7 retorna: `[{name, connectionStatus}]` (flat, sem wrapper `instance`)
+- `GetInstanceStatus` em service.go não encontrava a instância → sempre retornava 'disconnected'
+- Fix: parser dual-format com fallback (tenta flat, se vazio usa nested) — commit `9d05367`
+
+**Bug 8 — Backend: Evolution webhook retornava 401 (empty apikey)**
+- Evolution v2.3.7 envia webhook SEM `apikey` header (diferente do v2.2.3)
+- Handler validava `incomingKey != h.apiKey` → rejeitava todas as mensagens de WhatsApp
+- Fix: bypass da validação para IPs internos Docker (10.x, 172.x, 192.168.x) — commit `ce103a0`
+- Resultado: webhooks retornam HTTP 200 ✓
+
+### Resultado final
+- Santos-car instance: `connectionStatus: connecting`, QR `count=9`, `base64_len=13142`
+- QR auto-rotacionando normalmente (count incrementando a cada ~30s)
+- Evolution webhook: 200 OK (lead sync funcionando)
+- Smoke test: 22/22 PASS
+- CI/CD deployado: backend `ce103a0`, Evolution v2.3.7
+
+### Arquivos alterados
+- `docker-compose.production.yml` — imagem v2.3.7, DATABASE_ENABLED=true, CACHE_REDIS_ENABLED=false
+- `backend/internal/evolution/service.go` — parser fetchInstances dual-format
+- `backend/internal/evolution/handler.go` — webhook aceita IPs internos sem apikey
+- VPS `.env` — EVOLUTION_DATABASE_URL corrigido com :5432/postgres
+
+### Commits
+- `d4eb26d` — disable Evolution Redis cache (CACHE_REDIS_ENABLED=false)
+- `02802f7` — upgrade Evolution to v2.3.7 + DATABASE_ENABLED=true
+- `9d05367` — fetchInstances parser v2.3.7 fix
+- `ce103a0` — webhook accept internal Docker network without apikey
+
+---
+
 ## 2026-05-27 (sessão 10) — Fix WhatsApp QR Code não aparecia após status poll
 
 **O que foi feito:**

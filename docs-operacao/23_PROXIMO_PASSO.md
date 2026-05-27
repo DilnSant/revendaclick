@@ -1,25 +1,25 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 27/05/2026 (sessão 10)
+> Atualizado em: 27/05/2026 (sessão 11)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 10 — 27/05/2026)
+## Estado Atual do Projeto (sessão 11 — 27/05/2026)
 
-Billing e WhatsApp QR Code **corrigidos e deployados**. Commit `3248b30` em CI/CD.
+Evolution API **upgradado para v2.3.7**, QR code **funcionando** em produção. 22/22 smoke test PASS.
 
 **ALERTA: devecar trial expira 2026-05-31 (4 dias)**
 
-- Backend Go → `https://api.revendaclick.com.br` ✓ (22/22 smoke test — sessão 7)
+- Backend Go → `https://api.revendaclick.com.br` ✓ (22/22 smoke test — sessão 11, commit ce103a0)
 - Frontend Next.js → `https://app.revendaclick.com.br` ✓ (200 OK)
-- CI/CD GitHub Actions → automático ✓
+- CI/CD GitHub Actions → automático ✓ (VPS agora está limpo — git pull funciona)
 - Analytics → ✓ (revenue corrigido, plan gate OK)
 - Nginx webhooks → ✓ rate limiting OK
-- Evolution API → `https://evolution.revendaclick.com.br` ✓ (200 + 401 sem key)
-- Billing Asaas → ✓ whitelist OK | ✓ API key OK | ✓ SQL bug fixado | ✓ subscribe end-to-end confirmado | ✓ guard re-subscribe OK
-- WhatsApp QR → ✓ 3 bugs corrigidos: condição frontend, handleRefreshQR, normalização "close"→"disconnected"
-- Redis → ✓ (evolution depends_on healthcheck)
+- Evolution API → `https://evolution.revendaclick.com.br` ✓ v2.3.7 (QR count=9+, rotating)
+- Billing Asaas → ✓ subscribe end-to-end confirmado | ✓ guard re-subscribe OK
+- WhatsApp QR → ✓ **FUNCIONAL**: santos-car connecting, QR rotacionando, webhook 200 OK
+- Redis → ✓ (evolution CACHE_REDIS_ENABLED=false — Baileys não usa Redis)
 - Auth/Onboarding → ✓ signup → onboarding → JWT OK
 - CRUDs → ✓ leads, vehicles, customers, users, sales, financial, audit
 - Supabase → ✓ 0 advisors WARN
@@ -40,9 +40,9 @@ Trial de `dilneysantos.developer@gmail.com` expira **2026-05-31**. Sem `asaas_cu
 4. Esperado: subscription criada, status trialing/active
 ```
 
-### AÇÃO 2 — Validar QR Code WhatsApp no browser (pós-deploy commit 3248b30)
+### AÇÃO 2 — Validar QR Code WhatsApp no browser
 
-Após CI/CD deployar:
+QR está sendo gerado (confirmado via API). Validar fluxo visual:
 ```
 1. https://app.revendaclick.com.br/whatsapp
 2. Clicar "Conectar WhatsApp"
@@ -51,13 +51,15 @@ Após CI/CD deployar:
 5. Escanear com WhatsApp → status muda para "Conectado"
 ```
 
-### AÇÃO 3 — Verificar VPS Evolution (diagnóstico complementar, se QR ainda não aparecer)
+### AÇÃO 3 — Inicializar devecar instance no Evolution
+
+O tenant `devecar` (dilneysantos.developer@gmail.com) tem instance `close` na Evolution.
+Após login e assinatura, conectar WhatsApp em /whatsapp.
 
 ```bash
-# No VPS:
-docker logs rc_evolution --tail 100 | grep -i "santos-car\|error\|qr"
-curl -s http://localhost:8081/instance/fetchInstances -H "apikey: $EVOLUTION_API_KEY" | python3 -m json.tool
-curl -s http://localhost:8081/instance/connect/santos-car -H "apikey: $EVOLUTION_API_KEY" | python3 -m json.tool
+# Diagnóstico VPS se necessário:
+curl -s http://localhost:8081/instance/fetchInstances -H "apikey: revendaclick123" | python3 -m json.tool
+curl -s http://localhost:8081/instance/connect/devecar -H "apikey: revendaclick123" | python3 -c "import json,sys; d=json.load(sys.stdin); print('count:', d.get('count'), 'len:', len(d.get('base64','')))"
 ```
 
 ---
@@ -115,6 +117,39 @@ UptimeRobot ou BetterStack Uptime → URL: `https://api.revendaclick.com.br/heal
 ### 8. Rotação de Secrets (Baixa)
 
 Política semestral: `ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN`.
+
+---
+
+## Diagnóstico desta Sessão (sessão 11)
+
+**8 bugs em cascata na Evolution API — todos resolvidos:**
+
+**Bug 4 — CACHE_REDIS_ENABLED=true com Redis vazio:**
+- Redis estava habilitado mas vazio → hypothesis foi invalidada (não era a causa raiz)
+- Fix: `CACHE_REDIS_ENABLED=false` (correto mesmo que não fosse a causa)
+
+**Bug 5 — DATABASE_ENABLED=true ausente:**
+- beautynow tem `DATABASE_ENABLED=true`; rc_evolution não tinha → instance status sem efeito
+- Fix: adicionado `DATABASE_ENABLED: "true"` no docker-compose.production.yml
+
+**Bug 6 — EVOLUTION_DATABASE_URL incompleto (faltava :5432/postgres):**
+- Fix: `sed -i` no VPS .env para incluir porta e database name
+
+**Bug 7 — Imagem Evolution 14 meses defasada:**
+- `atendai/evolution-api:latest` buildado em 2025-02-03 → Baileys não inicializava (silent failure)
+- beautynow usa `evoapicloud/evolution-api:v2.3.7` (mesmo VPS) → funciona
+- Fix: alterar imagem para `evoapicloud/evolution-api:v2.3.7`
+
+**Bug 8 — parser fetchInstances incompatível com v2.3.7 (flat vs nested):**
+- v2.2.3: `[{instance:{instanceName,...}}]`, v2.3.7: `[{name,...}]`
+- Fix: parser dual-format em GetInstanceStatus (service.go)
+
+**Bug 9 — webhook 401 (Evolution v2.3.7 envia empty apikey header):**
+- Fix: bypass validação para IPs internos Docker (10.x, 172.x, 192.168.x)
+
+**Bug 10 — VPS docker-compose com changes sujos bloqueando git pull do CI/CD:**
+- Deploy steps falhando em 5-6s por dirty working tree
+- Fix: `git checkout docker-compose.production.yml && git pull` no VPS
 
 ---
 
