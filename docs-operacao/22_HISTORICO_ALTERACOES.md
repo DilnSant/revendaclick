@@ -12,6 +12,52 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-27 (sessão 9) — Billing end-to-end concluído + fix re-subscribe guard
+
+**O que foi feito:**
+
+### Sequência executada para validar billing completo (santos-car / dilneysantos@gmail.com)
+
+**Diagnóstico inicial:**
+- Backend health: `{"db":"ok","status":"ok"}` confirmado via curl
+- Variáveis VPS confirmadas: `ASAAS_API_KEY=$$aact_prod_...` (correto), `ASAAS_WEBHOOK_TOKEN=whsec_LH26fc...H84`, `ASAAS_ENV` ausente mas default `production` via compose `:-production`
+- Todas as variáveis críticas OK; todos os containers `Up` (rc_backend, rc_evolution, rc_redis)
+
+**Problema 1 — anon key MCP diferente do .env do VPS:**
+- MCP `get_publishable_keys` retornou chave divergente da configurada → `Invalid API key` na auth Supabase
+- Fix: extrair chave diretamente do `.env` via `grep NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+**Problema 2 — Customer Asaas sem CPF (`cus_000178475241`):**
+- Santos-car tinha `asaas_customer_id = cus_000178475241` criado sem CPF em momento anterior
+- Asaas rejeita criação de subscription com `"Para criar esta cobrança é necessário preencher o CPF ou CNPJ do cliente."`
+- Fix: `UPDATE tenants SET asaas_customer_id = NULL WHERE slug = 'santos-car'` via Supabase MCP
+- Novo customer criado com CPF na próxima chamada: `cus_000178518508`
+
+**Subscribe end-to-end confirmado:**
+- `POST /api/billing/subscribe` → 200 → `sub_5m91fx4nlyw40st2` criado (primeiro subscribe)
+- Webhook real Asaas (`SUBSCRIPTION_CREATED`, IP `54.94.183.101`) recebido automaticamente 0.46s após subscribe ✅
+- `PAYMENT_CONFIRMED` simulado (pay_billing_e2e_test_001) → `trialing → active` ✅
+- DB confirmado via MCP: `status=active`, `current_period_end=2026-06-27`, `trial_ends_at=null`
+
+**Problema 3 — Re-subscribe duplicado:**
+- Durante teste no browser, `POST /api/billing/subscribe` foi chamado novamente
+- Sem guard: criou novo Asaas subscription (`sub_nrprg7wb1iyf0szo`) e resetou DB para `trialing`
+- Fix imediato: PAYMENT_CONFIRMED simulado (pay_billing_e2e_test_002) → `active` ✅
+- Fix código: guard inserido em `billing/service.go:Subscribe` — se tenant já tem `asaas_subscription_id != ""` e `status == active || trialing`, retorna subscription existente sem criar nova
+
+### Estado final confirmado no banco
+- `santos-car`: `status=active`, `asaas_subscription_id=sub_nrprg7wb1iyf0szo`, `asaas_customer_id=cus_000178518508`, `current_period_end=2026-06-27`
+- Idempotência de webhooks confirmada: `billing_events` registrou todos os eventos sem duplicação
+
+### Arquivos alterados
+- `backend/internal/billing/service.go` — guard re-subscribe inserido entre normalização de billingType e GetAsaasCustomerID
+
+### Pendente após esta sessão
+- `git push origin main` → CI/CD deploya guard de re-subscribe
+- devecar: assinar antes de 2026-05-31
+
+---
+
 ## 2026-05-26 (sessão 8) — Validação e desbloqueio do billing Asaas
 
 **O que foi feito:**

@@ -61,6 +61,15 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 		cycle = "YEARLY"
 	}
 
+	// Guard: if tenant already has an active or trialing Asaas subscription, return it as-is.
+	// Prevents duplicate subscriptions and accidental status reset on repeated POST /subscribe.
+	if existing, gerr := s.repo.GetSubscription(ctx, tenantID); gerr == nil &&
+		existing != nil && existing.AsaasSubscriptionID != "" &&
+		(existing.Status == "active" || existing.Status == "trialing") {
+		existing.ComputeFlags()
+		return existing, nil
+	}
+
 	name, email, asaasCustomerID, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
 	if err != nil {
 		return nil, fmt.Errorf("tenant não encontrado: %w", err)

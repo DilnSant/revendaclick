@@ -64,7 +64,10 @@
 | CONCLUÍDA | Fix BUG 2 (config): Asaas IP Whitelist | — | 2.24.67.84 adicionado em www.asaas.com (production) — sessão 8 |
 | CONCLUÍDA | Fix billing: API key `$$` Docker Compose | — | Restaurado `$$aact_prod_` no .env do VPS — escape correto para dupla interpolação |
 | CONCLUÍDA | Fix billing: UpdateSubscriptionAsaas SQL bug | — | tenantID duplicado nos args, $2 nunca usado — commit 71d6ba6 |
-| PENDENTE | Confirmar billing subscribe end-to-end | Alta | Token do usuário de teste expirou antes da confirmação final; customer criado (cus_000178453189); subscription creation precisa de um retry com token fresco |
+| CONCLUÍDA | Confirmar billing subscribe end-to-end | — | Confirmado sessão 9: santos-car subscribe → cus_000178518508 (com CPF) → sub_nrprg7wb1iyf0szo → PAYMENT_CONFIRMED webhook → status active (2026-05-27) |
+| CONCLUÍDA | Fix re-subscribe duplicado (guard service.go) | — | Guard inserido em billing/service.go:Subscribe — retorna subscription existente se status active/trialing com asaas_subscription_id preenchido |
+| PENDENTE | Deploy guard re-subscribe | Alta | git push origin main → CI/CD → smoke test |
+| PENDENTE | devecar subscribe antes de 2026-05-31 | Alta | Trial expira 31/05 — fazer login com dilneysantos.developer@gmail.com e assinar starter |
 | CONCLUÍDA | Fix BUG 3 (código): WhatsApp refreshStatus silencioso | — | handleRefreshStatusManual com toast |
 | CONCLUÍDA | Diagnosticar Evolution API no VPS pós-OOM fix | — | Evolution respondendo 200 + 401 sem key — confirmado sessão 7 |
 | CONCLUÍDA | Fix BUG 4: Settings/Plan botões mortos | — | planError/planSuccess states; banner trial |

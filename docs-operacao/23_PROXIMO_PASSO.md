@@ -1,15 +1,15 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 26/05/2026 (sessão 8)
+> Atualizado em: 27/05/2026 (sessão 9)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 8 — 26/05/2026)
+## Estado Atual do Projeto (sessão 9 — 27/05/2026)
 
-Billing desbloqueado: 3 bugs em cascata identificados e corrigidos. Customer Asaas criado com CPF confirmado no DB. Confirmação end-to-end do subscribe pendente (token de teste expirou).
+Billing end-to-end **concluído**. santos-car: subscribe → customer com CPF (cus_000178518508) → subscription (sub_nrprg7wb1iyf0szo) → PAYMENT_CONFIRMED webhook → status `active`. Guard de re-subscribe adicionado em service.go — aguardando deploy via CI/CD.
 
-**ALERTA: trials expiram em 5 dias (2026-05-31) para santos-car e devecar**
+**ALERTA: devecar trial expira 2026-05-31 (4 dias)**
 
 - Backend Go → `https://api.revendaclick.com.br` ✓ (22/22 smoke test — sessão 7)
 - Frontend Next.js → `https://app.revendaclick.com.br` ✓ (200 OK)
