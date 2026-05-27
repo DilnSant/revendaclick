@@ -1,29 +1,41 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 27/05/2026 (sessão 13)
+> Atualizado em: 27/05/2026 (sessão 14)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 13 — 27/05/2026)
+## Estado Atual do Projeto (sessão 14 — 27/05/2026)
 
 **ALERTA: devecar trial expira 2026-05-31 (4 dias)**
 
-- Backend Go → `https://api.revendaclick.com.br` ✓ (commit fa18153 — filtros públicos + backend search/sort/fuel)
-- Frontend Next.js → `https://www.revendaclick.com.br` ✓ (vitrine profissional + settings personalização)
+- Backend Go → `https://api.revendaclick.com.br` ✓
+- Frontend Next.js → `https://www.revendaclick.com.br` ✓
 - CI/CD GitHub Actions → automático ✓
 - Vehicle detail → ✓ HTTP 200 (features null fix — commit 2ee68ab)
 - Public store → ✓ filtros chip + busca + ordenação + paginação + logo hero
 - Settings loja → ✓ logo upload + cor primária + cidade/estado
 - Billing plans → ✓ badge status + trial days + renewal date
-- Evolution API → `https://evolution.revendaclick.com.br` ✓ v2.3.7
+- Evolution API → `https://evolution.revendaclick.com.br` ✓ v2.3.7 healthy (migrations aplicadas)
 - Billing Asaas → ✓ subscribe end-to-end | ✓ guard re-subscribe OK
-- WhatsApp QR → ✓ FUNCIONAL
-- Supabase → ✓ migration 014 (logos bucket) aplicada
+- WhatsApp QR → instâncias resetadas — santos-car precisa reconectar em /whatsapp
+- Supabase → ✓ migrations 015-017 aplicadas (Evolution tables removidas, ENUMs dropados, security advisors limpos)
 
 ---
 
 ## ⚠️ AÇÃO PRIORITÁRIA (Primeira Coisa da Próxima Sessão)
+
+### AÇÃO 0 — Reconectar WhatsApp santos-car (URGENTE — instâncias foram resetadas)
+
+As instâncias Evolution foram perdidas durante a limpeza das tabelas do banco (sessão 14).
+Reconectar imediatamente:
+```
+1. https://app.revendaclick.com.br/whatsapp
+2. Login com a conta santos-car
+3. Clicar "Conectar WhatsApp"
+4. QR aparece → escanear com o celular
+5. Status deve mudar para "Conectado"
+```
 
 ### AÇÃO 1 — Assinar devecar antes de 2026-05-31 (URGENTE)
 

@@ -42,6 +42,11 @@
 | [FC021](FC021_VENDEDORES_INVITE_SMTP.md) | Vendedores invite — "Error sending invite email" (SMTP rate limit) | Equipe / Frontend | MÉDIA | 2026-05-25 |
 | [FC022](FC022_LEAD_SOURCE_VALIDACAO.md) | Lead source inválido retornava internal_error opaco | CRM / Backend | BAIXA | 2026-05-26 |
 | [FC023](FC023_LISTAS_VAZIAS_NULL.md) | Listas vazias retornavam null em vez de [] | API / Backend | BAIXA | 2026-05-26 |
+| [FC024](FC024_VEHICLE_DETAIL_500_FEATURES_NULL.md) | Vehicle detail 500 — features null + photo_urls→images | Frontend / Público | CRÍTICA | 2026-05-27 |
+| [FC025](FC025_LOGOS_BUCKET_POLICY_BROAD.md) | Logos bucket: policy pública desnecessária (listing exposto) | Storage / Segurança | BAIXA | 2026-05-27 |
+| [FC026](FC026_EVOLUTION_TABLES_SUPABASE_ADVISORS.md) | Evolution tables no schema public — RLS desabilitado em 37 tabelas | Segurança / Evolution | ALTA | 2026-05-27 |
+| [FC027](FC027_EVOLUTION_P3005_P3009_PRISMA.md) | Evolution P3005 + P3009 — crash loop após drop das tabelas | WhatsApp / Evolution | CRÍTICA | 2026-05-27 |
+| [FC028](FC028_EVOLUTION_ENUM_TYPES_ORFAOS.md) | Evolution ENUM types órfãos após DROP TABLE CASCADE | WhatsApp / Evolution | CRÍTICA | 2026-05-27 |
 
 ---
 
@@ -83,6 +88,13 @@
 
 ### Frontend / UX
 - FC021 — Vendedores invite SMTP rate limit
+- FC024 — Vehicle detail 500 (features null + photo_urls→images)
+
+### Storage / Supabase
+- FC025 — Logos bucket: policy pública permite listing
+- FC026 — Evolution tables no schema public (37 tabelas sem RLS)
+- FC027 — Evolution P3005 + P3009 após drop das tabelas
+- FC028 — Evolution ENUM types órfãos após DROP TABLE CASCADE
 
 ---
 
@@ -90,7 +102,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC024.
+3. **Numeração sequencial:** próximo número disponível é FC029.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -102,8 +114,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC024
-# Nome do arquivo: FC024_DESCRICAO_CURTA.md
+# Próximo número: FC029
+# Nome do arquivo: FC029_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
