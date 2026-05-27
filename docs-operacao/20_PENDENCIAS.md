@@ -140,3 +140,4 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | FLUTTERFLOW_MIGRATION.md | — | Guia completo de migração |
 | CONCLUÍDA | Runbook de incidentes | — | `24_RUNBOOK_INCIDENTES.md` — 10 cenários com diagnóstico e solução |
 | CONCLUÍDA | Sync docs ↔ código (sessão 5) | — | 11_DOCKER.md, 16_EVOLUTION.md, 19_RISCOS.md, 24_RUNBOOK atualizados para refletir commit d17025e (Redis + 768m + NODE_OPTIONS) |
+| CONCLUÍDA | FalhasCorrigidas/ — histórico permanente de bugs | — | 23 falhas documentadas em `docs-operacao/FalhasCorrigidas/` (FC001–FC023) com causa raiz, correção, commits e prevenção |

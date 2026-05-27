@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 27/05/2026 (sessão 11)
+> Atualizado em: 27/05/2026 (sessão 12)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -61,6 +61,14 @@ Após login e assinatura, conectar WhatsApp em /whatsapp.
 curl -s http://localhost:8081/instance/fetchInstances -H "apikey: revendaclick123" | python3 -m json.tool
 curl -s http://localhost:8081/instance/connect/devecar -H "apikey: revendaclick123" | python3 -c "import json,sys; d=json.load(sys.stdin); print('count:', d.get('count'), 'len:', len(d.get('base64','')))"
 ```
+
+---
+
+## Documentação de Falhas
+
+Pasta `docs-operacao/FalhasCorrigidas/` criada na sessão 12 com **23 falhas documentadas (FC001–FC023)**.
+
+Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
 ---
 

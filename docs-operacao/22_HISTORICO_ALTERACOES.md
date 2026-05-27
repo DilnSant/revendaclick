@@ -12,6 +12,58 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-27 (sessão 12) — Documentação permanente de histórico de bugs + fix billing UI
+
+**O que foi feito:**
+
+### Fix: Plano Starter sem botão de contratar
+
+- Tenant em plano Starter ativo (`status=active`) via exibia apenas `<span>Plano atual</span>` sem botão, enquanto Pro e Premium tinham botões "Assinar"
+- Fix: substituído pelo `<button disabled>Plano atual ✓</button>` com estilo visual diferenciado (fundo vermelho claro, desabilitado)
+- Arquivo: `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx`
+- Commit: `1d779c9a6fb2f4e67c06bff948c35f6546b5512f`
+
+### Criação de docs-operacao/FalhasCorrigidas/
+
+Pasta de documentação permanente de bugs corrigidos criada com 23 falhas documentadas:
+
+| FC | Título | Severidade |
+|---|---|---|
+| FC001 | React Error #300 / Loop /onboarding | CRÍTICA |
+| FC002 | QR Code Evolution (5 bugs em cascata) | CRÍTICA |
+| FC003 | RLS onboarding — JWT claim ausente | ALTA |
+| FC004 | Slug 404 / redirect de confirmação | ALTA |
+| FC005 | Starter sem botão de contratar | BAIXA |
+| FC006 | PIX / Asaas whitelist IP + $$ escape | CRÍTICA |
+| FC007 | Security Advisor — 3 warnings RLS | ALTA |
+| FC008 | tenants_select_own sem SELECT wrapper | ALTA |
+| FC009 | leads_public_insert sem restrição tenant | ALTA |
+| FC010 | Analytics revenue zerado (colunas SQL) | MÉDIA |
+| FC011 | Nginx webhook location /api/v1/ vs /api/ | MÉDIA |
+| FC012 | Billing SQL args duplicados | ALTA |
+| FC013 | Customer Asaas sem CPF | ALTA |
+| FC014 | Re-subscribe duplicado sem guard | ALTA |
+| FC015 | Evolution OOM 512m→768m + NODE_OPTIONS | ALTA |
+| FC016 | Evolution webhook 401 empty apikey v2.3.7 | ALTA |
+| FC017 | Evolution sendText formato v2.3.7 | ALTA |
+| FC018 | Evolution webhook 413 body limit | MÉDIA |
+| FC019 | Prisma connection pool exhaustion | ALTA |
+| FC020 | VPS git dirty working tree CI/CD | MÉDIA |
+| FC021 | Vendedores invite SMTP rate limit | MÉDIA |
+| FC022 | Lead source inválido → internal_error | BAIXA |
+| FC023 | Listas vazias retornam null | BAIXA |
+
+**Arquivos criados:**
+- `docs-operacao/FalhasCorrigidas/README.md` — índice com tabela e regras
+- `docs-operacao/FalhasCorrigidas/FC001` a `FC023` — 23 documentos de falha
+
+**Arquivos atualizados:**
+- `docs-operacao/20_PENDENCIAS.md` — FalhasCorrigidas marcado como CONCLUÍDA
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` — esta entrada
+- `docs-operacao/23_PROXIMO_PASSO.md` — referência à nova pasta
+
+---
+
 ## 2026-05-27 (sessão 11) — Fix definitivo Evolution API: QR gerando + upgrade v2.3.7
 
 **O que foi feito:**
