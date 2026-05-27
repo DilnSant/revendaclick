@@ -525,7 +525,9 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
                 ))}
               </ul>
               {isCurrentPlan && subscription?.status === 'active' ? (
-                <span className="block text-center text-xs font-medium text-red-600">Plano atual</span>
+                <button disabled className="w-full rounded-lg border border-red-300 bg-red-50 py-2 text-sm font-semibold text-red-700 cursor-default select-none">
+                  Plano atual ✓
+                </button>
               ) : (
                 <button
                   onClick={() => handleSubscribe(plan.name)}
