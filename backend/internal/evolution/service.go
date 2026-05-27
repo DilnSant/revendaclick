@@ -133,18 +133,24 @@ func (s *Service) GetInstanceStatus(ctx context.Context, tenantSlug string) (*In
 	return &InstanceStatus{InstanceName: tenantSlug, Status: "disconnected"}, nil
 }
 
+// qrRetryDelays controls how long to wait between GetQRCode attempts.
+// Baileys can take 5-15s to initialise a fresh session and emit the QR event,
+// so later attempts use longer waits. Total budget: ~15s across 5 attempts.
+var qrRetryDelays = []time.Duration{0, 3 * time.Second, 4 * time.Second, 4 * time.Second, 4 * time.Second}
+
 // GetQRCode fetches the QR code for a tenant's WhatsApp instance.
-// Retries up to 3 times with a short delay to handle Evolution startup latency.
+// Retries up to 5 times to handle Baileys startup latency — Evolution returns
+// {"count":0} (no base64/code) while the session is still initialising.
 func (s *Service) GetQRCode(ctx context.Context, tenantSlug string) (*QRCodeResponse, error) {
 	url := fmt.Sprintf("%s/instance/connect/%s", s.apiURL, tenantSlug)
 
 	var lastErr error
-	for attempt := 0; attempt < 3; attempt++ {
-		if attempt > 0 {
+	for attempt := 0; attempt < len(qrRetryDelays); attempt++ {
+		if d := qrRetryDelays[attempt]; d > 0 {
 			select {
 			case <-ctx.Done():
 				return nil, ctx.Err()
-			case <-time.After(time.Duration(attempt*2) * time.Second):
+			case <-time.After(d):
 			}
 		}
 
@@ -172,6 +178,12 @@ func (s *Service) GetQRCode(ctx context.Context, tenantSlug string) (*QRCodeResp
 		if resp.StatusCode >= 500 {
 			lastErr = fmt.Errorf("evolution: qr returned %d", resp.StatusCode)
 			s.logger.Warn("evolution: qr server error", zap.Int("status", resp.StatusCode), zap.Int("attempt", attempt+1))
+			continue
+		}
+		// count=0 with no content means Baileys is still initialising — retry
+		if qr.Count == 0 && qr.Base64 == "" && qr.Code == "" {
+			lastErr = fmt.Errorf("evolution: qr not ready (count=0)")
+			s.logger.Warn("evolution: qr not ready, retrying", zap.Int("attempt", attempt+1))
 			continue
 		}
 		// Evolution v2 returns base64 with "data:image/png;base64," prefix — strip it
