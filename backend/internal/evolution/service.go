@@ -120,9 +120,13 @@ func (s *Service) GetInstanceStatus(ctx context.Context, tenantSlug string) (*In
 
 	for _, item := range list {
 		if item.Instance.InstanceName == tenantSlug {
+			status := item.Instance.Status
+			if status == "close" {
+				status = "disconnected"
+			}
 			return &InstanceStatus{
 				InstanceName: item.Instance.InstanceName,
-				Status:       item.Instance.Status,
+				Status:       status,
 			}, nil
 		}
 	}

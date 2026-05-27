@@ -41,12 +41,14 @@ const STATUS_COLORS: Record<string, string> = {
   open:         'bg-green-100 text-green-700',
   connecting:   'bg-yellow-100 text-yellow-700',
   disconnected: 'bg-gray-100 text-gray-500',
+  close:        'bg-gray-100 text-gray-500',
 }
 
 const STATUS_LABELS: Record<string, string> = {
   open:         'Conectado',
   connecting:   'Conectando…',
   disconnected: 'Desconectado',
+  close:        'Desconectado',
 }
 
 export default function WhatsAppManager({
@@ -158,6 +160,7 @@ export default function WhatsAppManager({
         return
       }
       setQr(result.data ?? null)
+      setStatus(prev => ({ ...prev, status: 'connecting' }))
     })
   }
 
@@ -298,7 +301,7 @@ export default function WhatsAppManager({
       </div>
 
       {/* QR Code display */}
-      {qr && isConnecting && (
+      {qr && !isConnected && (
         <div className="card p-6 text-center space-y-4">
           <h2 className="text-base font-semibold text-gray-900">Escaneie o QR code com seu WhatsApp</h2>
           <p className="text-sm text-gray-500">
