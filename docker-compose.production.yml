@@ -73,7 +73,7 @@ services:
 
   # ── Evolution API (WhatsApp) ─────────────────────────────────────────────────
   evolution:
-    image: atendai/evolution-api:latest
+    image: evoapicloud/evolution-api:v2.3.7
     container_name: rc_evolution
     ports:
       - "127.0.0.1:8081:8080"          # localhost only — Nginx terminates TLS
@@ -81,6 +81,7 @@ services:
       SERVER_URL:                          "https://evolution.revendaclick.com.br"
       AUTHENTICATION_API_KEY:             "${EVOLUTION_API_KEY}"
       DATABASE_PROVIDER:                  "postgresql"
+      DATABASE_ENABLED:                   "true"
       # CRITICAL: session pooler port 5432 (NOT transaction pooler 6543)
       DATABASE_CONNECTION_URI:            "${EVOLUTION_DATABASE_URL}"
       DATABASE_CONNECTION_CLIENT_NAME:    "evolution_api"
