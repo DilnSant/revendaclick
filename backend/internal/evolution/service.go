@@ -269,15 +269,12 @@ func (s *Service) DisconnectInstance(ctx context.Context, tenantSlug string) err
 
 // SendMessage sends a WhatsApp message via Evolution API.
 func (s *Service) SendMessage(ctx context.Context, instance, number, text string) error {
+	// v2.3.7 changed the sendText body to flat {number, text, delay}.
+	// v2.2.3 used nested {options:{delay,presence}, textMessage:{text}}.
 	body := map[string]any{
 		"number": number,
-		"options": map[string]any{
-			"delay":    1200,
-			"presence": "composing",
-		},
-		"textMessage": map[string]any{
-			"text": text,
-		},
+		"text":   text,
+		"delay":  1200,
 	}
 
 	b, _ := json.Marshal(body)

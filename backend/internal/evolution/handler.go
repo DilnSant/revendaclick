@@ -33,8 +33,8 @@ func (h *Handler) Webhook(c *gin.Context) {
 		return
 	}
 
-	// Body size guard — prevent large payloads from media messages
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 512*1024)
+	// Body size guard — Evolution v2.3.7 sends history-sync payloads up to ~2MB.
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 4*1024*1024)
 
 	var payload WebhookPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
