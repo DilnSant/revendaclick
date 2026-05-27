@@ -12,6 +12,65 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-26 (sessão 8) — Validação e desbloqueio do billing Asaas
+
+**O que foi feito:**
+
+### Diagnóstico e resolução da cadeia de bloqueios do billing
+
+O billing estava bloqueado por 3 problemas em cascata, resolvidos em sequência:
+
+**Problema 1 — Whitelist Asaas aplicada no ambiente errado (sandbox)**
+- Sintoma: `not_allowed_ip` em `POST /api/billing/subscribe`
+- Causa: Usuário havia aplicado o whitelist do IP `2.24.67.84` em `sandbox.asaas.com`, mas o backend usa `www.asaas.com` (production — `ASAAS_ENV` não definido no `.env` → padrão `production` via docker-compose `${ASAAS_ENV:-production}`)
+- Diagnóstico: `curl ifconfig.me` dentro do container → `2.24.67.84`; `grep ASAAS_ENV /opt/revendaclick/.env` → vazio (production); `curl -v www.asaas.com` com chave inválida → 401 (não 403) confirmando que IP check é por-account, não global
+- Fix: Whitelist `2.24.67.84` adicionado em `www.asaas.com` (production Asaas)
+
+**Problema 2 — API key com `$$` no `.env` (Docker Compose double-interpolation)**
+- Sintoma: Após whitelist corrigido → `asaas HTTP 401` (auth failure)
+- Causa: `ASAAS_API_KEY=$$aact_prod_...` no `.env` do VPS. Docker Compose faz dupla interpolação: lê `$$aact_prod_...` do `.env`, substitui `${ASAAS_API_KEY}` no compose → o resultado `$$aact_prod_...` é processado novamente como variável `$aact_prod_...` → não encontrada → **container recebe key vazia**. O `$$` no `.env` é o escape correto para Docker Compose produzir um `$` literal no container.
+- Diagnóstico: `docker compose up -d backend` logava `WARN: The "aact_prod_000M..." variable is not set. Defaulting to a blank string.` — a chave inteira era tratada como nome de variável
+- Fix tentado e revertido: `sed` que removeu o `$$` quebrou o escaping. Restaurado com `sed -i 's/^ASAAS_API_KEY=\$/ASAAS_API_KEY=\$\$/' /opt/revendaclick/.env` + restart backend
+- Evidência de resolução: warning sumiu nos logs, backend logou `asaas configured, env: production`
+
+**Problema 3 — `UpdateSubscriptionAsaas`: `$2` nunca usado, `tenantID` duplicado nos args**
+- Sintoma: `update subscription: unused argument: 1` (pgx)
+- Causa: Query SQL usava `$1, $3, $4, $5, $6` (pulava `$2`), mas args passavam `tenantID` duas vezes: `tenantID, tenantID, planID, asaasSubID, paymentLink, cycle`. O pgx rejeita quando um argumento (índice 1 = segundo) não é referenciado na query.
+- Fix: Removido `tenantID` duplicado; placeholders renumerados para `$1–$5` sequenciais
+- Arquivo: `backend/internal/billing/repository.go`
+- Commit: `71d6ba6`
+
+### Estado do billing após correções
+
+- Customer Asaas criado com CPF ✓ (`cus_000178453189` no tenant de teste)
+- Subscription: SQL bug fixado e deployado; confirmação end-to-end pendente (token do teste expirou)
+- Webhook, trial→active, upgrade, cancel, reactivate: pendentes
+
+### Arquivos alterados
+
+- `backend/internal/billing/repository.go` — fix `UpdateSubscriptionAsaas` SQL args (commit `71d6ba6`)
+- `/opt/revendaclick/.env` no VPS — restaurado `$$` na `ASAAS_API_KEY` (Docker Compose escape)
+
+### Comandos executados no VPS
+
+```bash
+# Diagnóstico de IP
+docker compose -f docker-compose.production.yml exec backend wget -qO- ifconfig.me
+grep ASAAS_ENV /opt/revendaclick/.env
+curl -v --max-time 5 https://www.asaas.com/api/v3/customers?limit=1 -H "access_token: invalida"
+
+# Fix da API key (restaurar $$ correto)
+sed -i 's/^ASAAS_API_KEY=\$/ASAAS_API_KEY=\$\$/' /opt/revendaclick/.env
+docker compose -f docker-compose.production.yml up -d backend
+docker compose -f docker-compose.production.yml logs backend --tail=5
+```
+
+### Commits desta sessão
+
+- `71d6ba6` — fix: billing subscribe — remove duplicate tenantID arg in UpdateSubscriptionAsaas
+
+---
+
 ## 2026-05-26 (sessão 7) — Validação de produção completa + fix lead source + fix nil slice
 
 **O que foi feito:**

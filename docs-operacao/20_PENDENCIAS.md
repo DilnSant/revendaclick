@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 26/05/2026 (sessão 7)
+> Atualizado em: 26/05/2026 (sessão 8)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -58,13 +58,15 @@
 | CONCLUÍDA | Configurar SUPABASE_SERVICE_ROLE_KEY no Vercel | — | Configurado; getTenantForUser agora tem fallback service role |
 | CONCLUÍDA | Corrigir loop /onboarding para usuários com JWT sem claim | — | SQL patch + getTenantForUser com service role fallback (commit b5685c2) |
 | CONCLUÍDA | Fix updateSupabaseAppMetadata no backend | — | Retry 3x + logging estruturado (zap) + leitura do body de erro (sessão 3) |
-| PENDENTE | Testar login + dashboard em produção após deploy | Alta | Confirmar que dilneysantos@gmail.com acessa /dashboard sem loop |
-| PENDENTE | Verificar SUPABASE_SERVICE_ROLE_KEY no .env do VPS | Alta | Confirmar que a chave está correta — ver logs pós-deploy: `docker compose logs backend \| grep updateSupabase` |
+| PENDENTE | Testar login + dashboard em produção (browser) | Baixa | Validado via API; confirmar no browser que dilneysantos@gmail.com acessa /dashboard sem loop |
 | CONCLUÍDA | Fix BUG 1: Vendedores invite | — | inviteUserByEmail → generateLink; UX "Novo vendedor"; roles só Vendedor/Visualizador |
 | CONCLUÍDA | Fix BUG 2 (código): Billing Asaas 403 mensagem | — | asaasUserErr() em billing/service.go |
-| PENDENTE | Fix BUG 2 (config): Asaas IP Whitelist | **URGENTE** | Adicionar IP do VPS no painel Asaas — bloqueia todo billing; trials expiram em 4 dias (2026-05-31) |
+| CONCLUÍDA | Fix BUG 2 (config): Asaas IP Whitelist | — | 2.24.67.84 adicionado em www.asaas.com (production) — sessão 8 |
+| CONCLUÍDA | Fix billing: API key `$$` Docker Compose | — | Restaurado `$$aact_prod_` no .env do VPS — escape correto para dupla interpolação |
+| CONCLUÍDA | Fix billing: UpdateSubscriptionAsaas SQL bug | — | tenantID duplicado nos args, $2 nunca usado — commit 71d6ba6 |
+| PENDENTE | Confirmar billing subscribe end-to-end | Alta | Token do usuário de teste expirou antes da confirmação final; customer criado (cus_000178453189); subscription creation precisa de um retry com token fresco |
 | CONCLUÍDA | Fix BUG 3 (código): WhatsApp refreshStatus silencioso | — | handleRefreshStatusManual com toast |
-| PENDENTE | Diagnosticar Evolution API no VPS pós-OOM fix | Alta | Verificar se container está healthy após d17025e: `docker compose ps evolution`, logs, `curl localhost:8081` |
+| CONCLUÍDA | Diagnosticar Evolution API no VPS pós-OOM fix | — | Evolution respondendo 200 + 401 sem key — confirmado sessão 7 |
 | CONCLUÍDA | Fix BUG 4: Settings/Plan botões mortos | — | planError/planSuccess states; banner trial |
 | CONCLUÍDA | Fix BUG 5: Settings/Users invite modal | — | + Convidar Membro com roles Administrador/Gerente |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |

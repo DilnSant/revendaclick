@@ -1,25 +1,24 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 26/05/2026 (sessão 7)
+> Atualizado em: 26/05/2026 (sessão 8)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 7 — 26/05/2026)
+## Estado Atual do Projeto (sessão 8 — 26/05/2026)
 
-Validação completa de produção executada (sessão 7). Smoke test 22/22 PASS. CRUDs testados com JWT real.
-2 bugs de código corrigidos e deployados. Pendências restantes são de configuração externa.
+Billing desbloqueado: 3 bugs em cascata identificados e corrigidos. Customer Asaas criado com CPF confirmado no DB. Confirmação end-to-end do subscribe pendente (token de teste expirou).
 
-**ALERTA: trials expiram em 4 dias (2026-05-31) para santos-car e devecar**
+**ALERTA: trials expiram em 5 dias (2026-05-31) para santos-car e devecar**
 
-- Backend Go → `https://api.revendaclick.com.br` ✓ (22/22 smoke test)
+- Backend Go → `https://api.revendaclick.com.br` ✓ (22/22 smoke test — sessão 7)
 - Frontend Next.js → `https://app.revendaclick.com.br` ✓ (200 OK)
 - CI/CD GitHub Actions → automático ✓
 - Analytics → ✓ (revenue corrigido, plan gate OK)
 - Nginx webhooks → ✓ rate limiting OK
 - Evolution API → `https://evolution.revendaclick.com.br` ✓ (200 + 401 sem key)
-- Billing Asaas → **BLOQUEADO por IP whitelist — urgente resolver antes de 2026-05-31**
-- Redis → ✓ (evolution depende_on healthcheck)
+- Billing Asaas → ✓ whitelist OK (production) | ✓ API key `$$` OK | ✓ SQL bug fixado | ⏳ subscribe end-to-end pendente
+- Redis → ✓ (evolution depends_on healthcheck)
 - Auth/Onboarding → ✓ signup → onboarding → JWT OK
 - CRUDs → ✓ leads, vehicles, customers, users, sales, financial, audit
 - Supabase → ✓ 0 advisors WARN
@@ -27,231 +26,113 @@ Validação completa de produção executada (sessão 7). Smoke test 22/22 PASS.
 
 ---
 
-## ⚠️ AÇÕES URGENTES (Fazer Agora)
+## ⚠️ AÇÃO PRIORITÁRIA (Primeira Coisa da Próxima Sessão)
 
-### AÇÃO 0 — Verificar Evolution + Redis no VPS ✓ (Evolution respondendo 200 e 401)
+### AÇÃO 1 — Confirmar billing subscribe end-to-end
+
+O SQL bug (`UpdateSubscriptionAsaas`) foi corrigido e deployado (commit `71d6ba6`). O customer Asaas foi criado com CPF (`cus_000178453189`). Precisa de uma confirmação final com token fresco.
 
 ```bash
-# No VPS — verificar se Redis e Evolution subiram corretamente
-docker compose -f docker-compose.production.yml ps
+# 1. Fazer login com o usuário de teste (ou criar novo)
+# O usuário billing-val-1779826935@revendaclick.dev existe no Supabase
+# mas a senha não está salva — use dilneysantos@gmail.com ou crie novo usuário
 
-# Verificar se Evolution está healthy
-docker compose -f docker-compose.production.yml logs evolution --tail=30
+# 2. Via API:
+TOKEN="<jwt-fresco>"
+curl -s -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"plan_name":"pro","billing_cycle":"monthly","billing_type":"PIX","cpf_or_cnpj":"24971563792"}' \
+  "https://api.revendaclick.com.br/api/billing/subscribe"
 
-# Verificar se Redis está respondendo
-docker compose -f docker-compose.production.yml exec redis redis-cli ping
-# Esperado: PONG
-
-# Verificar se Evolution conecta no Redis
-docker compose -f docker-compose.production.yml logs evolution --tail=20 | grep -i redis
+# Esperado: {"data": {"asaas_subscription_id": "sub_...", "asaas_payment_link": "..."}}
 ```
 
-**Se Evolution não subir (ex: não encontra rc_redis):**
+**IMPORTANTE:** O tenant de teste (`4d7845ac-7a15-4334-b49c-3d61eb3ee8cb`) já tem `asaas_customer_id = "cus_000178453189"`. O próximo subscribe vai direto para criação da subscription (sem recriar o customer).
+
+Se retornar `asaas_subscription_id` preenchido → billing 100% funcional.
+
+---
+
+### AÇÃO 2 — Testar webhook Asaas (pós-subscribe)
+
+Após confirmar subscribe, simular evento de pagamento para validar transição trial → active:
+
 ```bash
-docker compose -f docker-compose.production.yml up -d redis
-docker compose -f docker-compose.production.yml up -d evolution
+# Obter ASAAS_WEBHOOK_TOKEN no VPS
+grep ASAAS_WEBHOOK_TOKEN /opt/revendaclick/.env
+
+# Simular PAYMENT_CONFIRMED
+WEBHOOK_TOKEN="<valor acima>"
+ASAAS_SUB_ID="<asaas_subscription_id retornado no subscribe>"
+
+curl -s -X POST \
+  -H "Content-Type: application/json" \
+  -H "asaas-access-token: $WEBHOOK_TOKEN" \
+  -d "{\"event\":\"PAYMENT_CONFIRMED\",\"payment\":{\"subscription\":\"$ASAAS_SUB_ID\",\"status\":\"CONFIRMED\",\"value\":97.00}}" \
+  "https://api.revendaclick.com.br/api/webhooks/asaas"
+
+# Verificar transição
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://api.revendaclick.com.br/api/billing/subscription" | python3 -m json.tool
+# Esperado: "status": "active"
 ```
 
 ---
 
-### AÇÃO 1 — Whitelist IP do VPS no Asaas (BUG 2 — BLOQUEIO DE BILLING)
+### AÇÃO 3 — Testar trials prestes a expirar (URGENTE — antes de 2026-05-31)
 
-**⚠️ URGENTE: trials de santos-car e devecar expiram em 2026-05-31 (4 dias).**
-**Sem esta configuração:** Nenhum usuário consegue assinar um plano. O erro `not_allowed_ip` bloqueia toda criação de customer/subscription no Asaas.
+Tenants em risco:
+- `santos-car` (dilneysantos@gmail.com): trial_ends_at = 2026-05-31
+- `devecar` (dilneysantos.developer@gmail.com): trial_ends_at = 2026-05-31
 
-**Como resolver:**
-
-```bash
-# 1. No VPS — descobrir o IP público
-curl ifconfig.me
-# Exemplo: 185.204.1.234
+Com billing agora funcional, estes usuários podem assinar. Confirmar no browser:
 ```
-
-```
-2. Acessar https://www.asaas.com (ou https://sandbox.asaas.com se ASAAS_ENV=sandbox)
-3. Fazer login
-4. Menu: Configurações → Integrações → API
-5. Seção: "Whitelist de IPs"
-6. Adicionar o IP do VPS
-7. Salvar
-```
-
-**Verificar qual ambiente está ativo:**
-```bash
-# No VPS
-grep ASAAS_ENV /opt/revendaclick/.env
-# Se sandbox → whitelist em sandbox.asaas.com
-# Se production → whitelist em www.asaas.com
-```
-
-**Após whitelist:** Testar em `/billing/plans` → clicar "Assinar" → deve processar sem erro 403.
-
----
-
-### AÇÃO 2 — Diagnosticar Evolution API (BUG 3 — WhatsApp)
-
-```bash
-# No VPS — verificar se Evolution está rodando
-docker compose -f docker-compose.production.yml ps evolution
-
-# Ver logs recentes
-docker compose -f docker-compose.production.yml logs evolution --tail=50
-
-# Verificar se responde
-curl -H "apikey: $(grep EVOLUTION_API_KEY /opt/revendaclick/.env | cut -d= -f2)" http://localhost:8081/instance/fetchInstances
-```
-
-**Se Evolution estiver down:**
-```bash
-docker compose -f docker-compose.production.yml up -d evolution
-```
-
-**Se retornar 401 (EVOLUTION_API_KEY errada):**
-```bash
-# Verificar no .env
-grep EVOLUTION_API_KEY /opt/revendaclick/.env
-```
-
----
-
-### AÇÃO 3 — Testar login em produção (validado via API — confirmar no browser)
-
-**Validado via API (sessão 7):**
-- Signup → Onboarding → JWT com tenant_id em app_metadata ✓
-- `auth.users` confirmados: todos os owners com jwt_tenant_id correto ✓
-
-**Confirmar no browser:**
-```
-1. Acessar https://app.revendaclick.com.br/login
+1. https://app.revendaclick.com.br/login
 2. Login com dilneysantos@gmail.com
-3. Deve ir para /dashboard sem loop
+3. Menu → Billing/Planos → Assinar plano
+4. Deve processar sem erro
 ```
-
----
-
-### AÇÃO 4 — Ativar Leaked Password Protection (Supabase Dashboard)
-
-Não é acessível via SQL nem MCP. Requer acesso direto ao Supabase Dashboard:
-
-```
-1. Acessar https://supabase.com/dashboard
-2. Selecionar o projeto RevendaClick
-3. Authentication → Settings → Security
-4. Ativar "Leaked Password Protection"
-5. Salvar
-```
-
----
-
-## Estado do Banco (26/05/2026 — sessão 6)
-
-| Email | auth.users | public.users | jwt_tenant_id | Situação |
-|---|---|---|---|---|
-| dilneysantos@gmail.com | ✓ confirmado | ✓ owner | ✓ fd1172f6 (patchado) | Deve acessar /dashboard após deploy |
-| admin@staging.revendaclick.com.br | ✓ confirmado | ✓ owner | ✓ e9f92ebf (patchado) | OK |
-| admin@revendaclick.staging | ✓ confirmado | ✗ | ✗ | Sem tenant (staging, irrelevante) |
-
-**Banco Supabase — Migrations aplicadas:**
-- `20260526145045` — migration 011 (performance indexes + RLS optimization)
-- `20260526145129` — migration 012 (SECURITY DEFINER REVOKE from PUBLIC)
-- `20260526165633` — migration 013 (leads_public_insert + storage listing)
-- Advisor WARN: 0 pendentes
-
-**Nota:** Os usuários `desconto.do.dono@gmail.com`, `dilsant.nocode@gmail.com`, `dilneysantos.coprodutor@gmail.com`, `metodolimpezas@gmail.com` mencionados em sessões anteriores **não existem mais neste projeto Supabase** (ou foram excluídos). Apenas 3 usuários encontrados no banco.
-
----
-
-## ⚠️ AÇÃO URGENTE (Primeira Coisa da Próxima Sessão)
-
-### 1. Fazer deploy do fix de onboarding e verificar logs
-
-```bash
-# O fix já está no código — fazer commit e push
-git add backend/internal/onboarding/onboarding.go backend/internal/server/server.go
-git commit -m "fix: retry + logging on updateSupabaseAppMetadata in onboarding"
-git push
-```
-
-Após o deploy (CI/CD automático), verificar nos logs do VPS se `updateSupabaseAppMetadata` está funcionando:
-
-```bash
-# No VPS — durante ou após um novo cadastro de teste
-docker compose -f docker-compose.production.yml logs backend --tail=100 | grep -i "updateSupabase"
-
-# Resultado esperado se OK:
-# {"level":"info","msg":"updateSupabaseAppMetadata: success","user_id":"...","tenant_id":"...","attempt":1}
-
-# Resultado se ainda falha:
-# {"level":"warn","msg":"updateSupabaseAppMetadata: non-2xx response","status":401,"body":"..."}
-# → Se 401: SUPABASE_SERVICE_ROLE_KEY incorreta no .env do VPS
-# → Se 404: SUPABASE_URL incorreta no .env do VPS
-```
-
-### 2. Testar login em produção
-
-```
-1. Acessar https://app.revendaclick.com.br/login
-2. Fazer login com dilneysantos@gmail.com
-3. Deve ir para /dashboard (não mais loop /onboarding)
-4. Verificar que KPIs e módulos carregam normalmente
-```
-
-**Se login ainda falhar com "Email ou senha inválidos":**
-- Tentar reset de senha: Supabase Dashboard → Authentication → Users → Reset Password
-- Verificar `NEXT_PUBLIC_SUPABASE_ANON_KEY` no Vercel (deve ser igual ao projeto Supabase atual)
-
-### 3. Testar fluxo de novo cadastro
-
-```
-1. Acessar https://app.revendaclick.com.br/register
-2. Criar nova conta com email novo
-3. Deve ir para /onboarding (email confirmation está DESABILITADO)
-4. Preencher formulário → Criar loja → deve ir para /dashboard
-5. Verificar no Supabase: raw_app_meta_data tem tenant_id?
-   Supabase Dashboard → Authentication → Users → selecionar usuário → Raw Metadata
-```
-
-Se `raw_app_meta_data` ainda não tiver `tenant_id`, verificar logs do VPS (passo 1 acima).
 
 ---
 
 ## Próximos Passos (por prioridade)
 
-### 0. Verificar Evolution + Redis no VPS (Alta — primeiro passo)
+### 1. Confirmar billing subscribe (Alta — próxima sessão)
 
-Descrito acima em AÇÃO 0.
+Ver AÇÃO 1 acima. Um teste com token fresco é suficiente.
 
-### 1. Testar fluxo completo auth (Alta — depois de AÇÃO 0)
+### 2. Testar fluxo completo de webhook (Alta)
 
-Descrito acima na seção URGENTE.
+Ver AÇÃO 2 acima. Necessário para validar transição de status.
 
-### 2. Corrigir updateSupabaseAppMetadata no backend (Alta — se confirmado falho)
-
-Se o teste 2 mostrar que `raw_app_meta_data` não recebe `tenant_id`:
+### 3. Cancelamento e Reativação (Média)
 
 ```bash
-# Verificar .env do backend no VPS
-grep "SUPABASE_URL\|SUPABASE_SERVICE" /path/to/.env
+# Cancel
+curl -s -X DELETE \
+  -H "Authorization: Bearer $TOKEN" \
+  "https://api.revendaclick.com.br/api/billing/subscription"
+
+# Reactivate
+curl -s -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  "https://api.revendaclick.com.br/api/billing/reactivate"
 ```
 
-O fix pode ser:
-- Remover trailing slash de `SUPABASE_URL`
-- Corrigir o `SUPABASE_SERVICE_ROLE_KEY`
-- Ou tornar o `updateSupabaseAppMetadata` fatal (panic em startup se credenciais inválidas)
-
-### 3. Verificar rotas públicas de vitrine (Média)
+### 4. Testar login em produção no browser (Baixa)
 
 ```
-https://app.revendaclick.com.br/<slug-de-tenant>
+https://app.revendaclick.com.br/login → dilneysantos@gmail.com → /dashboard sem loop
 ```
 
-Depende de `getTenantBySlug` (usa service role) — deve funcionar agora que `SUPABASE_SERVICE_ROLE_KEY` está no Vercel.
+### 5. Leaked Password Protection (Baixa — Supabase Dashboard)
 
-### 4. Leaked Password Protection (Baixa — Supabase Dashboard)
+```
+Supabase Dashboard → Authentication → Settings → Security → "Leaked Password Protection" → ON
+```
 
-Ver AÇÃO 4 acima. Não pode ser feito via SQL/MCP.
-
-### 5. Backup S3 (Média — opcional)
+### 6. Backup S3 (Baixa)
 
 ```bash
 # No VPS — adicionar ao .env
@@ -261,76 +142,35 @@ AWS_SECRET_ACCESS_KEY=...
 AWS_DEFAULT_REGION=sa-east-1
 ```
 
-Ver `11_DOCKER.md`.
+### 7. Uptime Monitoring (Baixa)
 
-### 6. Uptime Monitoring (Baixa)
+UptimeRobot ou BetterStack Uptime → URL: `https://api.revendaclick.com.br/health`
 
-Configurar UptimeRobot ou BetterStack Uptime para `https://api.revendaclick.com.br/health`.
+### 8. Rotação de Secrets (Baixa)
 
-### 7. Rotação de Secrets (Baixa)
-
-Definir política semestral: `ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN`.
-
-### 8. Review de Indexes (Baixa)
-
-`EXPLAIN ANALYZE` nas queries mais frequentes após 30 dias com carga real. Migrations 011 já cobrem os casos mais críticos.
+Política semestral: `ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN`.
 
 ---
 
-## Diagnóstico desta Sessão
+## Diagnóstico desta Sessão (sessão 8)
 
-**O que foi investigado:**
+**3 bugs em cascata no billing — todos resolvidos:**
 
-Bug report com 3 sintomas:
-1. Novo cadastro não envia email de confirmação — vai direto para /onboarding
-2. Login existente retorna "email/senha incorretos"
-3. Onboarding: inputs limpam, fica na página, sem erro visível, sem redirect
+**Bug 1 — Whitelist no ambiente errado:**
+- Whitelist aplicado em `sandbox.asaas.com` → backend usa `www.asaas.com` (production)
+- Fix: adicionar `2.24.67.84` em `www.asaas.com`
 
-**Causa raiz identificada:**
+**Bug 2 — Docker Compose double-interpolation da API key:**
+- `.env` com `$$aact_prod_...` é correto. `sed` da sessão anterior havia removido um `$`, causando key vazia no container
+- Diagnóstico: warning `The "aact_prod_000M..." variable is not set` nos logs do `docker compose up`
+- Fix: `sed -i 's/^ASAAS_API_KEY=\$/ASAAS_API_KEY=\$\$/' /opt/revendaclick/.env` + restart
+- Regra documentada em D18 em `21_DECISOES_TECNICAS.md`
 
-`updateSupabaseAppMetadata` (Go backend) falha silenciosamente → `raw_app_meta_data` sem `tenant_id` → JWT emitido sem claim → `getTenantForUser` (session client + RLS `auth_tenant_id()`) retorna 0 linhas → `null` → dashboard redireciona para /onboarding → loop.
-
-**Sequência real do bug no onboarding:**
-1. Usuário submete formulário → `setupTenant` server action é chamada
-2. `fetch(API + '/api/onboarding/setup')` → backend cria tenant + user no DB (transação OK)
-3. Backend chama `updateSupabaseAppMetadata` → **falha silenciosamente**
-4. Backend retorna 201 → `setupTenant` retorna `{ data: ..., error: null }`
-5. `refreshSession()` é chamado → JWT refreshado **sem** `tenant_id` (pois `app_metadata` não foi atualizado)
-6. `router.push('/dashboard')` → dashboard → `getTenantForUser` → null → redirect /onboarding
-7. Usuário vê form limpo — parece que "nada aconteceu"
-
-**Sintoma 1 (sem email):** Comportamento correto — email confirmation está desabilitado no Supabase. Quando desabilitado, `signUp` retorna `data.session` imediatamente e o código faz `window.location.href = '/onboarding'`.
-
-**Sintoma 2 (login falha):** Não totalmente investigado — pode ser senha errada ou anon key incorreto no build anterior. O novo deploy com env vars corretas deve resolver se for questão de key.
-
-**Sintoma 3 (onboarding loop):** Causa raiz confirmada e corrigida (ver acima).
-
-**Fixes aplicados:**
-- `getTenantForUser`: session client primeiro → service role fallback (unbloqueia qualquer usuário com tenant no DB, independente do JWT)
-- SQL patch: `raw_app_meta_data` corrigido retroativamente para todos os usuários com tenant sem claim
-- Protocol guard: `API.startsWith('http')` garante que URL sem protocolo nunca gera TypeError
-
-**SQL executado:**
-```sql
-UPDATE auth.users au
-SET raw_app_meta_data = au.raw_app_meta_data 
-  || jsonb_build_object('tenant_id', pu.tenant_id::text, 'user_role', pu.role)
-FROM public.users pu
-WHERE au.id = pu.id
-  AND pu.tenant_id IS NOT NULL
-  AND pu.is_active = TRUE
-  AND (au.raw_app_meta_data ->> 'tenant_id') IS NULL;
--- Afetados: dilneysantos@gmail.com, admin@staging.revendaclick.com.br
-```
-
-**Commits desta sessão:**
-- `1436f8a` — debug: show exact error code+message on onboarding submit failure
-- `de7c02b` — fix: redirect to /onboarding immediately when email confirmation is disabled
-- `4e76ced` — fix: simplify register to account-only — store config moves to /onboarding after email confirmation
-- `9f3b7e0` — fix: add emailRedirectTo in signUp to route confirmation through /auth/callback
-- `c3beeb6` — fix: wait for backend healthy before smoke test
-- `606ebd9` — fix: remove middleware.ts (conflicted with proxy.ts in Next.js 16)
-- `b5685c2` — fix: service role fallback in getTenantForUser + protocol guard on API URL
+**Bug 3 — `UpdateSubscriptionAsaas`: args SQL errados:**
+- Query usava `$1, $3, $4, $5, $6` sem `$2`; args passavam `tenantID` duplicado
+- pgx erro: `unused argument: 1` (índice 1 = segundo arg não referenciado)
+- Fix: renumerar para `$1–$5`, remover `tenantID` duplicado
+- Arquivo: `backend/internal/billing/repository.go` — commit `71d6ba6`
 
 ---
 
@@ -345,3 +185,5 @@ Ao iniciar uma nova sessão:
 5. Se for alterar infra: ver `10_INFRA_VPS.md` e `11_DOCKER.md`
 6. Se for alterar backend: ver `04_BACKEND.md` e `08_API_ROTAS_REAIS.md`
 7. Se for fazer deploy: ver `13_DEPLOY.md` e `12_CICD.md`
+
+**ATENÇÃO .env VPS:** Variáveis que contêm `$` literal devem usar `$$` no `.env`. Ver D18 em `21_DECISOES_TECNICAS.md`.

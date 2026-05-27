@@ -150,6 +150,16 @@
 
 ---
 
+## D18 — `$$` no `.env` para chaves com `$` literal (Docker Compose double-interpolation) (26/05/2026)
+
+**Decisão:** Variáveis de ambiente que contêm `$` literal (ex: `ASAAS_API_KEY=$aact_prod_...`) devem ser escritas com `$$` no `.env` do VPS: `ASAAS_API_KEY=$$aact_prod_...`.
+**Por quê:** Docker Compose v2 faz dupla interpolação. Ao processar `ASAAS_API_KEY: "${ASAAS_API_KEY}"` no compose file, substitui o valor do `.env` e então re-escaneia o resultado por `$`. Se o valor começa com `$aact_prod_...`, o Docker trata `$aact_prod_...` como referência a outra variável → não encontrada → **container recebe string vazia**. O `$$` no `.env` força o escape: `$$aact_prod_...` → após processamento → `$aact_prod_...` (correto).
+**Evidência:** `docker compose up` logava `WARN: The "aact_prod_000M..." variable is not set. Defaulting to a blank string.` quando a chave tinha `$` simples.
+**Regra:** Qualquer `.env` no VPS com valor que começa por `$` deve usar `$$` como prefixo.
+**Impacto ao alterar:** Remover um `$` (deixar `$aact_...`) → container recebe key vazia → Asaas retorna 401 em todas as chamadas de billing.
+
+---
+
 ## D14 — middleware.ts renomeado para proxy.ts (23/05/2026)
 
 **Decisão:** `frontend/middleware.ts` substituído por `frontend/proxy.ts`.
