@@ -22,7 +22,15 @@ func NewHandler(svc *Service, apiKey string, logger *zap.Logger) *Handler {
 func (h *Handler) Webhook(c *gin.Context) {
 	incomingKey := c.GetHeader("apikey")
 	if h.apiKey != "" && incomingKey != h.apiKey {
-		h.logger.Warn("evolution webhook: invalid apikey", zap.String("ip", c.ClientIP()))
+		h.logger.Warn("evolution webhook: invalid apikey",
+			zap.String("ip", c.ClientIP()),
+			zap.String("got_key_prefix", func() string {
+				if len(incomingKey) > 8 {
+					return incomingKey[:8] + "..."
+				}
+				return incomingKey
+			}()),
+		)
 		c.Status(http.StatusUnauthorized)
 		return
 	}
