@@ -27,9 +27,9 @@ type VehicleDetail = {
   condition: string
   doors: number | null
   description: string | null
-  features: string[]
+  features: string[] | null
   thumbnail_url: string | null
-  photo_urls: string[]
+  images: string[] | null
   status: string
 }
 
@@ -149,9 +149,9 @@ export default async function VehiclePage({ params }: Props) {
             </div>
 
             {/* Photo strip */}
-            {vehicle.photo_urls.length > 1 && (
+            {(vehicle.images ?? []).length > 1 && (
               <div className="flex gap-2 overflow-x-auto pb-1">
-                {vehicle.photo_urls.slice(0, 8).map((url, i) => (
+                {(vehicle.images ?? []).slice(0, 8).map((url, i) => (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     key={i}
@@ -172,11 +172,11 @@ export default async function VehiclePage({ params }: Props) {
             )}
 
             {/* Features */}
-            {vehicle.features.length > 0 && (
+            {(vehicle.features ?? []).length > 0 && (
               <div className="rounded-xl border border-gray-100 bg-white p-5">
                 <h2 className="mb-3 text-sm font-semibold text-gray-900">Opcionais</h2>
                 <div className="flex flex-wrap gap-2">
-                  {vehicle.features.map((f) => (
+                  {(vehicle.features ?? []).map((f) => (
                     <span
                       key={f}
                       className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700"
