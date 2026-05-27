@@ -1,29 +1,25 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 27/05/2026 (sessão 12)
+> Atualizado em: 27/05/2026 (sessão 13)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 11 — 27/05/2026)
-
-Evolution API **upgradado para v2.3.7**, QR code **funcionando** em produção. 22/22 smoke test PASS.
+## Estado Atual do Projeto (sessão 13 — 27/05/2026)
 
 **ALERTA: devecar trial expira 2026-05-31 (4 dias)**
 
-- Backend Go → `https://api.revendaclick.com.br` ✓ (22/22 smoke test — sessão 11, commit ce103a0)
-- Frontend Next.js → `https://app.revendaclick.com.br` ✓ (200 OK)
-- CI/CD GitHub Actions → automático ✓ (VPS agora está limpo — git pull funciona)
-- Analytics → ✓ (revenue corrigido, plan gate OK)
-- Nginx webhooks → ✓ rate limiting OK
-- Evolution API → `https://evolution.revendaclick.com.br` ✓ v2.3.7 (QR count=9+, rotating)
-- Billing Asaas → ✓ subscribe end-to-end confirmado | ✓ guard re-subscribe OK
-- WhatsApp QR → ✓ **FUNCIONAL**: santos-car connecting, QR rotacionando, webhook 200 OK
-- Redis → ✓ (evolution CACHE_REDIS_ENABLED=false — Baileys não usa Redis)
-- Auth/Onboarding → ✓ signup → onboarding → JWT OK
-- CRUDs → ✓ leads, vehicles, customers, users, sales, financial, audit
-- Supabase → ✓ 0 advisors WARN
-- Docs → ✓ sincronizadas
+- Backend Go → `https://api.revendaclick.com.br` ✓ (commit fa18153 — filtros públicos + backend search/sort/fuel)
+- Frontend Next.js → `https://www.revendaclick.com.br` ✓ (vitrine profissional + settings personalização)
+- CI/CD GitHub Actions → automático ✓
+- Vehicle detail → ✓ HTTP 200 (features null fix — commit 2ee68ab)
+- Public store → ✓ filtros chip + busca + ordenação + paginação + logo hero
+- Settings loja → ✓ logo upload + cor primária + cidade/estado
+- Billing plans → ✓ badge status + trial days + renewal date
+- Evolution API → `https://evolution.revendaclick.com.br` ✓ v2.3.7
+- Billing Asaas → ✓ subscribe end-to-end | ✓ guard re-subscribe OK
+- WhatsApp QR → ✓ FUNCIONAL
+- Supabase → ✓ migration 014 (logos bucket) aplicada
 
 ---
 

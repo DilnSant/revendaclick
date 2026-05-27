@@ -12,6 +12,67 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-27 (sessão 13) — Problemas 1-5 produção: 500 vitrine, personalização loja, filtros, billing
+
+**O que foi feito:**
+
+### PROBLEMA 1 — Vehicle detail HTTP 500 (digest 4250320451)
+
+- **Causa raiz 1:** `vehicle.features: string[]` na tipagem frontend, mas backend Go retorna `null` para nil slice → `null.length` throw TypeError no SSR
+- **Causa raiz 2:** campo estava tipado como `photo_urls` no frontend mas backend usa `images`
+- Fix: `features: string[] | null`, `images: string[] | null`, todos os acessos com `(vehicle.features ?? [])` e `(vehicle.images ?? [])`
+- Arquivo: `frontend/app/(public)/[slug]/[vehicleSlug]/page.tsx`
+- Commits: `2ee68ab` (feature/photo fix) → deployado e validado: HTTP 200
+
+### PROBLEMA 2 — Vitrine não exibia veículos
+
+- Confirmado que a vitrine já exibia "1 veículo disponível" corretamente — não era bug ativo
+- Diagnóstico: backend retornava veículo correto, frontend consumia via NEXT_PUBLIC_API_URL
+
+### PROBLEMA 3 — Settings: personalização completa da loja
+
+- **Logo upload:** `/api/upload/logo/route.ts` — multipart POST → Supabase Storage `logos/{tenantId}/logo.ext` com upsert=true
+- **Supabase migration 014:** bucket `logos` criado (public=true, 2MB limit, JPEG/PNG/WebP)
+- **Color picker:** `<input type="color">` + hex text input → armazenado em `tenant.theme.primary_color`
+- **Localização:** campos Cidade (address.city) e Estado (address.state) → armazenado em `tenant.address` JSONB
+- **UI:** preview do logo com click-to-upload, CSS var `--color-primary` injetada na vitrine
+- Arquivos: `frontend/app/api/upload/logo/route.ts` (novo), `settings/actions.ts`, `settings/page.tsx`, `settings/_components/SettingsTabs.tsx`
+
+### PROBLEMA 4 — Vitrine pública profissional com filtros
+
+- **Hero:** logo da loja, slogan/descrição, cidade+estado, botão "Falar via WhatsApp"
+- **Filtros:** chips de condição (Usado/Novo) + combustível (Flex/Gasolina/Diesel/Elétrico/Híbrido)
+- **Ordenação:** links SSR para menor/maior preço, mais novo
+- **Busca:** form GET com campo de texto (search = title ILIKE OR brand ILIKE OR model ILIKE)
+- **Paginação:** 12 por página, navegação por URL (pagina=N)
+- **Estado vazio:** ícone + texto + botão "Ver todos os veículos"
+- **Cor primária:** CSS var `--color-primary` sincronizada com `tenant.theme.primary_color`
+- **Backend: `ListPublic`** expandido: fuel, transmission, sort, search, min_price, max_price
+- **Backend: `ListFilter`** + `Sort` via switch → ORDER BY dinâmico
+- Arquivos: `frontend/app/(public)/[slug]/page.tsx`, `backend/internal/vehicles/handler.go`, `model.go`, `repository.go`
+
+### PROBLEMA 5 — Billing plans: badge e status da assinatura
+
+- `billing/plans/page.tsx`: banner "Plano atual: Starter [Ativo] X dias de trial / Renova em DD/MM/AAAA"
+- `PlanCard.tsx`: botão "Plano atual ✓" com `bg-primary/10` + border; mostra trial days ou renewal date
+- Subscription tipada como `Subscription | null` — campos `is_trialing`, `trial_days_left`, `trial_ends_at`, `current_period_end`
+- Commits: `fa18153`
+
+**Arquivos modificados (sessão 13):**
+- `backend/internal/vehicles/handler.go`
+- `backend/internal/vehicles/model.go`
+- `backend/internal/vehicles/repository.go`
+- `frontend/app/api/upload/logo/route.ts` (novo)
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx`
+- `frontend/app/(dashboard)/billing/plans/page.tsx`
+- `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx`
+- `frontend/app/(dashboard)/settings/actions.ts`
+- `frontend/app/(dashboard)/settings/page.tsx`
+- `frontend/app/(public)/[slug]/page.tsx`
+- `frontend/app/(public)/[slug]/[vehicleSlug]/page.tsx`
+
+---
+
 ## 2026-05-27 (sessão 12) — Documentação permanente de histórico de bugs + fix billing UI
 
 **O que foi feito:**
