@@ -24,14 +24,16 @@ function LoginForm() {
 
     startTransition(async () => {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
       if (error) {
         setError('Email ou senha inválidos.')
         return
       }
 
-      router.push(redirect)
+      const role = data.user?.app_metadata?.user_role as string | undefined
+      const destination = role === 'super_admin' ? '/admin' : redirect
+      router.push(destination)
       router.refresh()
     })
   }

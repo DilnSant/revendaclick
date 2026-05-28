@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Dashboard route prefixes that require authentication
 const PROTECTED_PREFIXES = [
+  '/admin',
   '/dashboard',
   '/leads',
   '/crm',

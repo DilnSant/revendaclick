@@ -1,7 +1,23 @@
 'use client'
 
 import { useState } from 'react'
-import type { TenantSummary } from '../page'
+
+export interface TenantSummary {
+  id: string
+  slug: string
+  name: string
+  email: string
+  is_active: boolean
+  created_at: string
+  sub_status: string
+  plan_name: string
+  plan_display: string
+  trial_ends_at?: string
+  period_end?: string
+  vehicle_count: number
+  user_count: number
+  lead_count: number
+}
 
 const STATUS_COLOR: Record<string, string> = {
   active:   'bg-green-900/40 text-green-400 border-green-800',
