@@ -1,44 +1,70 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 28/05/2026 (sessão 15)
+> Atualizado em: 28/05/2026 (sessão 17)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 15 — 28/05/2026)
+## Estado Atual do Projeto (sessão 17 — 28/05/2026)
 
 **⚠️ ALERTA: devecar trial expira 2026-05-31 (3 dias)**
 
 | Componente | Status |
 |---|---|
-| Backend Go | ✓ healthy — `https://api.revendaclick.com.br` |
-| Frontend Next.js | ✓ deploy commit `81eceb5` — `https://app.revendaclick.com.br` |
-| Vitrine pública | ✓ sem header duplo, cores tenant dinâmicas |
+| Backend Go | ✓ pendente deploy sessão 17 — módulo storecontact novo |
+| Frontend Next.js | ✓ pendente commit/deploy sessão 17 |
+| Vitrine pública | ✓ + contato público (Instagram, grupos, localização) |
+| Settings | ✓ + aba "Contato Público da Loja" |
+| Central de Atendimento (`/whatsapp`) | ✓ nomenclatura correta — sem linguagem de bulk |
+| Migration 018 | ✓ aplicada ao Supabase (tenant_public_contacts + tenant_whatsapp_sessions) |
 | CI/CD GitHub Actions | ✓ automático — 22/22 smoke test PASS |
-| Vehicle detail `/[slug]/[vehicleSlug]` | ✓ HTTP 200 |
-| Settings loja | ✓ logo + cor primária + cidade/estado |
-| Billing plans | ✓ trial permite assinar (fix sessão 15) |
-| Evolution API v2.3.7 | ✓ healthy — migrations Prisma aplicadas |
-| Billing Asaas | ✓ subscribe end-to-end + guard re-subscribe |
-| WhatsApp instâncias | ⚠️ resetadas na sessão 14 — reconectar santos-car |
-| Supabase security advisors | ✓ limpos (migrations 015-017) |
+| Evolution API v2.3.7 | ✓ healthy |
+| Billing Asaas | ✓ subscribe + upgrade end-to-end |
+| Central de Atendimento santos-car | ⚠️ reconectar — instância perdida na sessão 14 |
+| Supabase security advisors | ✓ limpos |
 | FalhasCorrigidas | ✓ 28 FCs documentadas (FC001–FC028) |
 
 ---
 
 ## ⚠️ AÇÕES PRIORITÁRIAS
 
-### AÇÃO 1 — Reconectar WhatsApp santos-car (URGENTE)
+### AÇÃO 0 — Commit + Deploy sessão 17 (URGENTE — fazer agora)
+
+Os arquivos novos/modificados nesta sessão ainda não foram commitados.
+
+```bash
+# Verificar estado
+git status
+git diff --stat
+
+# Commitar
+git add backend/internal/storecontact/ \
+        backend/internal/tenant/handler.go \
+        backend/internal/server/server.go \
+        frontend/components/layout/DashboardShell.tsx \
+        frontend/app/\(dashboard\)/whatsapp/page.tsx \
+        frontend/components/whatsapp/WhatsAppManager.tsx \
+        frontend/app/\(dashboard\)/settings/actions.ts \
+        frontend/app/\(dashboard\)/settings/page.tsx \
+        frontend/app/\(dashboard\)/settings/_components/SettingsTabs.tsx \
+        frontend/lib/tenant.ts \
+        frontend/app/\(public\)/\[slug\]/page.tsx \
+        database/migrations/018_tenant_public_contacts_and_whatsapp_sessions.sql \
+        docs-operacao/
+
+git commit -m "feat: refatoração WhatsApp — Central de Atendimento + Contato Público da Loja"
+```
+
+### AÇÃO 1 — Reconectar Central de Atendimento santos-car (URGENTE)
 
 As instâncias Evolution foram perdidas durante a limpeza do banco (sessão 14 — ver FC028).
-Reconectar antes de qualquer teste de fluxo de leads.
 
 ```
-1. https://app.revendaclick.com.br/whatsapp
+1. https://app.revendaclick.com.br/whatsapp  (menu → "Central de Atendimento")
 2. Login com dilneysantos@gmail.com (conta santos-car)
-3. Clicar "Conectar WhatsApp"
+3. Clicar "Conectar canal"
 4. QR aparece → escanear com o celular
-5. Status muda para "Conectado"
+5. Status muda para "Canal conectado"
 ```
 
 ```bash
@@ -49,8 +75,7 @@ curl -s http://localhost:8081/instance/fetchInstances -H "apikey: revendaclick12
 
 ### AÇÃO 2 — Assinar devecar antes de 2026-05-31 (URGENTE — 3 dias)
 
-Trial de `dilneysantos.developer@gmail.com` expira **2026-05-31**. Sem `asaas_customer_id` — será criado no primeiro subscribe.
-O botão de assinatura durante trial está agora habilitado (fix sessão 15 — D21).
+Trial de `dilneysantos.developer@gmail.com` expira **2026-05-31**.
 
 ```
 1. https://app.revendaclick.com.br/login
@@ -61,7 +86,7 @@ O botão de assinatura durante trial está agora habilitado (fix sessão 15 — 
 6. Esperado: redirect para link Asaas → pagar → status active após confirmação
 ```
 
-Após assinar: conectar WhatsApp em /whatsapp (instância `devecar` a ser criada pelo app).
+Após assinar: acessar Central de Atendimento → conectar canal (instância `devecar`).
 
 ---
 

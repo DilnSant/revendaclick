@@ -155,7 +155,7 @@ limit_req zone=evo_limit burst=120 nodelay;
 
 ```yaml
 evolution:
-  image: atendai/evolution-api:latest
+  image: evoapicloud/evolution-api:v2.3.7
   ports:
     - "127.0.0.1:8081:8080"    # apenas local — acesso via Nginx
   environment:

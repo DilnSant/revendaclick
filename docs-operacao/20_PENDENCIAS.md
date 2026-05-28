@@ -70,7 +70,7 @@
 | CONCLUÍDA | Deploy guard re-subscribe | — | commit 4cd5dee deployado via CI/CD |
 | CONCLUÍDA | Fix WhatsApp QR Code não aparecia | — | 3 bugs corrigidos: condição frontend + handleRefreshQR + normalização "close"→"disconnected" backend (commit 3248b30) |
 | CONCLUÍDA | Fix Evolution API não gerava QR (Baileys silent failure) | — | 8 bugs: imagem 14m defasada → upgrade v2.3.7, DATABASE_ENABLED, CACHE_REDIS desabilitado, parser fetchInstances, webhook internal IP (commits d4eb26d→ce103a0) |
-| PENDENTE | Reconectar WhatsApp santos-car | CRÍTICA | Instâncias Evolution foram resetadas na sessão 14 (limpeza do banco). Acessar /whatsapp → "Conectar WhatsApp" → escanear QR |
+| PENDENTE | Reconectar Central de Atendimento santos-car | CRÍTICA | Instâncias Evolution foram resetadas na sessão 14. Acessar /whatsapp (Central de Atendimento) → "Conectar canal" → escanear QR |
 | PENDENTE | devecar subscribe antes de 2026-05-31 | Alta | Trial expira 31/05 — fazer login com dilneysantos.developer@gmail.com e assinar starter |
 | CONCLUÍDA | Fix vehicle detail 500 (digest 4250320451) | — | features null + photo_urls→images — commit 2ee68ab |
 | CONCLUÍDA | Fix billing trial — botão bloqueado durante trialing | — | isActiveAndCurrent = isCurrent && !isTrialing — commit 81eceb5 |
@@ -91,7 +91,8 @@
 | CONCLUÍDA | Módulo Vendas | — | Pipeline + comissões |
 | CONCLUÍDA | Módulo Analytics | — | Plano Pro+ apenas |
 | CONCLUÍDA | Settings e Equipe | — | Configurações da loja e vendedores |
-| CONCLUÍDA | WhatsApp screen | — | QR code, status, envio |
+| CONCLUÍDA | WhatsApp screen (Central de Atendimento) | — | QR code, status, envio — sem linguagem de bulk/spam |
+| CONCLUÍDA | Refatoração estratégica WhatsApp (sessão 17) | — | Separação CONCEITO 1 (Central de Atendimento: Evolution/CRM) e CONCEITO 2 (Contato Público da Loja: vitrine). Menu → "Central de Atendimento". Settings → aba "Contato Público". Vitrine pública exibe contato público. Ver `22_HISTORICO_ALTERACOES.md` sessão 17 |
 | CONCLUÍDA | Billing screens | — | Assinatura, planos, faturas |
 
 ---

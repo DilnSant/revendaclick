@@ -3,7 +3,7 @@ import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import WhatsAppManager from '@/components/whatsapp/WhatsAppManager'
 
-export const metadata = { title: 'WhatsApp' }
+export const metadata = { title: 'Central de Atendimento' }
 
 const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
@@ -12,7 +12,7 @@ export interface InstanceStatus {
   status: string
 }
 
-export default async function WhatsAppPage() {
+export default async function AttendanceCenterPage() {
   const userId = await getUserIdFromHeaders()
   if (!userId) notFound()
 
@@ -28,8 +28,10 @@ export default async function WhatsAppPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-graphite">WhatsApp</h1>
-        <p className="mt-0.5 text-sm text-gray-500">Conecte seu WhatsApp para receber leads automaticamente</p>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Central de Atendimento</h1>
+        <p className="mt-0.5 text-sm text-gray-500">
+          Conecte seu canal de atendimento para receber e gerenciar leads automaticamente no CRM
+        </p>
       </div>
       <WhatsAppManager initialStatus={status} tenantSlug={tenant.slug} />
     </div>

@@ -307,6 +307,28 @@ export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> 
   }
 }
 
+// ─── Public store contact ─────────────────────────────────────────────────────
+
+export type PublicContact = {
+  public_whatsapp: string | null
+  public_phone: string | null
+  public_email: string | null
+  instagram: string | null
+  groups_link: string | null
+  location: string | null
+}
+
+export const getPublicStoreContact = cache(async (tenantId: string): Promise<PublicContact | null> => {
+  const supabase = createServiceClient()
+  const { data, error } = await supabase
+    .from('tenant_public_contacts')
+    .select('public_whatsapp, public_phone, public_email, instagram, groups_link, location')
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
+  if (error || !data) return null
+  return data as PublicContact
+})
+
 // ─── WhatsApp helper ─────────────────────────────────────────────────────────
 
 export function buildWhatsAppUrl(phone: string, message: string): string {

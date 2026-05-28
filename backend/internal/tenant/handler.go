@@ -7,14 +7,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"revendaclick/backend/internal/middleware"
 	"revendaclick/backend/internal/response"
+	"revendaclick/backend/internal/storecontact"
 )
 
 type Handler struct {
-	svc *Service
+	svc        *Service
+	contactSvc *storecontact.Service
 }
 
-func NewHandler(svc *Service) *Handler {
-	return &Handler{svc: svc}
+func NewHandler(svc *Service, contactSvc *storecontact.Service) *Handler {
+	return &Handler{svc: svc, contactSvc: contactSvc}
 }
 
 // GET /api/tenants/me
@@ -87,19 +89,39 @@ func (h *Handler) GetPublic(c *gin.Context) {
 		response.InternalError(c)
 		return
 	}
-	// Strip sensitive fields for public response
-	c.JSON(http.StatusOK, gin.H{
-		"data": gin.H{
-			"id":              t.ID,
-			"slug":            t.Slug,
-			"name":            t.Name,
-			"phone_whatsapp":  t.PhoneWhatsApp,
-			"logo_url":        t.LogoURL,
-			"description":     t.Description,
-			"social_links":    t.SocialLinks,
-			"seo_title":       t.SEOTitle,
-			"seo_description": t.SEODescription,
-			"theme":           t.Theme,
-		},
-	})
+
+	// Busca contato público — sem erro se não cadastrado (nil é aceitável)
+	var contact *storecontact.StoreContact
+	if h.contactSvc != nil {
+		contact, _ = h.contactSvc.Get(c.Request.Context(), t.ID)
+	}
+
+	// Monta resposta pública sem campos sensíveis
+	publicData := gin.H{
+		"id":              t.ID,
+		"slug":            t.Slug,
+		"name":            t.Name,
+		"phone_whatsapp":  t.PhoneWhatsApp,
+		"logo_url":        t.LogoURL,
+		"description":     t.Description,
+		"social_links":    t.SocialLinks,
+		"seo_title":       t.SEOTitle,
+		"seo_description": t.SEODescription,
+		"theme":           t.Theme,
+	}
+
+	if contact != nil {
+		publicData["public_contact"] = gin.H{
+			"public_whatsapp": contact.PublicWhatsApp,
+			"public_phone":    contact.PublicPhone,
+			"public_email":    contact.PublicEmail,
+			"instagram":       contact.Instagram,
+			"groups_link":     contact.GroupsLink,
+			"location":        contact.Location,
+		}
+	} else {
+		publicData["public_contact"] = nil
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": publicData})
 }

@@ -77,3 +77,26 @@ export async function subscribePlan(planName: string, billingCycle: string): Pro
   if (!result.error) revalidatePath('/settings')
   return result
 }
+
+// ── Store Contact (Contato Público da Loja) ───────────────────────────────────
+
+export interface StoreContactData {
+  id?: string
+  tenant_id?: string
+  public_whatsapp: string | null
+  public_phone: string | null
+  public_email: string | null
+  instagram: string | null
+  groups_link: string | null
+  location: string | null
+}
+
+export async function getStoreContact(): Promise<ApiResult<StoreContactData>> {
+  return apiCall<StoreContactData>('GET', '/api/store-contact')
+}
+
+export async function saveStoreContact(payload: Omit<StoreContactData, 'id' | 'tenant_id'>): Promise<ApiResult<StoreContactData>> {
+  const result = await apiCall<StoreContactData>('PUT', '/api/store-contact', payload)
+  if (!result.error) revalidatePath('/settings')
+  return result
+}

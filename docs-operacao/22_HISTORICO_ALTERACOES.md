@@ -12,6 +12,51 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 17) — Refatoração estratégica WhatsApp: Central de Atendimento × Contato Público da Loja
+
+**Commits:** pendente
+**Migration:** 018 aplicada ao Supabase (tenant_public_contacts + tenant_whatsapp_sessions)
+
+### Problema
+
+O sistema conflava dois conceitos distintos sob o nome "WhatsApp":
+- **CONCEITO 1 (operacional):** Evolution API, QR Code, sessão, CRM, leads automáticos — restrito ao dashboard interno
+- **CONCEITO 2 (comercial):** Botão de contato público na vitrine, Instagram, grupo de ofertas, localização — visível a clientes
+
+### Divergências corrigidas antes das alterações
+
+1. `docs-operacao/16_EVOLUTION.md` — `atendai/evolution-api:latest` → `evoapicloud/evolution-api:v2.3.7` (código real no `docker-compose.production.yml`)
+2. `docs-operacao/08_API_ROTAS_REAIS.md` — `PUT /api/billing/subscription` estava ausente (adicionado)
+
+### Arquivos criados
+
+- `database/migrations/018_tenant_public_contacts_and_whatsapp_sessions.sql` — tabelas `tenant_public_contacts` + `tenant_whatsapp_sessions` com RLS, indexes, triggers
+- `backend/internal/storecontact/model.go` — `StoreContact`, `UpsertRequest`
+- `backend/internal/storecontact/repository.go` — `GetByTenantID`, `Upsert`
+- `backend/internal/storecontact/service.go` — `Get`, `Upsert`
+- `backend/internal/storecontact/handler.go` — `GET /api/store-contact`, `PUT /api/store-contact`
+
+### Arquivos modificados
+
+- `backend/internal/tenant/handler.go` — `GetPublic` inclui `public_contact` na resposta pública do slug
+- `backend/internal/server/server.go` — rotas `GET/PUT /api/store-contact` + inicialização do módulo storecontact
+- `frontend/components/layout/DashboardShell.tsx` — menu "WhatsApp" → "Central de Atendimento" (ícone headset)
+- `frontend/app/(dashboard)/whatsapp/page.tsx` — título/descrição → linguagem de CRM/atendimento
+- `frontend/components/whatsapp/WhatsAppManager.tsx` — todos os textos sem linguagem de bulk/spam; banner explicativo apontando para Settings → Contato Público
+- `frontend/app/(dashboard)/settings/actions.ts` — `StoreContactData`, `getStoreContact()`, `saveStoreContact()`
+- `frontend/app/(dashboard)/settings/page.tsx` — fetch `getStoreContact()` em parallel; passa `storeContact` ao `SettingsTabs`
+- `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx` — nova aba "Contato Público" + componente `ContactTab` (6 campos: WhatsApp, telefone, email, Instagram, link grupos, localização)
+- `frontend/lib/tenant.ts` — tipo `PublicContact` + função `getPublicStoreContact(tenantId)`
+- `frontend/app/(public)/[slug]/page.tsx` — vitrine pública exibe `public_contact`: Instagram, telefone, email, localização, link grupo; botão WhatsApp usa `public_whatsapp` com fallback para `phone_whatsapp`
+
+### Docs atualizadas
+
+- `08_API_ROTAS_REAIS.md` — rotas `GET/PUT /api/store-contact` + nota `public_contact` na rota pública
+- `20_PENDENCIAS.md` — refatoração marcada CONCLUÍDA, nomenclatura atualizada
+- `23_PROXIMO_PASSO.md` — estado atualizado
+
+---
+
 ## 2026-05-28 (sessão 16) — Endpoint de upgrade de plano
 
 **Commits:** pendente

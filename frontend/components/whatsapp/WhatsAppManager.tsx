@@ -5,14 +5,13 @@ import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
 import type { InstanceStatus } from '@/app/(dashboard)/whatsapp/page'
 
 const TEMPLATES = [
-  { label: 'Boas-vindas', text: 'Olá! Obrigado pelo seu interesse. Como posso ajudar?' },
+  { label: 'Boas-vindas', text: 'Olá! Obrigado pelo contato. Como posso ajudar?' },
   { label: 'Veículo disponível', text: 'Olá! O veículo que você consultou ainda está disponível. Gostaria de agendar uma visita?' },
   { label: 'Proposta enviada', text: 'Olá! Enviamos uma proposta para você. Ficou com alguma dúvida?' },
-  { label: 'Follow-up', text: 'Olá! Passando para saber se ainda tem interesse no veículo. Posso te ajudar com mais informações?' },
+  { label: 'Follow-up', text: 'Olá! Passando para verificar se ainda tem interesse. Posso te ajudar com mais informações?' },
 ]
 
-// All Evolution calls go through local Next.js proxy routes (same-origin, no CORS issues)
-const RECONNECT_INTERVAL = 30 * 1000  // 30s auto-reconnect poll
+const RECONNECT_INTERVAL = 30 * 1000
 
 interface QRData {
   code?: string
@@ -45,10 +44,10 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  open:         'Conectado',
+  open:         'Canal conectado',
   connecting:   'Conectando…',
-  disconnected: 'Desconectado',
-  close:        'Desconectado',
+  disconnected: 'Canal desconectado',
+  close:        'Canal desconectado',
 }
 
 export default function WhatsAppManager({
@@ -75,7 +74,6 @@ export default function WhatsAppManager({
     setTimeout(() => setToast(null), 4000)
   }
 
-  // Used by auto-polls (silent — no toast on error)
   const refreshStatus = useCallback(async () => {
     const result = await apiFetch<InstanceStatus>('GET', '/api/evolution/status')
     if (result.data) {
@@ -86,7 +84,6 @@ export default function WhatsAppManager({
     }
   }, [])
 
-  // When service is down, auto-retry health probe every 30s
   useEffect(() => {
     if (!serviceDown) {
       if (retryTimerRef.current) clearInterval(retryTimerRef.current)
@@ -105,7 +102,7 @@ export default function WhatsAppManager({
       const result = await apiFetch('GET', '/api/evolution/health')
       if (!result.error) {
         setServiceDown(false)
-        showToast('Serviço WhatsApp restaurado.')
+        showToast('Canal de atendimento restaurado.')
         refreshStatus()
       }
     }, 30000)
@@ -117,21 +114,18 @@ export default function WhatsAppManager({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceDown])
 
-  // Poll status every 5s when connecting
   useEffect(() => {
     if (status.status !== 'connecting') return
     const id = setInterval(refreshStatus, 5000)
     return () => clearInterval(id)
   }, [status.status, refreshStatus])
 
-  // Auto-poll every 30s when disconnected (catches external reconnects)
   useEffect(() => {
     if (status.status !== 'disconnected') return
     const id = setInterval(refreshStatus, RECONNECT_INTERVAL)
     return () => clearInterval(id)
   }, [status.status, refreshStatus])
 
-  // Clear QR once connected
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (status.status === 'open') setQr(null)
@@ -147,7 +141,7 @@ export default function WhatsAppManager({
       }
       setQr(result.data ?? null)
       setStatus(prev => ({ ...prev, status: 'connecting' }))
-      showToast('QR code gerado. Escaneie com seu WhatsApp.')
+      showToast('QR code gerado. Conecte pelo aplicativo WhatsApp.')
     })
   }
 
@@ -198,19 +192,20 @@ export default function WhatsAppManager({
       if (result.data) {
         setStatus(result.data)
         if (result.data.status === 'open') setServiceDown(false)
-        showToast('Status atualizado: ' + (result.data.status === 'open' ? 'Conectado' : result.data.status === 'connecting' ? 'Conectando…' : 'Desconectado'))
+        const label = result.data.status === 'open' ? 'Canal conectado' : result.data.status === 'connecting' ? 'Conectando…' : 'Canal desconectado'
+        showToast('Status atualizado: ' + label)
       }
     })
   }
 
   function handleDisconnect() {
-    if (!confirm('Desconectar WhatsApp? Você precisará escanear o QR code novamente.')) return
+    if (!confirm('Desconectar o canal de atendimento? Você precisará reconectar via QR code.')) return
     startTransition(async () => {
       const result = await apiFetch('DELETE', '/api/evolution/disconnect')
       if (result.error) { showToast(result.error); return }
       setStatus({ instance_name: tenantSlug, status: 'disconnected' })
       setQr(null)
-      showToast('WhatsApp desconectado.')
+      showToast('Canal desconectado.')
     })
   }
 
@@ -235,9 +230,9 @@ export default function WhatsAppManager({
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
             </svg>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-orange-800">Serviço WhatsApp temporariamente indisponível</p>
+              <p className="text-sm font-semibold text-orange-800">Canal de atendimento temporariamente indisponível</p>
               <p className="mt-1 text-xs text-orange-700">
-                O Evolution API está iniciando ou reiniciando.{' '}
+                O serviço está iniciando ou reiniciando.{' '}
                 {retryCountdown !== null && retryCountdown > 0
                   ? `Verificando novamente em ${retryCountdown}s…`
                   : 'Tentando reconectar…'}
@@ -263,7 +258,7 @@ export default function WhatsAppManager({
             </div>
             <div>
               <p className="font-semibold text-gray-900">
-                Instância: <span className="font-mono text-sm">{status.instance_name || tenantSlug}</span>
+                Canal: <span className="font-mono text-sm">{status.instance_name || tenantSlug}</span>
               </p>
               <span className={`inline-block mt-0.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[status.status] ?? STATUS_COLORS.disconnected}`}>
                 {STATUS_LABELS[status.status] ?? status.status}
@@ -293,7 +288,7 @@ export default function WhatsAppManager({
                 disabled={pending}
                 className="btn-primary text-xs py-1.5 px-3 disabled:opacity-50"
               >
-                {pending ? 'Aguarde…' : 'Conectar WhatsApp'}
+                {pending ? 'Aguarde…' : 'Conectar canal'}
               </button>
             )}
           </div>
@@ -303,16 +298,18 @@ export default function WhatsAppManager({
       {/* QR Code display */}
       {qr && !isConnected && (
         <div className="card p-6 text-center space-y-4">
-          <h2 className="text-base font-semibold text-gray-900">Escaneie o QR code com seu WhatsApp</h2>
+          <h2 className="text-base font-semibold text-gray-900">
+            Conecte seu canal de atendimento pelo aplicativo WhatsApp
+          </h2>
           <p className="text-sm text-gray-500">
-            Abra o WhatsApp → Dispositivos conectados → Conectar um dispositivo → Escaneie o código
+            Abra o WhatsApp → Dispositivos conectados → Conectar um dispositivo → Escaneie o código abaixo
           </p>
 
           {qr.base64 ? (
             <div className="flex justify-center">
               <Image
                 src={`data:image/png;base64,${qr.base64}`}
-                alt="QR Code WhatsApp"
+                alt="QR Code — Central de Atendimento"
                 width={256}
                 height={256}
                 className="rounded-lg border border-gray-200 shadow-sm"
@@ -346,13 +343,13 @@ export default function WhatsAppManager({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-md rounded-2xl bg-white shadow-xl p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">Enviar mensagem</h2>
+              <h2 className="text-base font-semibold text-gray-900">Enviar mensagem de atendimento</h2>
               <button onClick={() => setSendModal(false)} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
             </div>
 
             <form onSubmit={handleSend} className="space-y-4">
               <div>
-                <label className="label">Número WhatsApp</label>
+                <label className="label">Número do cliente</label>
                 <input
                   type="tel"
                   value={sendPhone}
@@ -381,7 +378,7 @@ export default function WhatsAppManager({
                 <textarea
                   value={sendMessage}
                   onChange={e => setSendMessage(e.target.value)}
-                  placeholder="Digite sua mensagem…"
+                  placeholder="Digite sua mensagem de atendimento…"
                   required
                   rows={4}
                   maxLength={4096}
@@ -407,7 +404,7 @@ export default function WhatsAppManager({
       {isConnected && (
         <div className="card p-6 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">WhatsApp conectado</h2>
+            <h2 className="text-base font-semibold text-gray-900">Canal conectado</h2>
             <button
               onClick={() => setSendModal(true)}
               className="btn-primary text-xs py-1.5 px-3"
@@ -416,12 +413,12 @@ export default function WhatsAppManager({
             </button>
           </div>
           <p className="text-sm text-gray-600">
-            Leads enviando mensagens para seu WhatsApp serão automaticamente registrados no CRM.
+            Clientes que enviarem mensagens para seu WhatsApp serão registrados automaticamente como leads no CRM.
           </p>
           <div className="rounded-lg bg-green-50 border border-green-100 p-4">
-            <p className="text-sm font-medium text-green-800">Webhook ativo</p>
+            <p className="text-sm font-medium text-green-800">Automação ativa</p>
             <p className="mt-1 text-xs text-green-700">
-              Mensagens recebidas → lead criado ou atualizado → atividade registrada no CRM
+              Mensagem recebida → lead criado ou atualizado → atividade registrada no CRM → equipe notificada
             </p>
           </div>
         </div>
@@ -429,14 +426,21 @@ export default function WhatsAppManager({
 
       {/* Info when disconnected */}
       {isDisconnected && !qr && (
-        <div className="card p-6 space-y-3">
-          <h2 className="text-base font-semibold text-gray-900">Como funciona</h2>
+        <div className="card p-6 space-y-4">
+          <h2 className="text-base font-semibold text-gray-900">Como funciona a Central de Atendimento</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
-            <li>Clique em &ldquo;Conectar WhatsApp&rdquo;</li>
-            <li>Escaneie o QR code com o WhatsApp da sua revenda</li>
-            <li>Leads que enviarem mensagens serão criados automaticamente no CRM</li>
-            <li>Mensagens são registradas como atividades na linha do tempo do lead</li>
+            <li>Clique em &ldquo;Conectar canal&rdquo; e escaneie o QR code com o WhatsApp da revenda</li>
+            <li>Clientes que enviarem mensagens são criados automaticamente como leads no CRM</li>
+            <li>Cada mensagem é registrada como atividade na linha do tempo do lead</li>
+            <li>A equipe de atendimento acompanha e responde pelo painel de Leads</li>
           </ol>
+          <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
+            <p className="text-xs font-medium text-blue-800">Canal exclusivo de atendimento e CRM</p>
+            <p className="mt-0.5 text-xs text-blue-700">
+              Este canal é utilizado para atendimento individual de leads e clientes — não para envios em massa.
+              Para configurar o botão público de contato da loja, acesse Configurações → Contato Público.
+            </p>
+          </div>
         </div>
       )}
     </div>

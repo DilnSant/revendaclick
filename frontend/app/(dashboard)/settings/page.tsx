@@ -3,8 +3,8 @@ import { getUserIdFromHeaders, getTenantForUser, getTenantById } from '@/lib/ten
 import { createClient } from '@/lib/supabaseServer'
 import type { User } from '@/lib/users'
 import SettingsTabs from './_components/SettingsTabs'
-import { getSubscription } from './actions'
-import type { SubscriptionData } from './actions'
+import { getSubscription, getStoreContact } from './actions'
+import type { SubscriptionData, StoreContactData } from './actions'
 
 export const metadata = { title: 'Configurações' }
 
@@ -28,15 +28,17 @@ export default async function SettingsPage({ searchParams }: Props) {
   const { data: { session } } = await supabase.auth.getSession()
   const token = session?.access_token ?? ''
 
-  const [tenant, users, subscriptionResult] = await Promise.all([
+  const [tenant, users, subscriptionResult, storeContactResult] = await Promise.all([
     getTenantById(tenantCtx.id),
     fetchUsers(token),
     getSubscription(),
+    getStoreContact(),
   ])
 
   if (!tenant) notFound()
 
   const subscription: SubscriptionData | null = subscriptionResult.error ? null : subscriptionResult.data
+  const storeContact: StoreContactData | null = storeContactResult.error ? null : storeContactResult.data
 
   return (
     <div className="space-y-6">
@@ -62,6 +64,7 @@ export default async function SettingsPage({ searchParams }: Props) {
         }}
         users={users}
         subscription={subscription}
+        storeContact={storeContact}
       />
     </div>
   )

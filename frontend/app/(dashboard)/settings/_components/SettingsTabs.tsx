@@ -3,8 +3,8 @@
 import Link from 'next/link'
 import { useState, useTransition, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateTenantProfile, subscribePlan } from '../actions'
-import type { SubscriptionData } from '../actions'
+import { updateTenantProfile, subscribePlan, saveStoreContact } from '../actions'
+import type { SubscriptionData, StoreContactData } from '../actions'
 import { inviteVendor } from '@/app/(dashboard)/vendors/actions'
 import type { User } from '@/lib/users'
 import { ROLE_LABELS, ROLE_COLORS, userInitials } from '@/lib/users'
@@ -30,9 +30,10 @@ interface Props {
   tenant: TenantData
   users: User[]
   subscription: SubscriptionData | null
+  storeContact: StoreContactData | null
 }
 
-export default function SettingsTabs({ tab, tenant, users, subscription }: Props) {
+export default function SettingsTabs({ tab, tenant, users, subscription, storeContact }: Props) {
   const [toasts, setToasts]         = useState<ToastMessage[]>([])
   const toastIdRef                  = useRef(0)
 
@@ -46,9 +47,10 @@ export default function SettingsTabs({ tab, tenant, users, subscription }: Props
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex gap-1">
           {[
-            { key: 'store',  label: 'Loja' },
-            { key: 'users',  label: 'Usuários' },
-            { key: 'plan',   label: 'Plano' },
+            { key: 'store',   label: 'Loja' },
+            { key: 'contact', label: 'Contato Público' },
+            { key: 'users',   label: 'Usuários' },
+            { key: 'plan',    label: 'Plano' },
           ].map(({ key, label }) => (
             <a
               key={key}
@@ -66,9 +68,10 @@ export default function SettingsTabs({ tab, tenant, users, subscription }: Props
       </div>
 
       {/* Tab content */}
-      {tab === 'store'  && <StoreTab tenant={tenant} onToast={addToast} />}
-      {tab === 'users'  && <UsersTab users={users} subscription={subscription} />}
-      {tab === 'plan'   && <PlanTab initialSubscription={subscription} />}
+      {tab === 'store'   && <StoreTab tenant={tenant} onToast={addToast} />}
+      {tab === 'contact' && <ContactTab storeContact={storeContact} onToast={addToast} />}
+      {tab === 'users'   && <UsersTab users={users} subscription={subscription} />}
+      {tab === 'plan'    && <PlanTab initialSubscription={subscription} />}
 
       <ToastContainer toasts={toasts} onDismiss={id => setToasts(p => p.filter(t => t.id !== id))} />
     </>
@@ -300,6 +303,146 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
       <div className="flex justify-end">
         <button type="submit" disabled={pending || logoUploading} className="btn-primary">
           {pending ? 'Salvando…' : 'Salvar alterações'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+// ─── Contact Tab ──────────────────────────────────────────────────────────────
+
+function ContactTab({
+  storeContact,
+  onToast,
+}: {
+  storeContact: StoreContactData | null
+  onToast: (t: Omit<ToastMessage, 'id'>) => void
+}) {
+  const [form, setForm] = useState({
+    public_whatsapp: storeContact?.public_whatsapp ?? '',
+    public_phone:    storeContact?.public_phone ?? '',
+    public_email:    storeContact?.public_email ?? '',
+    instagram:       storeContact?.instagram ?? '',
+    groups_link:     storeContact?.groups_link ?? '',
+    location:        storeContact?.location ?? '',
+  })
+  const [pending, startTransition] = useTransition()
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    startTransition(async () => {
+      const result = await saveStoreContact({
+        public_whatsapp: form.public_whatsapp.trim() || null,
+        public_phone:    form.public_phone.trim() || null,
+        public_email:    form.public_email.trim() || null,
+        instagram:       form.instagram.trim() || null,
+        groups_link:     form.groups_link.trim() || null,
+        location:        form.location.trim() || null,
+      })
+      if (result.error) {
+        onToast({ type: 'error', text: result.error.message })
+      } else {
+        onToast({ type: 'success', text: 'Contato público atualizado com sucesso.' })
+      }
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="rounded-xl border border-blue-100 bg-blue-50 px-5 py-3.5">
+        <p className="text-sm font-semibold text-blue-900">Contato público da loja</p>
+        <p className="mt-0.5 text-xs text-blue-700">
+          Esses dados aparecem na vitrine pública para clientes entrarem em contato.
+          Independente da Central de Atendimento (Evolution/CRM).
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
+        <h2 className="text-base font-semibold text-gray-900">Canais de contato</h2>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">WhatsApp da loja</label>
+            <input
+              type="tel"
+              value={form.public_whatsapp}
+              onChange={e => setForm(f => ({ ...f, public_whatsapp: e.target.value }))}
+              maxLength={20}
+              className="input"
+              placeholder="(11) 99999-9999"
+            />
+            <p className="mt-1 text-xs text-gray-400">Botão de WhatsApp exibido na vitrine</p>
+          </div>
+          <div>
+            <label className="label">Telefone fixo</label>
+            <input
+              type="tel"
+              value={form.public_phone}
+              onChange={e => setForm(f => ({ ...f, public_phone: e.target.value }))}
+              maxLength={20}
+              className="input"
+              placeholder="(11) 3333-4444"
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">E-mail de contato</label>
+            <input
+              type="email"
+              value={form.public_email}
+              onChange={e => setForm(f => ({ ...f, public_email: e.target.value }))}
+              maxLength={120}
+              className="input"
+              placeholder="contato@minha-loja.com.br"
+            />
+          </div>
+          <div>
+            <label className="label">Instagram</label>
+            <div className="relative">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-gray-400">@</span>
+              <input
+                type="text"
+                value={form.instagram}
+                onChange={e => setForm(f => ({ ...f, instagram: e.target.value }))}
+                maxLength={60}
+                className="input pl-7"
+                placeholder="minha_loja"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="label">Link do grupo WhatsApp</label>
+          <input
+            type="url"
+            value={form.groups_link}
+            onChange={e => setForm(f => ({ ...f, groups_link: e.target.value }))}
+            maxLength={300}
+            className="input"
+            placeholder="https://chat.whatsapp.com/..."
+          />
+          <p className="mt-1 text-xs text-gray-400">Link de convite para grupo de ofertas ou novidades</p>
+        </div>
+
+        <div>
+          <label className="label">Endereço / Localização</label>
+          <input
+            type="text"
+            value={form.location}
+            onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+            maxLength={200}
+            className="input"
+            placeholder="Rua das Flores, 100 — São Paulo, SP"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button type="submit" disabled={pending} className="btn-primary">
+          {pending ? 'Salvando…' : 'Salvar contato'}
         </button>
       </div>
     </form>

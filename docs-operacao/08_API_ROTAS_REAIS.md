@@ -23,7 +23,7 @@
 | GET | `/api/v1/health` | Health check simples |
 | GET | `/metrics` | Prometheus (requer Bearer METRICS_TOKEN; bloqueado por nginx para IPs externos) |
 | GET | `/api/plans` | Lista todos os planos (pricing page) |
-| GET | `/api/public/:slug/` | Dados públicos da loja pelo slug |
+| GET | `/api/public/:slug/` | Dados públicos da loja pelo slug (inclui `public_contact`) |
 | GET | `/api/public/:slug/vehicles` | Veículos disponíveis da loja |
 | GET | `/api/public/:slug/vehicles/:vehicleSlug` | Veículo específico pelo slug |
 | POST | `/api/public/:slug/leads` | Cria lead (formulário público) |
@@ -51,9 +51,12 @@
 | PUT | `/api/onboarding` | qualquer |
 | GET | `/api/billing/subscription` | qualquer |
 | POST | `/api/billing/subscribe` | owner, admin |
+| PUT | `/api/billing/subscription` | owner, admin |
 | DELETE | `/api/billing/subscription` | owner, admin |
 | POST | `/api/billing/reactivate` | owner, admin |
 | GET | `/api/billing/invoices` | qualquer |
+| GET | `/api/store-contact` | qualquer |
+| PUT | `/api/store-contact` | owner, admin |
 
 ---
 

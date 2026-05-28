@@ -23,6 +23,7 @@ import (
 	"revendaclick/backend/internal/observability"
 	"revendaclick/backend/internal/onboarding"
 	"revendaclick/backend/internal/plans"
+	"revendaclick/backend/internal/storecontact"
 	"revendaclick/backend/internal/tenant"
 	"revendaclick/backend/internal/users"
 	"revendaclick/backend/internal/vehicles"
@@ -56,7 +57,10 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	}))
 
 	// ── Module initialization ─────────────────────────────────────────────────
-	tenantH     := tenant.NewHandler(tenant.NewService(tenant.NewRepository(pool)))
+	contactRepo  := storecontact.NewRepository(pool)
+	contactSvc   := storecontact.NewService(contactRepo)
+	storeContactH := storecontact.NewHandler(contactSvc)
+	tenantH     := tenant.NewHandler(tenant.NewService(tenant.NewRepository(pool)), contactSvc)
 	vehicleH    := vehicles.NewHandler(vehicles.NewService(vehicles.NewRepository(pool)))
 	leadH       := leads.NewHandler(leads.NewService(leads.NewRepository(pool)))
 	customerH   := customers.NewHandler(customers.NewService(customers.NewRepository(pool)))
@@ -142,6 +146,10 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		// Onboarding checklist always readable/writable
 		free.GET("/onboarding", onboardingH.Get)
 		free.PUT("/onboarding", onboardingH.Update)
+
+		// Contato público da loja (não requer subscription ativa)
+		free.GET("/store-contact", storeContactH.Get)
+		free.PUT("/store-contact", ownerAdmin, storeContactH.Upsert)
 
 		// Billing routes always accessible so tenant can pay
 		// StrictRateLimit on subscribe/reactivate: they call Asaas API (external, paid)
