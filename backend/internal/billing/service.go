@@ -183,6 +183,15 @@ func (s *Service) ReactivateSubscription(ctx context.Context, tenantID string) e
 	return s.repo.ReactivateByTenantID(ctx, tenantID)
 }
 
+// DevActivate bypasses Asaas and immediately activates a subscription.
+// Only call from routes that are registered exclusively in non-production environments.
+func (s *Service) DevActivate(ctx context.Context, tenantID, planName string) (*Subscription, error) {
+	if err := s.repo.DevActivateSubscription(ctx, tenantID, planName); err != nil {
+		return nil, err
+	}
+	return s.GetSubscription(ctx, tenantID)
+}
+
 // ListInvoices returns the billing invoice history for a tenant.
 func (s *Service) ListInvoices(ctx context.Context, tenantID string) ([]*Invoice, error) {
 	return s.repo.ListInvoices(ctx, tenantID, 30)

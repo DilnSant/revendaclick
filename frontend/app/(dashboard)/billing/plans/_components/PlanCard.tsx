@@ -86,6 +86,9 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
   const [cpf, setCpf] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [devLoading, setDevLoading] = useState(false)
+
+  const isDevMode = process.env.NEXT_PUBLIC_DEV_BILLING === 'true'
 
   const isCurrent          = plan.name === currentPlanName
   const isTrialing         = subscription?.status === 'trialing'
@@ -100,6 +103,29 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
   const sections = PLAN_HIGHLIGHTS[plan.name] ?? []
   const isPro          = plan.name === 'pro'
   const isPerformance  = plan.name === 'performance'
+
+  async function handleDevActivate() {
+    setDevLoading(true)
+    setError(null)
+    setSuccess(null)
+    try {
+      const res = await fetch('/api/billing/dev-activate-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_name: plan.name }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Erro ao ativar.')
+        return
+      }
+      setSuccess(`Plano ${plan.display_name} ativado! Recarregue a página.`)
+    } catch {
+      setError('Erro de conexão.')
+    } finally {
+      setDevLoading(false)
+    }
+  }
 
   async function handleSubscribe() {
     setLoading(true)
@@ -347,6 +373,17 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
           )}
           {isUpgradeMode && <p>Mudança aplicada no próximo ciclo</p>}
         </div>
+
+        {/* Dev-only activation button — visible only when NEXT_PUBLIC_DEV_BILLING=true */}
+        {isDevMode && (
+          <button
+            onClick={handleDevActivate}
+            disabled={devLoading || isActiveAndCurrent}
+            className="mt-3 w-full rounded-xl border border-dashed border-amber-400 px-4 py-2 text-xs font-medium text-amber-700 hover:bg-amber-50 transition-colors disabled:opacity-40"
+          >
+            {devLoading ? 'Ativando…' : `⚡ Ativar sem pagamento (dev)`}
+          </button>
+        )}
       </div>
     </div>
   )

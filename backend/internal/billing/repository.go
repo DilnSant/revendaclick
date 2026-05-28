@@ -168,6 +168,37 @@ func (r *Repository) UpdateSubscriptionPlan(ctx context.Context, tenantID, planI
 	return err
 }
 
+// DevActivateSubscription bypasses Asaas and directly activates a subscription.
+// For use in non-production environments only. Call site must enforce ENV check.
+func (r *Repository) DevActivateSubscription(ctx context.Context, tenantID, planName string) error {
+	planID, _, _, err := r.GetPlanByName(ctx, planName)
+	if err != nil || planID == "" {
+		return errors.New("plan not found: " + planName)
+	}
+	result, err := r.pool.Exec(ctx, `
+		UPDATE subscriptions SET
+			plan_id               = $2,
+			status                = 'active',
+			billing_cycle         = 'monthly',
+			asaas_subscription_id = 'dev_test_' || $1::text,
+			asaas_payment_link    = '',
+			current_period_start  = NOW(),
+			current_period_end    = NOW() + INTERVAL '30 days',
+			trial_ends_at         = NULL,
+			grace_until           = NULL,
+			canceled_at           = NULL
+		WHERE tenant_id = $1`,
+		tenantID, planID,
+	)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("subscription not found for tenant")
+	}
+	return nil
+}
+
 func (r *Repository) CheckSubscriptionStatus(ctx context.Context, tenantID string) (status string, graceUntil *time.Time, err error) {
 	err = r.pool.QueryRow(ctx,
 		`SELECT status, grace_until FROM subscriptions WHERE tenant_id = $1`,

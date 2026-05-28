@@ -110,6 +110,25 @@ func (h *Handler) ListInvoices(c *gin.Context) {
 	response.JSON(c, http.StatusOK, gin.H{"invoices": invoices, "total": len(invoices)})
 }
 
+// POST /api/billing/dev/activate — dev/staging only (not registered in production)
+// Bypasses Asaas and immediately activates the subscription for the authenticated tenant.
+func (h *Handler) DevActivate(c *gin.Context) {
+	tenantID := middleware.TenantIDFromGin(c)
+	var body struct {
+		PlanName string `json:"plan_name"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || body.PlanName == "" {
+		response.BadRequest(c, "plan_name is required")
+		return
+	}
+	sub, err := h.svc.DevActivate(c.Request.Context(), tenantID, body.PlanName)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, sub)
+}
+
 // POST /api/webhooks/asaas — public, validated by access-token header
 func (h *Handler) Webhook(c *gin.Context) {
 	if h.asaasToken != "" {

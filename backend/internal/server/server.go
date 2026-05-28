@@ -159,6 +159,12 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		free.DELETE("/billing/subscription", ownerAdmin, billingH.Cancel)
 		free.POST("/billing/reactivate", ownerAdmin, appMiddleware.StrictRateLimit(), billingH.Reactivate)
 		free.GET("/billing/invoices", billingH.ListInvoices)
+
+		// Dev/staging only — bypasses Asaas, activates subscription directly in DB.
+		// Not registered in production (ENV=production).
+		if !cfg.IsProd() {
+			free.POST("/billing/dev/activate", ownerAdmin, billingH.DevActivate)
+		}
 	}
 
 	// ── Gated routes — blocked when subscription past_due/canceled ───────────
