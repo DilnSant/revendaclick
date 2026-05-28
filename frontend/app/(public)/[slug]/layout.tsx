@@ -24,38 +24,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace('#', '').padEnd(6, '0')
+  return {
+    r: parseInt(h.slice(0, 2), 16) || 229,
+    g: parseInt(h.slice(2, 4), 16) || 57,
+    b: parseInt(h.slice(4, 6), 16) || 53,
+  }
+}
+
+function darken(r: number, g: number, b: number, factor = 0.83): string {
+  return `${Math.round(r * factor)} ${Math.round(g * factor)} ${Math.round(b * factor)}`
+}
+
 export default async function StoreLayout({ children, params }: Props) {
   const { slug } = await params
   const tenant = await getTenantBySlug(slug)
   if (!tenant) notFound()
 
-  const primaryColor = tenant.theme?.primary_color ?? '#E53935'
+  const hexColor = (tenant.theme as { primary_color?: string } | null)?.primary_color ?? '#E53935'
+  const { r, g, b } = hexToRgb(hexColor)
+  const darkChannels = darken(r, g, b)
 
   return (
     <>
-      {/* Inject tenant brand color as CSS variable for client components */}
-      <style>{`:root { --color-primary: ${primaryColor}; }`}</style>
-
-      {/* Store header */}
-      <header className="sticky top-0 z-40 border-b border-gray-100 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-          {tenant.logo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={tenant.logo_url} alt={tenant.name} className="h-16 w-auto object-contain" />
-          ) : (
-            <span className="text-lg font-heading font-bold text-graphite">{tenant.name}</span>
-          )}
-
-          <a
-            href={`https://wa.me/${tenant.phone_whatsapp.replace(/\D/g, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary text-xs"
-          >
-            WhatsApp
-          </a>
-        </div>
-      </header>
+      {/* Override Tailwind primary channel variables + hex variable for this tenant */}
+      <style>{`
+        :root {
+          --color-primary: ${hexColor};
+          --primary: ${r} ${g} ${b};
+          --primary-dark: ${darkChannels};
+        }
+      `}</style>
 
       <main>{children}</main>
 

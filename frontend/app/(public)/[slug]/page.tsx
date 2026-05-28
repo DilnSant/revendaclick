@@ -48,7 +48,6 @@ export default async function StorePage({ params, searchParams }: Props) {
   if (!tenant) notFound()
 
   const { vehicles, total } = vehiclesRes
-  const primaryColor = (tenant.theme as { primary_color?: string } | null)?.primary_color ?? '#E53935'
   const city  = (tenant.address as { city?: string } | null)?.city
   const state = (tenant.address as { state?: string } | null)?.state
 
@@ -76,8 +75,6 @@ export default async function StorePage({ params, searchParams }: Props) {
 
   return (
     <>
-      <style>{`:root { --color-primary: ${primaryColor}; }`}</style>
-
       {/* Hero */}
       <section className="border-b border-gray-100 bg-white py-8">
         <div className="mx-auto max-w-7xl px-4">
@@ -107,7 +104,7 @@ export default async function StorePage({ params, searchParams }: Props) {
                 href={buildWhatsAppUrl(tenant.phone_whatsapp, `Olá, ${tenant.name}! Estou acessando o site de vocês.`)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-xl bg-green-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-green-600 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
               >
                 <WhatsAppIcon />
                 Falar via WhatsApp

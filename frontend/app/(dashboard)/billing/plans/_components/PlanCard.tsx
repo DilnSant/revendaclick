@@ -19,10 +19,15 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
   const [subscribeError, setSubscribeError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  const isCurrent = plan.name === currentPlanName
-  const price = cycle === 'yearly' ? plan.price_yearly / 12 : plan.price_monthly
-  const yearlyDiscount = Math.round((1 - plan.price_yearly / (plan.price_monthly * 12)) * 100)
+  const isCurrent  = plan.name === currentPlanName
+  const isTrialing = subscription?.status === 'trialing'
 
+  // Block the button only when the subscription is active on this exact plan.
+  // During trialing the user must be able to anticipate (subscribe) any plan.
+  const isActiveAndCurrent = isCurrent && !isTrialing
+
+  const price         = cycle === 'yearly' ? plan.price_yearly / 12 : plan.price_monthly
+  const yearlyDiscount = Math.round((1 - plan.price_yearly / (plan.price_monthly * 12)) * 100)
   const isPro = plan.name === 'pro'
 
   async function handleSubscribe() {
@@ -58,6 +63,13 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
     }
   }
 
+  function ctaLabel(): string {
+    if (isActiveAndCurrent) return 'Plano atual ✓'
+    if (loading)            return 'Processando…'
+    if (isCurrent && isTrialing) return 'Antecipar assinatura'
+    return 'Assinar'
+  }
+
   return (
     <div
       className={`flex flex-col rounded-xl border p-6 shadow-sm transition-shadow hover:shadow-md ${
@@ -72,7 +84,14 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
         </span>
       )}
 
-      <h3 className="text-lg font-bold text-gray-900">{plan.display_name}</h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-lg font-bold text-gray-900">{plan.display_name}</h3>
+        {isCurrent && isTrialing && (
+          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+            Trial ativo
+          </span>
+        )}
+      </div>
 
       {/* Cycle toggle */}
       <div className="mt-3 flex gap-1 rounded-lg bg-gray-100 p-1 text-xs">
@@ -130,8 +149,8 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
         ))}
       </ul>
 
-      {/* Billing type */}
-      {!isCurrent && (
+      {/* Billing type — show for all non-active-current plans */}
+      {!isActiveAndCurrent && (
         <div className="mt-4">
           <label className="text-xs text-gray-500 mb-1 block">Forma de pagamento</label>
           <select
@@ -167,35 +186,44 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
 
       {/* CTA */}
       <button
-        onClick={isCurrent ? undefined : handleSubscribe}
-        disabled={isCurrent || loading}
+        onClick={isActiveAndCurrent ? undefined : handleSubscribe}
+        disabled={isActiveAndCurrent || loading}
         className={`mt-4 w-full rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
-          isCurrent
+          isActiveAndCurrent
             ? 'bg-primary/10 text-primary border border-primary/30 cursor-default'
             : isPro
-            ? 'bg-primary text-white hover:bg-primary/90 disabled:opacity-60'
+            ? 'bg-primary text-white hover:bg-primary-dark disabled:opacity-60'
             : 'bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60'
         }`}
       >
-        {isCurrent ? 'Plano atual ✓' : loading ? 'Processando…' : 'Assinar'}
+        {ctaLabel()}
       </button>
 
-      {isCurrent && subscription && (
+      {/* Subscription status info */}
+      {isActiveAndCurrent && subscription && (
         <div className="mt-2 text-center text-xs text-gray-400 space-y-0.5">
-          {subscription.is_trialing && subscription.trial_days_left != null && (
+          {subscription.current_period_end && (
+            <p>Renova em {new Date(subscription.current_period_end).toLocaleDateString('pt-BR')}</p>
+          )}
+        </div>
+      )}
+
+      {isCurrent && isTrialing && subscription && (
+        <div className="mt-2 text-center text-xs space-y-0.5">
+          {subscription.trial_days_left != null && (
             <p className="text-blue-600 font-medium">
               {subscription.trial_days_left} dia{subscription.trial_days_left !== 1 ? 's' : ''} de trial restante{subscription.trial_days_left !== 1 ? 's' : ''}
             </p>
           )}
-          {!subscription.is_trialing && subscription.current_period_end && (
-            <p>Renova em {new Date(subscription.current_period_end).toLocaleDateString('pt-BR')}</p>
-          )}
-          {subscription.is_trialing && subscription.trial_ends_at && (
-            <p>Trial até {new Date(subscription.trial_ends_at).toLocaleDateString('pt-BR')}</p>
+          {subscription.trial_ends_at && (
+            <p className="text-gray-400">
+              Trial até {new Date(subscription.trial_ends_at).toLocaleDateString('pt-BR')}
+            </p>
           )}
         </div>
       )}
-      {!isCurrent && (
+
+      {!isCurrent && !isTrialing && (
         <p className="mt-2 text-center text-xs text-gray-400">7 dias de trial gratuito</p>
       )}
     </div>

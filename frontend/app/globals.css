@@ -4,8 +4,13 @@
 
 @layer base {
   :root {
+    /* Hex value — used in raw CSS / inline style={{ color: 'var(--color-primary)' }} */
     --color-primary:  #E53935;
     --color-graphite: #1C1C1E;
+    /* RGB channel values — used by Tailwind (bg-primary, bg-primary/10, etc.)
+       The store layout overrides these per-tenant. */
+    --primary:      229 57 53;   /* #E53935 */
+    --primary-dark: 198 40 40;   /* #C62828 */
   }
 
   html {
