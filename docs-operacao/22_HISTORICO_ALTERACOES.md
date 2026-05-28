@@ -12,6 +12,44 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 20) — Reestruturação estratégica: sidebar dinâmica, Starter rename, feature flags, add-ons
+
+**Commit:** 6321538
+**Migration:** 021 aplicada ao Supabase
+
+### Problema
+Sidebar estática mostrava tudo para todos os planos. Plan name "start" divergia do posicionamento "Starter". Feature flags `financial` e `vendors` não existiam, tornando impossível ocultar Financeiro/Vendedores para Starter. Add-ons não tinham estrutura de banco.
+
+### Alterações
+
+#### Banco (Migration 021)
+- Plano `start` → `starter` (display_name='Starter')
+- Pro+: features + `financial` + `vendors`
+- Performance+: + `ai_assistance` + `automation` + `campaigns`
+- Trigger `auto_assign_trial_subscription` atualizado para `'starter'`
+- Tabela `subscription_addons` — add-ons ativos por tenant (RLS service_role)
+- Tabela `plan_addons` — catálogo de add-ons (5 produtos: R$19-R$99/mês)
+- View `plan_usage` recriada
+
+#### Backend
+- `plans/model.go` — Usage struct: +HasFinancial, +HasVendors, +HasAIAssistance, +HasAutomation, +HasCampaigns, +HasMultiStore
+- `ComputeFeatureFlags()` computa todos os novos flags
+
+#### Frontend
+- `DashboardShell.tsx` — sidebar 100% dinâmica por feature flag:
+  - Starter: Dashboard, Veículos, Interessados, Vendas, Assinatura, Configurações
+  - Pro+ (has_kanban): + Compradores, Atendimento, Financeiro, Comissões, Vendedores
+  - Pro+ (has_central_atendimento): + Central de Atendimento
+  - Pro+ (has_analytics): + Analytics
+  - DEFAULT_FEATURES agora restritivo (false por padrão)
+  - Labels: Leads→Interessados, Clientes→Compradores, CRM→Atendimento
+  - Banner upgrade para Starter ("Desbloqueie com Pro")
+- `PlanCard.tsx` — 'start'→'starter', "Tudo do Starter"
+- `plans/page.tsx` — tabela comparativa atualizada com novos features
+- `lib/tenant.ts` — PlanUsage com novos feature flags
+
+---
+
 ## 2026-05-28 (sessão 19) — FASE 2: Consolidação SaaS — feature flags reais, onboarding v2, painel admin, correção /whatsapp, widget checklist dashboard
 
 **Commits:** feat: FASE 2 — feature flags, onboarding v2, admin panel, checklist widget

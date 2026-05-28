@@ -5,12 +5,16 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 19 — 28/05/2026)
+## Estado Atual do Projeto (sessão 20 — 28/05/2026)
 
 | Componente | Status |
 |---|---|
 | Backend Go | ⚠️ alterações locais — commit + CI/CD pendente |
 | Frontend Next.js | ⚠️ alterações locais — commit + Vercel deploy pendente |
+| Migration 021 | ✓ aplicada — starter rename, add-ons, feature flags financial/vendors |
+| Sidebar dinâmica | ✓ Starter vê menu reduzido; Pro+ vê gestão completa |
+| Plan 'starter' | ✓ renomeado, display_name='Starter', features corretas |
+| Add-ons DB | ✓ subscription_addons + plan_addons (5 produtos catalogados) |
 | Migration 020 | ✓ aplicada ao Supabase (tenant_features, super_admin, onboarding v2) |
 | Migration 019 | ✓ aplicada ao Supabase (planos reestruturados) |
 | Planos | ✓ Start / Pro / Performance / Scale com tagline + features corretas |
