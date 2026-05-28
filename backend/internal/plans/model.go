@@ -43,6 +43,12 @@ type Usage struct {
 	HasAPIAccess           bool `json:"has_api_access"`
 	HasWhiteLabel          bool `json:"has_white_label"`
 	HasCentralAtendimento  bool `json:"has_central_atendimento"`
+	HasFinancial           bool `json:"has_financial"`
+	HasVendors             bool `json:"has_vendors"`
+	HasAIAssistance        bool `json:"has_ai_assistance"`
+	HasAutomation          bool `json:"has_automation"`
+	HasCampaigns           bool `json:"has_campaigns"`
+	HasMultiStore          bool `json:"has_multi_store"`
 }
 
 func (u *Usage) ComputeAlerts() {
@@ -55,13 +61,19 @@ func (u *Usage) ComputeFeatureFlags() {
 	for _, f := range u.Features {
 		fm[f] = true
 	}
-	u.HasCRM               = fm["crm"]
-	u.HasAnalytics         = fm["analytics"]
-	u.HasWhatsApp          = fm["whatsapp_button"]
-	u.HasKanban            = fm["kanban"]
-	u.HasAPIAccess         = fm["api_access"]
-	u.HasWhiteLabel        = fm["white_label"]
+	u.HasCRM                = fm["crm"]
+	u.HasAnalytics          = fm["analytics"]
+	u.HasWhatsApp           = fm["whatsapp_button"]
+	u.HasKanban             = fm["kanban"]
+	u.HasAPIAccess          = fm["api_access"]
+	u.HasWhiteLabel         = fm["white_label"]
 	u.HasCentralAtendimento = fm["central_atendimento"]
+	u.HasFinancial          = fm["financial"]
+	u.HasVendors            = fm["vendors"]
+	u.HasAIAssistance       = fm["ai_assistance"]
+	u.HasAutomation         = fm["automation"]
+	u.HasCampaigns          = fm["campaigns"]
+	u.HasMultiStore         = fm["multi_store"]
 }
 
 func alertLevel(pct float64, max int) string {

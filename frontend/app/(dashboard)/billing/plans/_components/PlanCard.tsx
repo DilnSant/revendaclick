@@ -14,7 +14,7 @@ interface Props {
 type FeatureSection = { section: string; items: string[] }
 
 const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
-  start: [
+  starter: [
     {
       section: 'Loja & Marketplace',
       items: [
@@ -29,7 +29,7 @@ const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
   pro: [
     {
       section: 'Loja & Marketplace',
-      items: ['Tudo do Start'],
+      items: ['Tudo do Starter'],
     },
     {
       section: 'Central de Atendimento',

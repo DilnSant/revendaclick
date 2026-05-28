@@ -16,15 +16,18 @@ interface PlanFeatures {
   has_kanban: boolean
   has_api_access: boolean
   has_white_label: boolean
+  has_central_atendimento: boolean
 }
 
+// Defaults restrictive: unlock progressively from plan
 const DEFAULT_FEATURES: PlanFeatures = {
-  has_crm: true,
-  has_analytics: true,
-  has_whatsapp: true,
-  has_kanban: true,
-  has_api_access: false,
-  has_white_label: false,
+  has_crm:                false,
+  has_analytics:          false,
+  has_whatsapp:           false,
+  has_kanban:             false,
+  has_api_access:         false,
+  has_white_label:        false,
+  has_central_atendimento: false,
 }
 
 const PlanFeaturesCtx = createContext<PlanFeatures>(DEFAULT_FEATURES)
@@ -33,14 +36,23 @@ export function usePlanFeatures() {
   return useContext(PlanFeaturesCtx)
 }
 
-// ─── Nav items ────────────────────────────────────────────────────────────────
+// ─── Nav definition ───────────────────────────────────────────────────────────
 
-const NAV_MAIN = [
+type NavItem = {
+  href: string
+  label: string
+  icon: React.ReactNode
+  exact?: boolean
+}
+
+// Base items — visible to all active users
+const NAV_BASE: NavItem[] = [
   {
     href: '/dashboard',
     label: 'Dashboard',
+    exact: true,
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10-3a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1v-7z" />
       </svg>
     ),
@@ -49,35 +61,17 @@ const NAV_MAIN = [
     href: '/vehicles',
     label: 'Veículos',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM7.3 7l1.4-3.6A1 1 0 019.6 3H17a1 1 0 01.9.6L19 7M3 11l1-4h16l1 4v4H3v-4z" />
       </svg>
     ),
   },
   {
     href: '/leads',
-    label: 'Leads',
+    label: 'Interessados',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V21a1 1 0 01-1.447.894l-4-2A1 1 0 017 19v-5.586L3.293 6.707A1 1 0 013 6V4z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/customers',
-    label: 'Clientes',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/vendors',
-    label: 'Vendedores',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     ),
   },
@@ -85,28 +79,29 @@ const NAV_MAIN = [
     href: '/sales',
     label: 'Vendas',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
       </svg>
     ),
   },
 ]
 
-const NAV_ANALYSIS = [
+// Pro+ items — visible when has_kanban = true
+const NAV_PRO: NavItem[] = [
   {
-    href: '/analytics',
-    label: 'Analytics',
+    href: '/customers',
+    label: 'Compradores',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     ),
   },
   {
     href: '/crm',
-    label: 'CRM',
+    label: 'Atendimento',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
       </svg>
     ),
@@ -115,7 +110,7 @@ const NAV_ANALYSIS = [
     href: '/financial',
     label: 'Financeiro',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
@@ -124,39 +119,17 @@ const NAV_ANALYSIS = [
     href: '/financial/commissions',
     label: 'Comissões',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
       </svg>
     ),
   },
-]
-
-const NAV_SYSTEM = [
   {
-    href: '/whatsapp',
-    label: 'Central de Atendimento',
+    href: '/vendors',
+    label: 'Vendedores',
     icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/billing',
-    label: 'Assinatura',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/settings',
-    label: 'Configurações',
-    icon: (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 016 0z" />
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     ),
   },
@@ -179,164 +152,236 @@ interface Props {
 export default function DashboardShell(props: Props) {
   const { tenantName, tenantSlug, userEmail, planDisplay, planFeatures, children } = props
   const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => { setMobileOpen(false) }, [pathname])
 
   const features: PlanFeatures = {
-    has_crm:         planFeatures?.has_crm         ?? DEFAULT_FEATURES.has_crm,
-    has_analytics:   planFeatures?.has_analytics   ?? DEFAULT_FEATURES.has_analytics,
-    has_whatsapp:    planFeatures?.has_whatsapp     ?? DEFAULT_FEATURES.has_whatsapp,
-    has_kanban:      planFeatures?.has_kanban       ?? DEFAULT_FEATURES.has_kanban,
-    has_api_access:  planFeatures?.has_api_access   ?? DEFAULT_FEATURES.has_api_access,
-    has_white_label: planFeatures?.has_white_label  ?? DEFAULT_FEATURES.has_white_label,
+    has_crm:                 planFeatures?.has_crm                 ?? DEFAULT_FEATURES.has_crm,
+    has_analytics:           planFeatures?.has_analytics           ?? DEFAULT_FEATURES.has_analytics,
+    has_whatsapp:            planFeatures?.has_whatsapp            ?? DEFAULT_FEATURES.has_whatsapp,
+    has_kanban:              planFeatures?.has_kanban              ?? DEFAULT_FEATURES.has_kanban,
+    has_api_access:          planFeatures?.has_api_access          ?? DEFAULT_FEATURES.has_api_access,
+    has_white_label:         planFeatures?.has_white_label         ?? DEFAULT_FEATURES.has_white_label,
+    has_central_atendimento: planFeatures?.has_central_atendimento ?? DEFAULT_FEATURES.has_central_atendimento,
   }
-
-  // Close mobile sidebar on route change
-  const pathname = usePathname()
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setMobileOpen(false) }, [pathname])
 
   return (
     <PlanFeaturesCtx.Provider value={features}>
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile overlay backdrop */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside className={`
-        fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-white border-r border-gray-100 shadow-sm
-        transition-transform duration-200 ease-in-out lg:translate-x-0 lg:shadow-none
-        ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        {/* Logo */}
-        <div className="flex h-40 shrink-0 items-center border-b border-gray-100 px-4">
-          <Image
-            src="/logo.png"
-            alt="RevendaClick"
-            width={870}
-            height={592}
-            style={{ height: '144px', width: 'auto' }}
-            className="object-contain"
-            priority
+      <div className="min-h-screen bg-gray-50">
+        {/* Mobile overlay */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-20 bg-black/40 lg:hidden"
+            onClick={() => setMobileOpen(false)}
           />
-        </div>
+        )}
 
-        {/* Store name */}
-        <div className="border-b border-gray-50 px-4 py-3">
-          <p className="text-xs text-gray-400">Loja</p>
-          <p className="truncate text-sm font-medium text-gray-800">{tenantName}</p>
-          {planDisplay && (
-            <span className="mt-0.5 inline-block rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
-              {planDisplay}
-            </span>
-          )}
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          <NavGroup items={NAV_MAIN} pathname={pathname} />
-
-          <div>
-            <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-              Análise
-            </p>
-            <NavGroup items={NAV_ANALYSIS} pathname={pathname} />
+        {/* Sidebar */}
+        <aside className={`
+          fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-white border-r border-gray-100 shadow-sm
+          transition-transform duration-200 ease-in-out lg:translate-x-0 lg:shadow-none
+          ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          {/* Logo */}
+          <div className="flex h-40 shrink-0 items-center border-b border-gray-100 px-4">
+            <Image
+              src="/logo.png"
+              alt="RevendaClick"
+              width={870}
+              height={592}
+              style={{ height: '144px', width: 'auto' }}
+              className="object-contain"
+              priority
+            />
           </div>
 
-          <div>
-            <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-              Sistema
-            </p>
-            <NavGroup items={NAV_SYSTEM} pathname={pathname} />
+          {/* Store identity */}
+          <div className="border-b border-gray-50 px-4 py-3">
+            <p className="text-xs text-gray-400">Loja</p>
+            <p className="truncate text-sm font-medium text-gray-800">{tenantName}</p>
+            {planDisplay && (
+              <span className="mt-0.5 inline-block rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
+                {planDisplay}
+              </span>
+            )}
           </div>
-        </nav>
 
-        {/* User footer */}
-        <UserFooter
-          userEmail={userEmail}
-          tenantSlug={tenantSlug}
-        />
-      </aside>
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
 
-      {/* Main area */}
-      <div className="lg:pl-64 flex flex-col min-h-screen">
-        {/* Mobile topbar */}
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-gray-100 bg-white/95 backdrop-blur px-4 lg:hidden">
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <Image src="/logo.png" alt="RevendaClick" width={870} height={592} style={{ height: '96px', width: 'auto' }} className="object-contain" />
-        </header>
+            {/* Base — always visible */}
+            <NavGroup items={NAV_BASE} pathname={pathname} />
 
-        {/* Desktop topbar */}
-        <header className="hidden lg:flex h-14 items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-6 sticky top-0 z-10">
-          <Breadcrumbs pathname={pathname} />
-          <div className="flex items-center gap-3">
-            <a
-              href={`/${tenantSlug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            {/* Pro+ — only when has_kanban */}
+            {features.has_kanban && (
+              <div>
+                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                  Gestão
+                </p>
+                <NavGroup items={NAV_PRO} pathname={pathname} />
+              </div>
+            )}
+
+            {/* Starter upgrade prompt — visible only when NOT Pro+ */}
+            {!features.has_kanban && (
+              <div className="mx-1 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-3 py-3">
+                <p className="text-xs font-medium text-gray-500">Desbloqueie com Pro</p>
+                <p className="mt-0.5 text-[11px] text-gray-400 leading-snug">
+                  CRM, Financeiro, Compradores e mais
+                </p>
+                <a
+                  href="/billing/plans"
+                  className="mt-2 block rounded-lg bg-red-600 px-3 py-1.5 text-center text-xs font-semibold text-white hover:bg-red-700 transition-colors"
+                >
+                  Ver planos →
+                </a>
+              </div>
+            )}
+
+            {/* Sistema */}
+            <div>
+              <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                Sistema
+              </p>
+              <div className="space-y-0.5">
+                {/* Central de Atendimento — Pro+ */}
+                {features.has_central_atendimento && (
+                  <NavItem
+                    href="/whatsapp"
+                    label="Central de Atendimento"
+                    pathname={pathname}
+                    icon={
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                    }
+                  />
+                )}
+
+                {/* Analytics — Pro+ */}
+                {features.has_analytics && (
+                  <NavItem
+                    href="/analytics"
+                    label="Analytics"
+                    pathname={pathname}
+                    icon={
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    }
+                  />
+                )}
+
+                {/* Assinatura — always */}
+                <NavItem
+                  href="/billing"
+                  label="Assinatura"
+                  pathname={pathname}
+                  icon={
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  }
+                />
+
+                {/* Configurações — always */}
+                <NavItem
+                  href="/settings"
+                  label="Configurações"
+                  pathname={pathname}
+                  icon={
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  }
+                />
+              </div>
+            </div>
+          </nav>
+
+          {/* User footer */}
+          <UserFooter userEmail={userEmail} tenantSlug={tenantSlug} />
+        </aside>
+
+        {/* Main area */}
+        <div className="lg:pl-64 flex flex-col min-h-screen">
+          {/* Mobile topbar */}
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-gray-100 bg-white/95 backdrop-blur px-4 lg:hidden">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors"
             >
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              Ver loja
-            </a>
-            <span className="text-xs text-gray-400">{userEmail}</span>
-          </div>
-        </header>
+            </button>
+            <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
+              style={{ height: '96px', width: 'auto' }} className="object-contain" />
+          </header>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
+          {/* Desktop topbar */}
+          <header className="hidden lg:flex h-14 items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-6 sticky top-0 z-10">
+            <Breadcrumbs pathname={pathname} />
+            <div className="flex items-center gap-3">
+              <a
+                href={`/${tenantSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Ver loja
+              </a>
+              <span className="text-xs text-gray-400">{userEmail}</span>
+            </div>
+          </header>
+
+          {/* Page content */}
+          <main className="flex-1 overflow-auto p-6">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
     </PlanFeaturesCtx.Provider>
   )
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function NavGroup({
-  items,
-  pathname,
-}: {
-  items: typeof NAV_MAIN
-  pathname: string
-}) {
+function NavGroup({ items, pathname }: { items: NavItem[]; pathname: string }) {
   return (
     <div className="space-y-0.5">
-      {items.map(({ href, label, icon }) => {
-        const active = pathname === href || pathname.startsWith(href + '/')
-        return (
-          <a
-            key={href}
-            href={href}
-            className={`
-              flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
-              ${active
-                ? 'bg-red-50 text-red-700'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
-            `}
-          >
-            <span className={active ? 'text-red-600' : 'text-gray-400'}>
-              {icon}
-            </span>
-            {label}
-          </a>
-        )
-      })}
+      {items.map(item => (
+        <NavItem key={item.href} {...item} pathname={pathname} />
+      ))}
     </div>
+  )
+}
+
+function NavItem({
+  href, label, icon, pathname, exact,
+}: NavItem & { pathname: string }) {
+  const active = exact
+    ? pathname === href
+    : (pathname === href || pathname.startsWith(href + '/'))
+
+  return (
+    <a
+      href={href}
+      className={`
+        flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
+        ${active ? 'bg-red-50 text-red-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+      `}
+    >
+      <span className={active ? 'text-red-600' : 'text-gray-400'}>
+        {icon}
+      </span>
+      {label}
+    </a>
   )
 }
 
@@ -362,7 +407,6 @@ function UserFooter(props: { userEmail: string; tenantSlug: string }) {
 
   return (
     <div className="relative border-t border-gray-100 p-3">
-      {/* Dropdown */}
       {open && (
         <div className="absolute bottom-full left-3 right-3 mb-1 rounded-xl border border-gray-100 bg-white shadow-lg">
           <div className="border-b border-gray-50 px-3 py-2.5">
@@ -404,8 +448,10 @@ function UserFooter(props: { userEmail: string; tenantSlug: string }) {
         <div className="min-w-0 flex-1">
           <p className="truncate text-xs font-medium text-gray-800">{userEmail}</p>
         </div>
-        <svg className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg
+          className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
         </svg>
       </button>
@@ -414,20 +460,21 @@ function UserFooter(props: { userEmail: string; tenantSlug: string }) {
 }
 
 const ROUTE_LABELS: Record<string, string> = {
-  dashboard: 'Dashboard',
-  vehicles: 'Veículos',
-  leads: 'Leads',
-  customers: 'Clientes',
-  vendors: 'Vendedores',
-  sales: 'Vendas',
-  analytics: 'Analytics',
-  crm: 'CRM',
-  financial: 'Financeiro',
-  whatsapp: 'Central de Atendimento',
-  billing: 'Assinatura',
-  plans: 'Planos',
-  history: 'Histórico',
-  settings: 'Configurações',
+  dashboard:   'Dashboard',
+  vehicles:    'Veículos',
+  leads:       'Interessados',
+  customers:   'Compradores',
+  vendors:     'Vendedores',
+  sales:       'Vendas',
+  analytics:   'Analytics',
+  crm:         'Atendimento',
+  financial:   'Financeiro',
+  commissions: 'Comissões',
+  whatsapp:    'Central de Atendimento',
+  billing:     'Assinatura',
+  plans:       'Planos',
+  history:     'Histórico',
+  settings:    'Configurações',
 }
 
 function Breadcrumbs({ pathname }: { pathname: string }) {

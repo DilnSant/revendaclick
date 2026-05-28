@@ -54,6 +54,12 @@ export type PlanUsage = {
   has_api_access?: boolean
   has_white_label?: boolean
   has_central_atendimento?: boolean
+  has_financial?: boolean
+  has_vendors?: boolean
+  has_ai_assistance?: boolean
+  has_automation?: boolean
+  has_campaigns?: boolean
+  has_multi_store?: boolean
 }
 
 // ─── Header extraction (public routes) ───────────────────────────────────────

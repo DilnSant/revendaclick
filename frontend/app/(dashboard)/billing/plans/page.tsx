@@ -108,18 +108,23 @@ export default async function PlansPage() {
 
                 <SectionRow label="LOJA & MARKETPLACE" colSpan={(plans as Plan[]).length + 1} />
                 <BoolRow label="Marketplace público" feat="marketplace" plans={plans as Plan[]} />
-                <BoolRow label="Botão WhatsApp na loja" feat="whatsapp_button" plans={plans as Plan[]} />
+                <BoolRow label="WhatsApp da Loja (contato)" feat="whatsapp_button" plans={plans as Plan[]} />
                 <BoolRow label="Captura de leads" feat="lead_capture" plans={plans as Plan[]} />
 
-                <SectionRow label="CENTRAL DE ATENDIMENTO" colSpan={(plans as Plan[]).length + 1} />
-                <BoolRow label="WhatsApp operacional (QR)" feat="central_atendimento" plans={plans as Plan[]} />
-                <BoolRow label="CRM completo" feat="crm" plans={plans as Plan[]} />
-                <BoolRow label="Kanban de leads" feat="kanban" plans={plans as Plan[]} />
+                <SectionRow label="GESTÃO" colSpan={(plans as Plan[]).length + 1} />
+                <BoolRow label="Kanban de Interessados" feat="kanban" plans={plans as Plan[]} />
                 <BoolRow label="Analytics avançado" feat="analytics" plans={plans as Plan[]} />
+                <BoolRow label="Financeiro & Comissões" feat="financial" plans={plans as Plan[]} />
+                <BoolRow label="Equipe / Vendedores" feat="vendors" plans={plans as Plan[]} />
+
+                <SectionRow label="CENTRAL DE ATENDIMENTO" colSpan={(plans as Plan[]).length + 1} />
+                <BoolRow label="WhatsApp operacional (QR Code)" feat="central_atendimento" plans={plans as Plan[]} />
+                <BoolRow label="Follow-up automático" feat="automation" plans={plans as Plan[]} />
+                <BoolRow label="Campanhas" feat="campaigns" plans={plans as Plan[]} />
 
                 <SectionRow label="IA & AUTOMAÇÃO" colSpan={(plans as Plan[]).length + 1} />
-                <BoolRow label="IA: sugestão de resposta" feat="ai_suggest_reply" plans={plans as Plan[]} />
-                <BoolRow label="IA: classificação de lead" feat="ai_classify_lead" plans={plans as Plan[]} />
+                <BoolRow label="IA: sugestão de resposta" feat="ai_assistance" plans={plans as Plan[]} />
+                <BoolRow label="IA: classificação de lead" feat="ai_assistance" plans={plans as Plan[]} />
 
                 <SectionRow label="ENTERPRISE" colSpan={(plans as Plan[]).length + 1} />
                 <BoolRow label="Suporte prioritário" feat="priority_support" plans={plans as Plan[]} />
