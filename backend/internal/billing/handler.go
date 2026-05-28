@@ -56,6 +56,28 @@ func (h *Handler) Subscribe(c *gin.Context) {
 	response.JSON(c, http.StatusOK, sub)
 }
 
+// PUT /api/billing/subscription — upgrade/downgrade an active subscription to a different plan
+func (h *Handler) Upgrade(c *gin.Context) {
+	tenantID := middleware.TenantIDFromGin(c)
+
+	var req UpgradeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "invalid request body")
+		return
+	}
+	if req.PlanName == "" {
+		response.BadRequest(c, "plan_name is required")
+		return
+	}
+
+	sub, err := h.svc.UpgradeSubscription(c.Request.Context(), tenantID, &req)
+	if err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, sub)
+}
+
 // DELETE /api/billing/subscription
 func (h *Handler) Cancel(c *gin.Context) {
 	tenantID := middleware.TenantIDFromGin(c)

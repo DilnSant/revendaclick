@@ -67,31 +67,24 @@ Após assinar: conectar WhatsApp em /whatsapp (instância `devecar` a ser criada
 
 ## Próximos Passos (por prioridade)
 
-### 3. Endpoint de upgrade de plano (Média)
-
-Usuários com `status=active` que quiserem trocar de plano recebem erro (guard bloqueia re-subscribe).
-Necessário criar endpoint `/api/billing/upgrade` no backend Go.
-
-Ver: `backend/internal/billing/service.go` — guard atual bloqueia quando `asaas_subscription_id != ""`
-
-### 4. Leaked Password Protection (Baixa — Supabase Dashboard)
+### 3. Leaked Password Protection (Baixa — Supabase Dashboard)
 
 Não acessível via SQL ou MCP — apenas via interface:
 ```
 Supabase Dashboard → Authentication → Settings → Security → "Leaked Password Protection" → ON
 ```
 
-### 5. Testar login em produção no browser (Baixa)
+### 4. Testar login em produção no browser (Baixa)
 
 ```
 https://app.revendaclick.com.br/login → dilneysantos@gmail.com → /dashboard sem loop
 ```
 
-### 6. Uptime Monitoring (Baixa)
+### 5. Uptime Monitoring (Baixa)
 
 UptimeRobot ou BetterStack Uptime → `https://api.revendaclick.com.br/health` → alerta por email
 
-### 7. Backup S3 (Baixa)
+### 6. Backup S3 (Baixa)
 
 ```bash
 # No VPS — adicionar ao .env:
@@ -101,16 +94,16 @@ AWS_SECRET_ACCESS_KEY=...
 AWS_DEFAULT_REGION=sa-east-1
 ```
 
-### 8. METRICS_TOKEN ausente no .env VPS (Baixa)
+### 7. METRICS_TOKEN ausente no .env VPS (Baixa)
 
 Endpoint `/metrics` retorna 403 porque `METRICS_TOKEN` não está configurado.
 Adicionar no VPS `/opt/revendaclick/.env` e reiniciar container.
 
-### 9. Rotação de Secrets (Baixa — política semestral)
+### 8. Rotação de Secrets (Baixa — política semestral)
 
 `ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN` — atualizar no .env VPS + reiniciar containers.
 
-### 10. Evolution schema isolado (Baixa — D19)
+### 9. Evolution schema isolado (Baixa — D19)
 
 Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution para isolar tabelas Prisma do schema `public`. Ver D19 em `21_DECISOES_TECNICAS.md`.
 

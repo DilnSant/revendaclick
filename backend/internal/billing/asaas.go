@@ -103,6 +103,22 @@ func (c *asaasClient) cancelSubscription(subscriptionID string) error {
 	return c.do("DELETE", "/subscriptions/"+subscriptionID, nil, nil)
 }
 
+type asaasSubscriptionUpdateReq struct {
+	Value       float64 `json:"value"`
+	Cycle       string  `json:"cycle"`
+	Description string  `json:"description"`
+}
+
+// updateSubscription updates value/cycle of an existing Asaas subscription.
+// Changes take effect on the next billing cycle.
+func (c *asaasClient) updateSubscription(subscriptionID string, value float64, cycle, description string) error {
+	return c.do("PUT", "/subscriptions/"+subscriptionID, asaasSubscriptionUpdateReq{
+		Value:       value,
+		Cycle:       cycle,
+		Description: description,
+	}, nil)
+}
+
 func (c *asaasClient) getSubscriptionPayments(subscriptionID string) (string, error) {
 	type paymentResp struct {
 		Data []struct {

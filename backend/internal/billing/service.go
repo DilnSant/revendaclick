@@ -109,6 +109,60 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 	return s.GetSubscription(ctx, tenantID)
 }
 
+// UpgradeSubscription changes the plan of an already-active Asaas subscription.
+// Updates Asaas (new value/cycle) and local DB (plan_id/billing_cycle).
+// Status is not changed — user keeps access immediately.
+func (s *Service) UpgradeSubscription(ctx context.Context, tenantID string, req *UpgradeRequest) (*Subscription, error) {
+	req.PlanName = strings.ToLower(strings.TrimSpace(req.PlanName))
+	req.BillingCycle = strings.ToLower(strings.TrimSpace(req.BillingCycle))
+
+	current, err := s.repo.GetSubscription(ctx, tenantID)
+	if err != nil {
+		return nil, fmt.Errorf("get subscription: %w", err)
+	}
+	if current == nil {
+		return nil, fmt.Errorf("assinatura não encontrada")
+	}
+	current.ComputeFlags()
+	if !current.IsActive {
+		return nil, fmt.Errorf("upgrade requer assinatura ativa (status atual: %s)", current.Status)
+	}
+	if current.AsaasSubscriptionID == "" {
+		return nil, fmt.Errorf("assinatura sem ID Asaas — use o fluxo de assinatura inicial")
+	}
+
+	if req.BillingCycle != "monthly" && req.BillingCycle != "yearly" {
+		req.BillingCycle = current.BillingCycle
+	}
+
+	if strings.EqualFold(req.PlanName, current.PlanName) && req.BillingCycle == current.BillingCycle {
+		return current, nil // no-op
+	}
+
+	planID, priceMonthly, priceYearly, err := s.repo.GetPlanByName(ctx, req.PlanName)
+	if err != nil || planID == "" {
+		return nil, fmt.Errorf("plano não encontrado: %s", req.PlanName)
+	}
+
+	value := priceMonthly
+	cycle := "MONTHLY"
+	if req.BillingCycle == "yearly" {
+		value = priceYearly
+		cycle = "YEARLY"
+	}
+
+	desc := fmt.Sprintf("RevendaClick — Plano %s (%s)", capitalize(req.PlanName), capitalize(req.BillingCycle))
+	if err := s.asaas.updateSubscription(current.AsaasSubscriptionID, value, cycle, desc); err != nil {
+		return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
+	}
+
+	if err := s.repo.UpdateSubscriptionPlan(ctx, tenantID, planID, req.BillingCycle); err != nil {
+		return nil, fmt.Errorf("update plan: %w", err)
+	}
+
+	return s.GetSubscription(ctx, tenantID)
+}
+
 // CancelSubscription cancels a tenant's active subscription in Asaas and DB.
 func (s *Service) CancelSubscription(ctx context.Context, tenantID string) error {
 	sub, err := s.repo.GetSubscription(ctx, tenantID)

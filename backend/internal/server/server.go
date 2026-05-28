@@ -147,6 +147,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		// StrictRateLimit on subscribe/reactivate: they call Asaas API (external, paid)
 		free.GET("/billing/subscription", billingH.GetSubscription)
 		free.POST("/billing/subscribe", ownerAdmin, appMiddleware.StrictRateLimit(), billingH.Subscribe)
+		free.PUT("/billing/subscription", ownerAdmin, appMiddleware.StrictRateLimit(), billingH.Upgrade)
 		free.DELETE("/billing/subscription", ownerAdmin, billingH.Cancel)
 		free.POST("/billing/reactivate", ownerAdmin, appMiddleware.StrictRateLimit(), billingH.Reactivate)
 		free.GET("/billing/invoices", billingH.ListInvoices)

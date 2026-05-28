@@ -68,11 +68,30 @@ Header `X-Subscription-Warning` é injetado quando dentro do grace period.
 | Método | Rota | Roles | Descrição |
 |---|---|---|---|
 | GET | `/api/billing/subscription` | qualquer | Retorna assinatura atual com flags computadas |
-| POST | `/api/billing/subscribe` | owner, admin | Cria/atualiza assinatura |
+| POST | `/api/billing/subscribe` | owner, admin | Cria assinatura (trialing ou sem asaas_subscription_id) |
+| PUT | `/api/billing/subscription` | owner, admin | Troca plano de assinatura ativa — requer `status=active` + `asaas_subscription_id` |
 | DELETE | `/api/billing/subscription` | owner, admin | Cancela assinatura |
 | POST | `/api/billing/reactivate` | owner, admin | Reativa assinatura cancelada |
 | GET | `/api/billing/invoices` | qualquer | Histórico de faturas (últimas 30) |
 | POST | `/api/webhooks/asaas` | público | Recebe eventos do Asaas |
+
+---
+
+## Body: PUT /api/billing/subscription (upgrade de plano)
+
+```json
+{
+  "plan_name": "pro",
+  "billing_cycle": "monthly"
+}
+```
+
+- `plan_name`: novo plano (`starter` | `pro` | `premium` | `enterprise`)
+- `billing_cycle`: opcional — usa o ciclo atual se omitido
+- Requer `status=active` e `asaas_subscription_id` preenchido
+- Chama Asaas `PUT /subscriptions/{id}` — novo valor/ciclo efetivo no próximo ciclo
+- Status local não é alterado — usuário mantém acesso imediatamente
+- No-op se mesmo plano + mesmo ciclo
 
 ---
 

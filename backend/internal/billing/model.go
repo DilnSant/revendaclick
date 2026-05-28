@@ -50,6 +50,11 @@ type SubscribeRequest struct {
 	CPFOrCNPJ    string `json:"cpf_or_cnpj,omitempty"`
 }
 
+type UpgradeRequest struct {
+	PlanName     string `json:"plan_name"`     // required
+	BillingCycle string `json:"billing_cycle"` // "monthly"|"yearly" — defaults to current if omitted
+}
+
 // ── Invoice ───────────────────────────────────────────────────────────────────
 
 type Invoice struct {

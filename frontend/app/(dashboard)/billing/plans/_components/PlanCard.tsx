@@ -19,12 +19,16 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
   const [subscribeError, setSubscribeError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  const isCurrent  = plan.name === currentPlanName
-  const isTrialing = subscription?.status === 'trialing'
+  const isCurrent      = plan.name === currentPlanName
+  const isTrialing     = subscription?.status === 'trialing'
+  const isActiveSub    = subscription?.is_active === true
 
   // Block the button only when the subscription is active on this exact plan.
   // During trialing the user must be able to anticipate (subscribe) any plan.
   const isActiveAndCurrent = isCurrent && !isTrialing
+
+  // Active subscribers changing to a different plan use the upgrade flow.
+  const isUpgradeMode = isActiveSub && !isCurrent
 
   const price         = cycle === 'yearly' ? plan.price_yearly / 12 : plan.price_monthly
   const yearlyDiscount = Math.round((1 - plan.price_yearly / (plan.price_monthly * 12)) * 100)
@@ -63,9 +67,33 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
     }
   }
 
+  async function handleUpgrade() {
+    setLoading(true)
+    setSubscribeError(null)
+    setSuccessMsg(null)
+    try {
+      const res = await fetch('/api/billing/upgrade-action', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan_name: plan.name, billing_cycle: cycle }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setSubscribeError(data.error ?? 'Erro ao alterar plano. Tente novamente.')
+        return
+      }
+      setSuccessMsg('Plano alterado! A nova cobrança será aplicada no próximo ciclo.')
+    } catch {
+      setSubscribeError('Erro de conexão. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   function ctaLabel(): string {
     if (isActiveAndCurrent) return 'Plano atual ✓'
     if (loading)            return 'Processando…'
+    if (isUpgradeMode)      return 'Mudar para este plano'
     if (isCurrent && isTrialing) return 'Antecipar assinatura'
     return 'Assinar'
   }
@@ -149,8 +177,8 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
         ))}
       </ul>
 
-      {/* Billing type — show for all non-active-current plans */}
-      {!isActiveAndCurrent && (
+      {/* Billing type + CPF — only for new subscriptions (not upgrade mode) */}
+      {!isActiveAndCurrent && !isUpgradeMode && (
         <div className="mt-4">
           <label className="text-xs text-gray-500 mb-1 block">Forma de pagamento</label>
           <select
@@ -186,7 +214,7 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
 
       {/* CTA */}
       <button
-        onClick={isActiveAndCurrent ? undefined : handleSubscribe}
+        onClick={isActiveAndCurrent ? undefined : isUpgradeMode ? handleUpgrade : handleSubscribe}
         disabled={isActiveAndCurrent || loading}
         className={`mt-4 w-full rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
           isActiveAndCurrent
@@ -223,7 +251,7 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
         </div>
       )}
 
-      {!isCurrent && !isTrialing && (
+      {!isCurrent && !isTrialing && !isUpgradeMode && (
         <p className="mt-2 text-center text-xs text-gray-400">7 dias de trial gratuito</p>
       )}
     </div>

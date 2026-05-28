@@ -12,6 +12,43 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 16) — Endpoint de upgrade de plano
+
+**Commits:** pendente
+**Smoke test:** pendente (CI/CD ao commitar)
+
+### Endpoint PUT /api/billing/subscription (upgrade/downgrade)
+
+**Problema:** Guard em `billing/service.go:Subscribe` devolvia a subscription ativa sem alteração quando `asaas_subscription_id != ""`. Usuários com `status=active` não conseguiam trocar de plano.
+
+**Solução:** Endpoint dedicado `PUT /api/billing/subscription` que:
+1. Valida `status=active` com `asaas_subscription_id` preenchido
+2. Chama Asaas `PUT /subscriptions/{id}` → novo valor/ciclo no próximo billing
+3. Atualiza `plan_id` + `billing_cycle` no banco local sem alterar `status`
+4. No-op se mesmo plano + mesmo ciclo
+
+**Frontend:**
+- `PlanCard.tsx`: detecta `is_active && !isCurrent` → modo upgrade (`isUpgradeMode`)
+- Modo upgrade: botão "Mudar para este plano", sem CPF/billing_type (customer já existe), sem banner "7 dias de trial gratuito"
+- Modo subscribe (existente): inalterado — trialing/novos assinantes
+
+**Arquivos criados/modificados:**
+- `backend/internal/billing/asaas.go` — `updateSubscription()` + `asaasSubscriptionUpdateReq`
+- `backend/internal/billing/model.go` — `UpgradeRequest`
+- `backend/internal/billing/repository.go` — `UpdateSubscriptionPlan()`
+- `backend/internal/billing/service.go` — `UpgradeSubscription()`
+- `backend/internal/billing/handler.go` — `Upgrade()` handler
+- `backend/internal/server/server.go` — rota `PUT /billing/subscription`
+- `frontend/app/api/billing/upgrade-action/route.ts` — novo proxy SSR
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx` — `isUpgradeMode` + `handleUpgrade()`
+
+**Docs atualizadas:**
+- `15_BILLING_ASAAS.md` — nova rota + body de upgrade documentados
+- `20_PENDENCIAS.md` — marcado CONCLUÍDA
+- `23_PROXIMO_PASSO.md` — item removido, numeração ajustada
+
+---
+
 ## 2026-05-28 (sessão 15) — Correções finais: billing trial + header duplo + cores tenant
 
 **Commits:** `81eceb5`

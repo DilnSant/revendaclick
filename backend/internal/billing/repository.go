@@ -155,6 +155,19 @@ func (r *Repository) GetPlanByName(ctx context.Context, name string) (id string,
 	return
 }
 
+// UpdateSubscriptionPlan updates plan and cycle without touching status or Asaas IDs.
+// Used for upgrades/downgrades of already-active subscriptions.
+func (r *Repository) UpdateSubscriptionPlan(ctx context.Context, tenantID, planID, cycle string) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE subscriptions SET
+			plan_id       = $2,
+			billing_cycle = $3
+		WHERE tenant_id = $1`,
+		tenantID, planID, cycle,
+	)
+	return err
+}
+
 func (r *Repository) CheckSubscriptionStatus(ctx context.Context, tenantID string) (status string, graceUntil *time.Time, err error) {
 	err = r.pool.QueryRow(ctx,
 		`SELECT status, grace_until FROM subscriptions WHERE tenant_id = $1`,
