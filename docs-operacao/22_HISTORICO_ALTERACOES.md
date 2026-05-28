@@ -14,8 +14,13 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ## 2026-05-28 (sessão 17) — Refatoração estratégica WhatsApp: Central de Atendimento × Contato Público da Loja
 
-**Commits:** pendente
+**Commit:** `b8d2a48` — feat: Central de Atendimento + Contato Público da Loja
+**Tag git:** `evolution-conectado` — marco publicado no GitHub
 **Migration:** 018 aplicada ao Supabase (tenant_public_contacts + tenant_whatsapp_sessions)
+**Deploy backend:** automático via CI/CD — VPS rodando `ghcr.io/dilnsant/revendaclick-backend:b8d2a487a2a486d300da2fc3e80abd8e711a7dea`
+**Deploy frontend:** automático via Vercel (push para `main` dispara integração Vercel)
+**Smoke test:** `https://api.revendaclick.com.br/health` → `{"db":"ok","status":"ok"}` ✓ | `https://app.revendaclick.com.br/` → HTTP 200 ✓
+**Erros:** nenhum durante deploy ou aplicação da migration
 
 ### Problema
 
@@ -59,8 +64,9 @@ O sistema conflava dois conceitos distintos sob o nome "WhatsApp":
 
 ## 2026-05-28 (sessão 16) — Endpoint de upgrade de plano
 
-**Commits:** pendente
-**Smoke test:** pendente (CI/CD ao commitar)
+**Commit:** `d20e798` — feat: billing upgrade — PUT /api/billing/subscription para troca de plano ativo
+**Deploy:** automático via CI/CD — incluído no mesmo pipeline do push da sessão 17
+**Smoke test:** `https://api.revendaclick.com.br/health` → `{"db":"ok","status":"ok"}` ✓
 
 ### Endpoint PUT /api/billing/subscription (upgrade/downgrade)
 

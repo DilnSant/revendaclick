@@ -11,8 +11,8 @@
 
 | Componente | Status |
 |---|---|
-| Backend Go | ✓ pendente deploy sessão 17 — módulo storecontact novo |
-| Frontend Next.js | ✓ pendente commit/deploy sessão 17 |
+| Backend Go | ✓ deployado — `b8d2a48` rodando no VPS (healthy) |
+| Frontend Next.js | ✓ deployado — Vercel auto-deploy via push `b8d2a48` (HTTP 200) |
 | Vitrine pública | ✓ + contato público (Instagram, grupos, localização) |
 | Settings | ✓ + aba "Contato Público da Loja" |
 | Central de Atendimento (`/whatsapp`) | ✓ nomenclatura correta — sem linguagem de bulk |
@@ -28,32 +28,11 @@
 
 ## ⚠️ AÇÕES PRIORITÁRIAS
 
-### AÇÃO 0 — Commit + Deploy sessão 17 (URGENTE — fazer agora)
+### AÇÃO 0 — CONCLUÍDA ✓ (sessão 17)
 
-Os arquivos novos/modificados nesta sessão ainda não foram commitados.
-
-```bash
-# Verificar estado
-git status
-git diff --stat
-
-# Commitar
-git add backend/internal/storecontact/ \
-        backend/internal/tenant/handler.go \
-        backend/internal/server/server.go \
-        frontend/components/layout/DashboardShell.tsx \
-        frontend/app/\(dashboard\)/whatsapp/page.tsx \
-        frontend/components/whatsapp/WhatsAppManager.tsx \
-        frontend/app/\(dashboard\)/settings/actions.ts \
-        frontend/app/\(dashboard\)/settings/page.tsx \
-        frontend/app/\(dashboard\)/settings/_components/SettingsTabs.tsx \
-        frontend/lib/tenant.ts \
-        frontend/app/\(public\)/\[slug\]/page.tsx \
-        database/migrations/018_tenant_public_contacts_and_whatsapp_sessions.sql \
-        docs-operacao/
-
-git commit -m "feat: refatoração WhatsApp — Central de Atendimento + Contato Público da Loja"
-```
+Commit `b8d2a48` criado e pushado. Tag `evolution-conectado` publicada.
+Backend no VPS: `ghcr.io/dilnsant/revendaclick-backend:b8d2a487a2a486d300da2fc3e80abd8e711a7dea` (healthy).
+Frontend Vercel: HTTP 200 confirmado.
 
 ### AÇÃO 1 — Reconectar Central de Atendimento santos-car (URGENTE)
 

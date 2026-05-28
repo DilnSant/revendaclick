@@ -86,10 +86,14 @@
 
 ---
 
-## D11 — Frontend Coolify (planejado) → não implementado como descrito
+## D11 — Frontend está no Vercel (confirmado 28/05/2026)
 
-**Status:** O CLAUDE.md menciona Coolify para o frontend. Na prática, o frontend Next.js pode estar em Coolify ou em outro setup.
-**Verificar:** Estado real do frontend em produção antes de qualquer alteração de deploy.
+**Status ATUALIZADO (sessão 17):** `app.revendaclick.com.br` resolve para `vercel-dns-017.com` — Vercel é o host real do frontend.
+**Evidência:** `dig +short app.revendaclick.com.br` → `c248871ab6e90d06.vercel-dns-017.com.`
+**Por quê Vercel:** O CLAUDE.md lista Vercel como "Forbidden" (aspiracional), mas o frontend Next.js foi deployado no Vercel durante as fases iniciais e permanece lá. Funciona corretamente — nenhuma ação de migração imediata necessária.
+**Deploy automático:** Vercel tem integração com o repositório GitHub. Push para `main` → deploy automático do frontend.
+**Impacto ao alterar:** Migrar para VPS/Coolify exigiria: build Docker do frontend, container `rc_frontend`, bloco nginx para `app.revendaclick.com.br`, redirecionar DNS de Vercel para 2.24.67.84.
+**Não fazer agora:** A migração do frontend para VPS é complexa, tem risco de downtime e não há urgência. Manter Vercel até decisão explícita de migração.
 
 ---
 
@@ -209,6 +213,47 @@ const isActiveAndCurrent = isCurrent && subscription?.status === 'active'
 **Evidência:** `docker compose up` logava `WARN: The "aact_prod_000M..." variable is not set. Defaulting to a blank string.` quando a chave tinha `$` simples.
 **Regra:** Qualquer `.env` no VPS com valor que começa por `$` deve usar `$$` como prefixo.
 **Impacto ao alterar:** Remover um `$` (deixar `$aact_...`) → container recebe key vazia → Asaas retorna 401 em todas as chamadas de billing.
+
+---
+
+## D22 — Separação arquitetural: Central de Atendimento vs Contato Público da Loja (28/05/2026 — sessão 17)
+
+**Decisão:** Os conceitos "WhatsApp operacional" e "WhatsApp comercial" são implementados como módulos separados, completamente independentes.
+
+**CONCEITO 1 — Central de Atendimento** (`/whatsapp` no dashboard):
+- Evolution API, QR Code, sessão WhatsApp, leads automáticos, CRM
+- Dados: `evolution_instances` no Evolution API + rotas `/api/evolution/*` no backend
+- Nunca aparece na vitrine pública
+- Rota menu: "Central de Atendimento" (não "WhatsApp")
+
+**CONCEITO 2 — Contato Público da Loja** (`/settings?tab=contact` no dashboard / vitrine pública):
+- Botão WhatsApp comercial, telefone, email, Instagram, link de grupos, endereço
+- Dados: tabela `tenant_public_contacts` + módulo `backend/internal/storecontact`
+- Aparece na vitrine pública via `GET /api/public/:slug/` (campo `public_contact`)
+- Nunca expõe dados operacionais da Central de Atendimento
+
+**Por quê separar:** Confundir os dois conceitos em uma única tela causava linguagem ambígua ("enviar mensagens em massa" sendo associada ao CRM de atendimento), limitava a evolução independente de cada módulo e misturava fluxos operacionais com fluxos comerciais.
+
+**Fallback do botão WhatsApp na vitrine:** Se `public_whatsapp` não estiver configurado no contato público, usa `tenant.phone_whatsapp` (campo principal da loja) como fallback.
+
+---
+
+## D23 — Infraestrutura real de deploy (28/05/2026 — sessão 17)
+
+**Realidade confirmada em produção:**
+- **Frontend** (`app.revendaclick.com.br`) → Vercel (auto-deploy via integração GitHub)
+- **Backend** (`api.revendaclick.com.br`) → VPS Hostinger (`2.24.67.84`) via Docker + nginx + CI/CD self-hosted runner
+- **Evolution** (`evolution.revendaclick.com.br`) → VPS Hostinger, container `rc_evolution`
+- **Banco** → Supabase cloud (`ibgaywezfcbbiiziaoac`)
+
+**CI/CD pipeline (`.github/workflows/ci.yml`):**
+1. Test backend (Go vet + go test)
+2. Build + push imagem Docker backend para GHCR
+3. Deploy via SSH no self-hosted runner (git pull + docker compose pull/up)
+4. Wait for health (24 tentativas × 5s)
+5. Smoke test (`scripts/smoke-test.sh`)
+
+**O que NÃO está no CI/CD:** frontend (Vercel cuida), migrations Supabase (aplicadas manualmente via MCP ou CLI)
 
 ---
 
