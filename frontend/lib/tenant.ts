@@ -53,6 +53,7 @@ export type PlanUsage = {
   has_kanban?: boolean
   has_api_access?: boolean
   has_white_label?: boolean
+  has_central_atendimento?: boolean
 }
 
 // ─── Header extraction (public routes) ───────────────────────────────────────
@@ -301,6 +302,7 @@ export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> 
       has_kanban: data.has_kanban ?? false,
       has_api_access: data.has_api_access ?? false,
       has_white_label: data.has_white_label ?? false,
+      has_central_atendimento: data.has_central_atendimento ?? false,
     }
   } catch {
     return null

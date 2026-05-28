@@ -17,7 +17,7 @@ func NewRepository(pool *pgxpool.Pool) *Repository {
 
 func (r *Repository) ListPlans(ctx context.Context) ([]*Plan, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id, name, display_name, max_vehicles, max_users, max_leads,
+		SELECT id, name, display_name, COALESCE(tagline,''), max_vehicles, max_users, max_leads,
 		       price_monthly, price_yearly, features, is_active, created_at
 		FROM plans WHERE is_active = TRUE ORDER BY price_monthly ASC`)
 	if err != nil {
@@ -30,7 +30,7 @@ func (r *Repository) ListPlans(ctx context.Context) ([]*Plan, error) {
 		p := &Plan{}
 		var featuresJSON []byte
 		if err := rows.Scan(
-			&p.ID, &p.Name, &p.DisplayName,
+			&p.ID, &p.Name, &p.DisplayName, &p.Tagline,
 			&p.MaxVehicles, &p.MaxUsers, &p.MaxLeads,
 			&p.PriceMonthly, &p.PriceYearly,
 			&featuresJSON, &p.IsActive, &p.CreatedAt,

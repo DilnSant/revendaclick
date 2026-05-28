@@ -60,6 +60,7 @@ export type Plan = {
   id: string
   name: string
   display_name: string
+  tagline: string
   max_vehicles: number
   max_users: number
   max_leads: number

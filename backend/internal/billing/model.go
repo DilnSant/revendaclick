@@ -44,7 +44,7 @@ func (s *Subscription) ComputeFlags() {
 }
 
 type SubscribeRequest struct {
-	PlanName     string `json:"plan_name"`    // "starter"|"pro"|"premium"|"enterprise"
+	PlanName     string `json:"plan_name"`    // "start"|"pro"|"performance"|"scale"
 	BillingCycle string `json:"billing_cycle"` // "monthly"|"yearly"
 	BillingType  string `json:"billing_type"`  // "BOLETO"|"PIX"|"CREDIT_CARD" (default BOLETO)
 	CPFOrCNPJ    string `json:"cpf_or_cnpj,omitempty"`

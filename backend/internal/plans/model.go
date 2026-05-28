@@ -6,6 +6,7 @@ type Plan struct {
 	ID           string    `json:"id"`
 	Name         string    `json:"name"`
 	DisplayName  string    `json:"display_name"`
+	Tagline      string    `json:"tagline"`
 	MaxVehicles  int       `json:"max_vehicles"`
 	MaxUsers     int       `json:"max_users"`
 	MaxLeads     int       `json:"max_leads"`
@@ -35,12 +36,13 @@ type Usage struct {
 	UsersAlert    string `json:"users_alert"`
 
 	// Feature availability helpers (computed from Features list)
-	HasCRM        bool `json:"has_crm"`
-	HasAnalytics  bool `json:"has_analytics"`
-	HasWhatsApp   bool `json:"has_whatsapp"`
-	HasKanban     bool `json:"has_kanban"`
-	HasAPIAccess  bool `json:"has_api_access"`
-	HasWhiteLabel bool `json:"has_white_label"`
+	HasCRM                 bool `json:"has_crm"`
+	HasAnalytics           bool `json:"has_analytics"`
+	HasWhatsApp            bool `json:"has_whatsapp"`
+	HasKanban              bool `json:"has_kanban"`
+	HasAPIAccess           bool `json:"has_api_access"`
+	HasWhiteLabel          bool `json:"has_white_label"`
+	HasCentralAtendimento  bool `json:"has_central_atendimento"`
 }
 
 func (u *Usage) ComputeAlerts() {
@@ -53,12 +55,13 @@ func (u *Usage) ComputeFeatureFlags() {
 	for _, f := range u.Features {
 		fm[f] = true
 	}
-	u.HasCRM        = fm["crm"]
-	u.HasAnalytics  = fm["analytics"]
-	u.HasWhatsApp   = fm["whatsapp_button"]
-	u.HasKanban     = fm["kanban"]
-	u.HasAPIAccess  = fm["api_access"]
-	u.HasWhiteLabel = fm["white_label"]
+	u.HasCRM               = fm["crm"]
+	u.HasAnalytics         = fm["analytics"]
+	u.HasWhatsApp          = fm["whatsapp_button"]
+	u.HasKanban            = fm["kanban"]
+	u.HasAPIAccess         = fm["api_access"]
+	u.HasWhiteLabel        = fm["white_label"]
+	u.HasCentralAtendimento = fm["central_atendimento"]
 }
 
 func alertLevel(pct float64, max int) string {

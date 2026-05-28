@@ -6,62 +6,129 @@ import type { Plan, Subscription } from '@/lib/billing-utils'
 
 interface Props {
   plan: Plan
+  cycle: 'monthly' | 'yearly'
   currentPlanName?: string
-  currentCycle: string
   subscription?: Subscription | null
 }
 
-export default function PlanCard({ plan, currentPlanName, currentCycle, subscription }: Props) {
-  const [cycle, setCycle] = useState<'monthly' | 'yearly'>(currentCycle as 'monthly' | 'yearly')
+type FeatureSection = { section: string; items: string[] }
+
+const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
+  start: [
+    {
+      section: 'Loja & Marketplace',
+      items: [
+        'Marketplace público de veículos',
+        'Botão WhatsApp na loja',
+        'Captura automática de leads',
+        'Página pública SEO otimizada',
+        'Domínio personalizado',
+      ],
+    },
+  ],
+  pro: [
+    {
+      section: 'Loja & Marketplace',
+      items: ['Tudo do Start'],
+    },
+    {
+      section: 'Central de Atendimento',
+      items: [
+        'WhatsApp operacional (QR Code)',
+        'CRM completo',
+        'Kanban de leads',
+        'Analytics avançado',
+        'Histórico de conversas',
+      ],
+    },
+  ],
+  performance: [
+    {
+      section: 'Atendimento',
+      items: ['Tudo do Pro'],
+    },
+    {
+      section: 'IA & Automação',
+      items: [
+        'IA: sugestão de resposta',
+        'IA: classificação de lead',
+        'Templates de resposta rápida',
+        'Suporte prioritário',
+      ],
+    },
+  ],
+  scale: [
+    {
+      section: 'Automação',
+      items: ['Tudo do Performance'],
+    },
+    {
+      section: 'Enterprise',
+      items: [
+        'White-label completo',
+        'Acesso à API REST',
+        'Volumes ilimitados',
+        'Atendimento dedicado',
+        'SLA garantido',
+      ],
+    },
+  ],
+}
+
+const PLAN_BADGE: Record<string, { label: string; className: string } | undefined> = {
+  pro: { label: 'Mais popular', className: 'bg-primary text-white' },
+  performance: { label: 'Melhor custo-benefício', className: 'bg-amber-500 text-white' },
+}
+
+export default function PlanCard({ plan, cycle, currentPlanName, subscription }: Props) {
   const [billingType, setBillingType] = useState<'BOLETO' | 'PIX' | 'CREDIT_CARD'>('BOLETO')
   const [loading, setLoading] = useState(false)
   const [cpf, setCpf] = useState('')
-  const [subscribeError, setSubscribeError] = useState<string | null>(null)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-  const isCurrent      = plan.name === currentPlanName
-  const isTrialing     = subscription?.status === 'trialing'
-  const isActiveSub    = subscription?.is_active === true
-
-  // Block the button only when the subscription is active on this exact plan.
-  // During trialing the user must be able to anticipate (subscribe) any plan.
+  const isCurrent          = plan.name === currentPlanName
+  const isTrialing         = subscription?.status === 'trialing'
+  const isActiveSub        = subscription?.is_active === true
   const isActiveAndCurrent = isCurrent && !isTrialing
+  const isUpgradeMode      = isActiveSub && !isCurrent
 
-  // Active subscribers changing to a different plan use the upgrade flow.
-  const isUpgradeMode = isActiveSub && !isCurrent
-
-  const price         = cycle === 'yearly' ? plan.price_yearly / 12 : plan.price_monthly
+  const price          = cycle === 'yearly' ? plan.price_yearly / 12 : plan.price_monthly
   const yearlyDiscount = Math.round((1 - plan.price_yearly / (plan.price_monthly * 12)) * 100)
-  const isPro = plan.name === 'pro'
+
+  const badge    = PLAN_BADGE[plan.name]
+  const sections = PLAN_HIGHLIGHTS[plan.name] ?? []
+  const isPro          = plan.name === 'pro'
+  const isPerformance  = plan.name === 'performance'
 
   async function handleSubscribe() {
     setLoading(true)
-    setSubscribeError(null)
-    setSuccessMsg(null)
+    setError(null)
+    setSuccess(null)
     try {
       const res = await fetch('/api/billing/subscribe-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          plan_name: plan.name,
+          plan_name:     plan.name,
           billing_cycle: cycle,
-          billing_type: billingType,
-          cpf_or_cnpj: cpf || undefined,
+          billing_type:  billingType,
+          cpf_or_cnpj:   cpf || undefined,
         }),
       })
       const data = await res.json()
       if (!res.ok) {
-        setSubscribeError(data.error ?? 'Erro ao processar. Tente novamente.')
+        setError(data.error ?? 'Erro ao processar. Tente novamente.')
         return
       }
       if (data.asaas_payment_link) {
-        setSuccessMsg('Redirecionando para pagamento…')
+        setSuccess('Redirecionando para pagamento…')
         window.open(data.asaas_payment_link, '_blank')
       } else {
-        setSuccessMsg('Assinatura ativada! Recarregue a página.')
+        setSuccess('Assinatura ativada! Recarregue a página.')
       }
     } catch {
-      setSubscribeError('Erro de conexão. Tente novamente.')
+      setError('Erro de conexão. Tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -69,8 +136,8 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
 
   async function handleUpgrade() {
     setLoading(true)
-    setSubscribeError(null)
-    setSuccessMsg(null)
+    setError(null)
+    setSuccess(null)
     try {
       const res = await fetch('/api/billing/upgrade-action', {
         method: 'PUT',
@@ -79,197 +146,208 @@ export default function PlanCard({ plan, currentPlanName, currentCycle, subscrip
       })
       const data = await res.json()
       if (!res.ok) {
-        setSubscribeError(data.error ?? 'Erro ao alterar plano. Tente novamente.')
+        setError(data.error ?? 'Erro ao alterar plano. Tente novamente.')
         return
       }
-      setSuccessMsg('Plano alterado! A nova cobrança será aplicada no próximo ciclo.')
+      setSuccess('Plano alterado! A nova cobrança será aplicada no próximo ciclo.')
     } catch {
-      setSubscribeError('Erro de conexão. Tente novamente.')
+      setError('Erro de conexão. Tente novamente.')
     } finally {
       setLoading(false)
     }
   }
 
   function ctaLabel(): string {
-    if (isActiveAndCurrent) return 'Plano atual ✓'
-    if (loading)            return 'Processando…'
-    if (isUpgradeMode)      return 'Mudar para este plano'
+    if (isActiveAndCurrent)      return 'Plano atual'
+    if (loading)                 return 'Processando…'
+    if (isUpgradeMode)           return 'Mudar para este plano'
     if (isCurrent && isTrialing) return 'Antecipar assinatura'
-    return 'Assinar'
+    return 'Começar agora'
   }
 
   return (
     <div
-      className={`flex flex-col rounded-xl border p-6 shadow-sm transition-shadow hover:shadow-md ${
+      className={`relative flex flex-col rounded-2xl border transition-shadow ${
         isPro
-          ? 'border-primary bg-primary/5 ring-2 ring-primary'
-          : 'border-gray-200 bg-white'
+          ? 'border-primary shadow-lg shadow-primary/10 ring-2 ring-primary bg-white'
+          : isPerformance
+          ? 'border-amber-200 shadow-md shadow-amber-100/50 bg-white'
+          : 'border-gray-200 bg-white shadow-sm hover:shadow-md'
       }`}
     >
-      {isPro && (
-        <span className="mb-3 self-start rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-white">
-          Mais popular
-        </span>
-      )}
-
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-lg font-bold text-gray-900">{plan.display_name}</h3>
-        {isCurrent && isTrialing && (
-          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-            Trial ativo
+      {badge && (
+        <div className="absolute -top-3.5 left-0 right-0 flex justify-center">
+          <span className={`rounded-full px-3 py-1 text-xs font-bold shadow-sm ${badge.className}`}>
+            {badge.label}
           </span>
+        </div>
+      )}
+
+      <div className="flex flex-col flex-1 p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className="text-base font-bold text-gray-900">{plan.display_name}</h3>
+            {plan.tagline && (
+              <p className="mt-0.5 text-xs text-gray-500 leading-snug">{plan.tagline}</p>
+            )}
+          </div>
+          {isActiveAndCurrent && (
+            <span className="shrink-0 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
+              Ativo
+            </span>
+          )}
+          {isCurrent && isTrialing && (
+            <span className="shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+              Trial
+            </span>
+          )}
+        </div>
+
+        {/* Price */}
+        <div className="mt-5">
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-extrabold tracking-tight text-gray-900">
+              {formatCurrency(price)}
+            </span>
+            <span className="text-sm text-gray-400">/mês</span>
+          </div>
+          {cycle === 'yearly' && yearlyDiscount > 0 && (
+            <p className="mt-0.5 text-xs text-green-600 font-medium">
+              {formatCurrency(plan.price_yearly)}/ano · economize {yearlyDiscount}%
+            </p>
+          )}
+          {cycle === 'monthly' && plan.price_yearly > 0 && (
+            <p className="mt-0.5 text-xs text-gray-400">
+              ou {formatCurrency(plan.price_yearly / 12)}/mês no plano anual
+            </p>
+          )}
+        </div>
+
+        {/* Limits pill grid */}
+        <div className="mt-4 grid grid-cols-3 gap-0 rounded-xl bg-gray-50 divide-x divide-gray-200 px-1 py-3">
+          <div className="text-center px-2">
+            <p className="text-sm font-bold text-gray-900">
+              {plan.max_vehicles === -1 ? '∞' : plan.max_vehicles}
+            </p>
+            <p className="text-[10px] text-gray-500 leading-tight">veículos</p>
+          </div>
+          <div className="text-center px-2">
+            <p className="text-sm font-bold text-gray-900">
+              {plan.max_users === -1 ? '∞' : plan.max_users}
+            </p>
+            <p className="text-[10px] text-gray-500 leading-tight">usuários</p>
+          </div>
+          <div className="text-center px-2">
+            <p className="text-sm font-bold text-gray-900">
+              {plan.max_leads === -1 ? '∞' : plan.max_leads}
+            </p>
+            <p className="text-[10px] text-gray-500 leading-tight">leads/mês</p>
+          </div>
+        </div>
+
+        {/* Feature sections */}
+        <div className="mt-5 flex-1 space-y-4">
+          {sections.map((group) => (
+            <div key={group.section}>
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                {group.section}
+              </p>
+              <ul className="space-y-1.5">
+                {group.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <svg
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-xs text-gray-600 leading-snug">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Billing type + CPF — only for new subscriptions */}
+        {!isActiveAndCurrent && !isUpgradeMode && (
+          <div className="mt-5 space-y-2">
+            <label className="text-xs font-medium text-gray-500">Forma de pagamento</label>
+            <select
+              value={billingType}
+              onChange={(e) => setBillingType(e.target.value as 'BOLETO' | 'PIX' | 'CREDIT_CARD')}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="BOLETO">Boleto bancário</option>
+              <option value="PIX">PIX</option>
+              <option value="CREDIT_CARD">Cartão de crédito</option>
+            </select>
+            <input
+              type="text"
+              placeholder="CPF ou CNPJ (opcional)"
+              value={cpf}
+              onChange={(e) => setCpf(e.target.value)}
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
         )}
-      </div>
 
-      {/* Cycle toggle */}
-      <div className="mt-3 flex gap-1 rounded-lg bg-gray-100 p-1 text-xs">
-        <button
-          className={`flex-1 rounded-md px-2 py-1 font-medium transition-colors ${
-            cycle === 'monthly' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
-          }`}
-          onClick={() => setCycle('monthly')}
-        >
-          Mensal
-        </button>
-        <button
-          className={`flex-1 rounded-md px-2 py-1 font-medium transition-colors ${
-            cycle === 'yearly' ? 'bg-white shadow text-gray-900' : 'text-gray-500'
-          }`}
-          onClick={() => setCycle('yearly')}
-        >
-          Anual {yearlyDiscount > 0 && <span className="text-green-600">-{yearlyDiscount}%</span>}
-        </button>
-      </div>
-
-      {/* Price */}
-      <div className="mt-4">
-        <span className="text-3xl font-extrabold text-gray-900">
-          {formatCurrency(price)}
-        </span>
-        <span className="text-sm text-gray-500">/mês</span>
-        {cycle === 'yearly' && (
-          <p className="text-xs text-gray-400 mt-0.5">
-            {formatCurrency(plan.price_yearly)} cobrado anualmente
-          </p>
+        {error && (
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+            {error}
+          </div>
         )}
-      </div>
+        {success && (
+          <div className="mt-3 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-xs text-green-700">
+            {success}
+          </div>
+        )}
 
-      {/* Limits */}
-      <ul className="mt-4 space-y-1.5 text-sm text-gray-600 flex-1">
-        <li>
-          <span className="font-medium">{plan.max_vehicles === -1 ? 'Ilimitados' : plan.max_vehicles}</span> veículos
-        </li>
-        <li>
-          <span className="font-medium">{plan.max_users === -1 ? 'Ilimitados' : plan.max_users}</span> usuários
-        </li>
-        <li>
-          <span className="font-medium">{plan.max_leads === -1 ? 'Ilimitados' : plan.max_leads}</span> leads/mês
-        </li>
-      </ul>
+        {/* CTA */}
+        <button
+          onClick={
+            isActiveAndCurrent
+              ? undefined
+              : isUpgradeMode
+              ? handleUpgrade
+              : handleSubscribe
+          }
+          disabled={isActiveAndCurrent || loading}
+          className={`mt-5 w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+            isActiveAndCurrent
+              ? 'cursor-default border border-gray-200 bg-gray-50 text-gray-400'
+              : isPro
+              ? 'bg-primary text-white shadow-sm hover:bg-primary-dark disabled:opacity-60'
+              : isPerformance
+              ? 'bg-amber-500 text-white shadow-sm hover:bg-amber-600 disabled:opacity-60'
+              : 'bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60'
+          }`}
+        >
+          {ctaLabel()}
+        </button>
 
-      {/* Features */}
-      <ul className="mt-3 space-y-1 text-xs text-gray-500">
-        {plan.features.slice(0, 5).map((f) => (
-          <li key={f} className="flex items-center gap-1">
-            <span className="text-green-500">✓</span>
-            {featureLabel(f)}
-          </li>
-        ))}
-      </ul>
-
-      {/* Billing type + CPF — only for new subscriptions (not upgrade mode) */}
-      {!isActiveAndCurrent && !isUpgradeMode && (
-        <div className="mt-4">
-          <label className="text-xs text-gray-500 mb-1 block">Forma de pagamento</label>
-          <select
-            value={billingType}
-            onChange={(e) => setBillingType(e.target.value as 'BOLETO' | 'PIX' | 'CREDIT_CARD')}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-          >
-            <option value="BOLETO">Boleto</option>
-            <option value="PIX">PIX</option>
-            <option value="CREDIT_CARD">Cartão de crédito</option>
-          </select>
-
-          <input
-            type="text"
-            placeholder="CPF ou CNPJ (opcional)"
-            value={cpf}
-            onChange={(e) => setCpf(e.target.value)}
-            className="mt-2 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
-          />
-        </div>
-      )}
-
-      {subscribeError && (
-        <div className="mt-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">
-          {subscribeError}
-        </div>
-      )}
-      {successMsg && (
-        <div className="mt-3 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-xs text-green-700">
-          {successMsg}
-        </div>
-      )}
-
-      {/* CTA */}
-      <button
-        onClick={isActiveAndCurrent ? undefined : isUpgradeMode ? handleUpgrade : handleSubscribe}
-        disabled={isActiveAndCurrent || loading}
-        className={`mt-4 w-full rounded-lg px-4 py-3 text-sm font-semibold transition-colors ${
-          isActiveAndCurrent
-            ? 'bg-primary/10 text-primary border border-primary/30 cursor-default'
-            : isPro
-            ? 'bg-primary text-white hover:bg-primary-dark disabled:opacity-60'
-            : 'bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60'
-        }`}
-      >
-        {ctaLabel()}
-      </button>
-
-      {/* Subscription status info */}
-      {isActiveAndCurrent && subscription && (
-        <div className="mt-2 text-center text-xs text-gray-400 space-y-0.5">
-          {subscription.current_period_end && (
+        {/* Footer note */}
+        <div className="mt-3 text-center text-xs text-gray-400">
+          {isActiveAndCurrent && subscription?.current_period_end && (
             <p>Renova em {new Date(subscription.current_period_end).toLocaleDateString('pt-BR')}</p>
           )}
-        </div>
-      )}
-
-      {isCurrent && isTrialing && subscription && (
-        <div className="mt-2 text-center text-xs space-y-0.5">
-          {subscription.trial_days_left != null && (
+          {isCurrent && isTrialing && subscription?.trial_days_left != null && (
             <p className="text-blue-600 font-medium">
-              {subscription.trial_days_left} dia{subscription.trial_days_left !== 1 ? 's' : ''} de trial restante{subscription.trial_days_left !== 1 ? 's' : ''}
+              {subscription.trial_days_left} dia
+              {subscription.trial_days_left !== 1 ? 's' : ''} restante
+              {subscription.trial_days_left !== 1 ? 's' : ''} no trial
             </p>
           )}
-          {subscription.trial_ends_at && (
-            <p className="text-gray-400">
-              Trial até {new Date(subscription.trial_ends_at).toLocaleDateString('pt-BR')}
-            </p>
+          {!isCurrent && !isTrialing && !isUpgradeMode && (
+            <p>7 dias grátis · Cancele quando quiser</p>
           )}
+          {isUpgradeMode && <p>Mudança aplicada no próximo ciclo</p>}
         </div>
-      )}
-
-      {!isCurrent && !isTrialing && !isUpgradeMode && (
-        <p className="mt-2 text-center text-xs text-gray-400">7 dias de trial gratuito</p>
-      )}
+      </div>
     </div>
   )
-}
-
-function featureLabel(f: string): string {
-  const labels: Record<string, string> = {
-    marketplace: 'Marketplace público',
-    whatsapp_button: 'Botão WhatsApp',
-    lead_capture: 'Captura de leads',
-    crm: 'CRM completo',
-    kanban: 'Kanban de leads',
-    custom_domain: 'Domínio personalizado',
-    analytics: 'Analytics avançado',
-    priority_support: 'Suporte prioritário',
-    api_access: 'Acesso à API',
-    white_label: 'White-label',
-  }
-  return labels[f] ?? f
 }

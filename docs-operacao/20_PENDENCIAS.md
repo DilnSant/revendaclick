@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 28/05/2026 (sessão 15)
+> Atualizado em: 28/05/2026 (sessão 18)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -94,6 +94,7 @@
 | CONCLUÍDA | WhatsApp screen (Central de Atendimento) | — | QR code, status, envio — sem linguagem de bulk/spam |
 | CONCLUÍDA | Refatoração estratégica WhatsApp (sessão 17) | — | Separação CONCEITO 1 (Central de Atendimento: Evolution/CRM) e CONCEITO 2 (Contato Público da Loja: vitrine). Menu → "Central de Atendimento". Settings → aba "Contato Público". Vitrine pública exibe contato público. Ver `22_HISTORICO_ALTERACOES.md` sessão 17 |
 | CONCLUÍDA | Billing screens | — | Assinatura, planos, faturas |
+| CONCLUÍDA | Reestruturação planos Start/Pro/Performance/Scale (sessão 18) | — | Migration 019: renomear planos, tagline, limites, features, gate central_atendimento; backend gate + tagline; billing plans premium redesign |
 
 ---
 
@@ -108,6 +109,7 @@
 | CONCLUÍDA | Migration 012: SECURITY DEFINER revoke | — | REVOKE de PUBLIC/anon/authenticated; GRANT só para service_role (26/05/2026) |
 | CONCLUÍDA | Migration 013: leads insert + storage | — | leads_public_insert restrito a anon + tenant ativo; vehicles_public_read removida (26/05/2026) |
 | CONCLUÍDA | Migration 018: tenant_public_contacts + tenant_whatsapp_sessions | — | Tabelas separadas para contato público da vitrine e sessão da Central de Atendimento — RLS, indexes, triggers (28/05/2026 — sessão 17) |
+| CONCLUÍDA | Migration 019: reestruturação de planos | — | Planos renomeados (start/pro/performance/scale), tagline, limites, features, gate central_atendimento, ENUM→TEXT, plan_usage view recriada (28/05/2026 — sessão 18) |
 
 ---
 

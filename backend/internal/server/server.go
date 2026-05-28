@@ -224,13 +224,14 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		gated.POST("/ai/suggest-reply", aiH.SuggestReply)
 		gated.POST("/ai/classify-lead", aiH.ClassifyLead)
 
-		// Evolution WhatsApp (blocked when subscription inactive)
+		// Evolution — Central de Atendimento (Pro+ apenas: feature "central_atendimento")
+		caGate := planGate("central_atendimento")
 		gated.GET("/evolution/health", evolutionH.GetHealth)
-		gated.GET("/evolution/status", evolutionH.GetStatus)
-		gated.GET("/evolution/qr", evolutionH.GetQR)
-		gated.POST("/evolution/connect", ownerAdmin, evolutionH.Connect)
-		gated.DELETE("/evolution/disconnect", ownerAdmin, evolutionH.Disconnect)
-		gated.POST("/evolution/send", evolutionH.Send)
+		gated.GET("/evolution/status", caGate, evolutionH.GetStatus)
+		gated.GET("/evolution/qr", caGate, evolutionH.GetQR)
+		gated.POST("/evolution/connect", ownerAdmin, caGate, evolutionH.Connect)
+		gated.DELETE("/evolution/disconnect", ownerAdmin, caGate, evolutionH.Disconnect)
+		gated.POST("/evolution/send", caGate, evolutionH.Send)
 	}
 
 	return r

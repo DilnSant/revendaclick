@@ -12,6 +12,46 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 18) — Reestruturação estratégica: novos planos (Start/Pro/Performance/Scale), billing premium redesign, gate Central de Atendimento
+
+**Commit:** pendente (próxima ação)
+**Migration:** 019 aplicada ao Supabase — planos renomeados, tagline adicionada, features atualizadas
+**Deploy:** pendente após commit
+
+### Problema
+
+O modelo de planos usava nomes genéricos (Starter/Pro/Premium/Enterprise) sem diferenciação de posicionamento. A feature "Central de Atendimento" (Evolution API) não estava isolada como gate de plano — qualquer plano com subscription ativa podia acessar QR Code. A página `/billing/plans` usava design básico sem hierarquia visual.
+
+### Alterações
+
+#### Banco de dados — Migration 019
+
+- `plans.name` convertido de ENUM `plan_type` para TEXT (+ drop/recreate view `plan_usage`)
+- Planos renomeados: `starter → start`, `premium → performance`, `enterprise → scale`
+- Coluna `tagline` adicionada com slogan de posicionamento por plano
+- Limites atualizados: Start (15/2/100), Pro (50/5/500), Performance (120/15/2500), Scale (−1/−1/−1)
+- Feature `central_atendimento` adicionada em Pro, Performance, Scale (ausente em Start)
+- Features de IA (`ai_suggest_reply`, `ai_classify_lead`) adicionadas em Performance e Scale
+- `auto_assign_trial_subscription()` atualizado para usar `'start'` em vez de `'starter'`
+
+#### Backend
+
+- `plans/model.go` — `Tagline string` em `Plan`; `HasCentralAtendimento bool` em `Usage`; `ComputeFeatureFlags()` atualizado
+- `plans/repository.go` — `tagline` incluído no SELECT/Scan de `ListPlans`
+- `server.go` — `caGate := planGate("central_atendimento")` aplicado a todas as rotas Evolution operacionais (`/evolution/status`, `/evolution/qr`, `/evolution/connect`, `/evolution/disconnect`, `/evolution/send`); `/evolution/health` sem gate
+- `billing/model.go` — comentário atualizado para `"start"|"pro"|"performance"|"scale"`
+
+#### Frontend
+
+- `lib/billing-utils.ts` — `tagline: string` adicionado ao tipo `Plan`
+- `lib/tenant.ts` — `has_central_atendimento?: boolean` em `PlanUsage`; `getUsageFromAPI` retorna o campo
+- `app/(dashboard)/whatsapp/page.tsx` — gate de plano: Start → exibe `CentralAtendimentoGate` (upgrade prompt com lock icon, benefícios, CTA Pro); Pro+ → renderiza `WhatsAppManager`
+- `app/(dashboard)/billing/plans/page.tsx` — redesign premium: header centralizado, subscription banner, usa `PlansGrid`, comparison table com seções groupadas (Limites / Loja & Marketplace / Central de Atendimento / IA & Automação / Enterprise)
+- `app/(dashboard)/billing/plans/_components/PlansGrid.tsx` — **novo** client component: toggle global mensal/anual aplica a todos os cards simultaneamente
+- `app/(dashboard)/billing/plans/_components/PlanCard.tsx` — redesign premium: recebe `cycle` do parent; badges "Mais popular" (Pro) e "Melhor custo-benefício" (Performance); pill grid de limites; feature sections groupadas por módulo; ring highlight no Pro; CTA amber no Performance
+
+---
+
 ## 2026-05-28 (sessão 17) — Refatoração estratégica WhatsApp: Central de Atendimento × Contato Público da Loja
 
 **Commit:** `b8d2a48` — feat: Central de Atendimento + Contato Público da Loja

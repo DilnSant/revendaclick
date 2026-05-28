@@ -1,23 +1,26 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 28/05/2026 (sessão 17)
+> Atualizado em: 28/05/2026 (sessão 18)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 17 — 28/05/2026)
+## Estado Atual do Projeto (sessão 18 — 28/05/2026)
 
 **⚠️ ALERTA: devecar trial expira 2026-05-31 (3 dias)**
+**⚠️ ALERTA: commit da sessão 18 pendente (alterações locais sem push)**
 
 | Componente | Status |
 |---|---|
-| Backend Go | ✓ deployado — `b8d2a48` rodando no VPS (healthy) |
-| Frontend Next.js | ✓ deployado — Vercel auto-deploy via push `b8d2a48` (HTTP 200) |
-| Vitrine pública | ✓ + contato público (Instagram, grupos, localização) |
-| Settings | ✓ + aba "Contato Público da Loja" |
-| Central de Atendimento (`/whatsapp`) | ✓ nomenclatura correta — sem linguagem de bulk |
+| Backend Go | ⚠️ alterações locais — commit + CI/CD pendente |
+| Frontend Next.js | ⚠️ alterações locais — commit + Vercel deploy pendente |
+| Migration 019 | ✓ aplicada ao Supabase (planos reestruturados) |
+| Planos | ✓ Start / Pro / Performance / Scale com tagline + features corretas |
+| Central de Atendimento gate | ✓ `central_atendimento` feature flag em todas rotas Evolution operacionais |
+| `/whatsapp` page | ✓ Start → upgrade prompt; Pro+ → WhatsAppManager |
+| Billing plans page | ✓ redesign premium — PlansGrid global toggle + PlanCard com badges e feature sections |
 | Migration 018 | ✓ aplicada ao Supabase (tenant_public_contacts + tenant_whatsapp_sessions) |
-| CI/CD GitHub Actions | ✓ automático — 22/22 smoke test PASS |
+| CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Central de Atendimento santos-car | ⚠️ reconectar — instância perdida na sessão 14 |
@@ -28,15 +31,38 @@
 
 ## ⚠️ AÇÕES PRIORITÁRIAS
 
-### AÇÃO 0 — CONCLUÍDA ✓ (sessão 17)
+### AÇÃO 0 — Commit + Deploy sessão 18 (FAZER AGORA)
 
-Commit `b8d2a48` criado e pushado. Tag `evolution-conectado` publicada.
-Backend no VPS: `ghcr.io/dilnsant/revendaclick-backend:b8d2a487a2a486d300da2fc3e80abd8e711a7dea` (healthy).
-Frontend Vercel: HTTP 200 confirmado.
+Arquivos alterados localmente aguardando commit:
+
+```
+database/migrations/019_plans_restructure_start_pro_performance_scale.sql
+backend/internal/plans/model.go
+backend/internal/plans/repository.go
+backend/internal/server/server.go
+backend/internal/billing/model.go
+frontend/lib/billing-utils.ts
+frontend/lib/tenant.ts
+frontend/app/(dashboard)/whatsapp/page.tsx
+frontend/app/(dashboard)/billing/plans/page.tsx
+frontend/app/(dashboard)/billing/plans/_components/PlansGrid.tsx
+frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx
+docs-operacao/22_HISTORICO_ALTERACOES.md
+docs-operacao/20_PENDENCIAS.md
+docs-operacao/23_PROXIMO_PASSO.md
+```
+
+```bash
+git add <arquivos acima>
+git commit -m "feat: reestruturação de planos Start/Pro/Performance/Scale + billing premium redesign"
+git push origin main
+# CI/CD dispara automaticamente → backend VPS + frontend Vercel
+```
 
 ### AÇÃO 1 — Reconectar Central de Atendimento santos-car (URGENTE)
 
 As instâncias Evolution foram perdidas durante a limpeza do banco (sessão 14 — ver FC028).
+**Nota:** o plano santos-car é Pro ou superior — a página `/whatsapp` liberará o WhatsAppManager.
 
 ```
 1. https://app.revendaclick.com.br/whatsapp  (menu → "Central de Atendimento")
@@ -55,13 +81,14 @@ curl -s http://localhost:8081/instance/fetchInstances -H "apikey: revendaclick12
 ### AÇÃO 2 — Assinar devecar antes de 2026-05-31 (URGENTE — 3 dias)
 
 Trial de `dilneysantos.developer@gmail.com` expira **2026-05-31**.
+**Nota:** plano Start não inclui Central de Atendimento — assinar Pro+ para ter acesso ao QR.
 
 ```
 1. https://app.revendaclick.com.br/login
 2. Login com dilneysantos.developer@gmail.com
-3. Menu → Billing/Planos
-4. Badge "Trial ativo" visível no plano Starter
-5. Clicar "Antecipar assinatura" → forma de pagamento PIX → informar CPF
+3. Menu → Billing → Planos
+4. Badge "Trial" visível no plano Start
+5. Clicar "Antecipar assinatura" no plano desejado (Pro recomendado) → PIX → informar CPF
 6. Esperado: redirect para link Asaas → pagar → status active após confirmação
 ```
 
