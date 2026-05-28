@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import { getSubscription } from '@/lib/billing'
 import WhatsAppManager from '@/components/whatsapp/WhatsAppManager'
@@ -21,19 +21,18 @@ export default async function AttendanceCenterPage() {
   const tenant = await getTenantForUser(userId)
   if (!tenant) notFound()
 
-  const sub = await getSubscription()
+  const supabase = await createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token ?? ''
 
-  // Central de Atendimento requer plano Pro ou superior (feature "central_atendimento")
-  const planName = sub?.plan_name ?? 'start'
-  const hasAccess = planName !== 'start'
+  const [sub, usage] = await Promise.all([getSubscription(), getUsageFromAPI(token)])
+
+  // Gate via feature flag — covers plan features AND admin-granted tenant_features overrides
+  const hasAccess = usage?.has_central_atendimento ?? false
 
   if (!hasAccess) {
     return <CentralAtendimentoGate planDisplay={sub?.plan_display ?? 'Start'} />
   }
-
-  const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  const token = session?.access_token ?? ''
 
   const status = await fetchStatus(token)
 

@@ -1,75 +1,67 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 28/05/2026 (sessão 18)
+> Atualizado em: 28/05/2026 (sessão 19)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 18 — 28/05/2026)
-
-**⚠️ ALERTA: devecar trial expira 2026-05-31 (3 dias)**
-**⚠️ ALERTA: commit da sessão 18 pendente (alterações locais sem push)**
+## Estado Atual do Projeto (sessão 19 — 28/05/2026)
 
 | Componente | Status |
 |---|---|
 | Backend Go | ⚠️ alterações locais — commit + CI/CD pendente |
 | Frontend Next.js | ⚠️ alterações locais — commit + Vercel deploy pendente |
+| Migration 020 | ✓ aplicada ao Supabase (tenant_features, super_admin, onboarding v2) |
 | Migration 019 | ✓ aplicada ao Supabase (planos reestruturados) |
 | Planos | ✓ Start / Pro / Performance / Scale com tagline + features corretas |
-| Central de Atendimento gate | ✓ `central_atendimento` feature flag em todas rotas Evolution operacionais |
-| `/whatsapp` page | ✓ Start → upgrade prompt; Pro+ → WhatsAppManager |
-| Billing plans page | ✓ redesign premium — PlansGrid global toggle + PlanCard com badges e feature sections |
-| Migration 018 | ✓ aplicada ao Supabase (tenant_public_contacts + tenant_whatsapp_sessions) |
+| Feature flags | ✓ PlanGate usa UNION ALL (plans.features OR tenant_features) |
+| Admin panel | ✓ /admin — super_admin protegido, ações por tenant |
+| OnboardingChecklist | ✓ widget no dashboard (4 obrigatórios + 1 WhatsApp opcional) |
+| devecar billing | ✓ ativado diretamente no Supabase (Pro, period_end 2026-06-27) |
+| Central de Atendimento santos-car | ⚠️ reconectar — instância perdida na sessão 14 |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
-| Central de Atendimento santos-car | ⚠️ reconectar — instância perdida na sessão 14 |
 | Supabase security advisors | ✓ limpos |
 | FalhasCorrigidas | ✓ 28 FCs documentadas (FC001–FC028) |
 
 ---
 
-## ⚠️ AÇÕES PRIORITÁRIAS
-
-### AÇÃO 0 — Commit + Deploy sessão 18 (FAZER AGORA)
-
-Arquivos alterados localmente aguardando commit:
-
-```
-database/migrations/019_plans_restructure_start_pro_performance_scale.sql
-backend/internal/plans/model.go
-backend/internal/plans/repository.go
-backend/internal/server/server.go
-backend/internal/billing/model.go
-frontend/lib/billing-utils.ts
-frontend/lib/tenant.ts
-frontend/app/(dashboard)/whatsapp/page.tsx
-frontend/app/(dashboard)/billing/plans/page.tsx
-frontend/app/(dashboard)/billing/plans/_components/PlansGrid.tsx
-frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx
-docs-operacao/22_HISTORICO_ALTERACOES.md
-docs-operacao/20_PENDENCIAS.md
-docs-operacao/23_PROXIMO_PASSO.md
-```
+## ⚠️ AÇÃO IMEDIATA — Commit + Deploy sessão 19
 
 ```bash
-git add <arquivos acima>
-git commit -m "feat: reestruturação de planos Start/Pro/Performance/Scale + billing premium redesign"
+git add \
+  backend/internal/admin/ \
+  backend/internal/middleware/plan_gate.go \
+  backend/internal/onboarding/onboarding.go \
+  backend/internal/server/server.go \
+  backend/internal/billing/repository.go \
+  backend/internal/billing/service.go \
+  backend/internal/billing/handler.go \
+  database/migrations/020_tenant_features_super_admin_onboarding_v2.sql \
+  frontend/app/\(admin\)/ \
+  frontend/app/api/admin/ \
+  frontend/components/onboarding/ \
+  frontend/app/\(dashboard\)/dashboard/page.tsx \
+  frontend/app/\(dashboard\)/whatsapp/page.tsx \
+  docs-operacao/22_HISTORICO_ALTERACOES.md \
+  docs-operacao/20_PENDENCIAS.md \
+  docs-operacao/23_PROXIMO_PASSO.md
+
+git commit -m "feat: FASE 2 — feature flags reais, onboarding v2, painel admin super_admin, checklist widget"
 git push origin main
-# CI/CD dispara automaticamente → backend VPS + frontend Vercel
 ```
 
-### AÇÃO 1 — Reconectar Central de Atendimento santos-car (URGENTE)
+---
 
-As instâncias Evolution foram perdidas durante a limpeza do banco (sessão 14 — ver FC028).
-**Nota:** o plano santos-car é Pro ou superior — a página `/whatsapp` liberará o WhatsAppManager.
+## Próximos Passos (por prioridade)
+
+### 1. Reconectar Central de Atendimento santos-car (URGENTE)
 
 ```
 1. https://app.revendaclick.com.br/whatsapp  (menu → "Central de Atendimento")
-2. Login com dilneysantos@gmail.com (conta santos-car)
-3. Clicar "Conectar canal"
-4. QR aparece → escanear com o celular
-5. Status muda para "Canal conectado"
+2. Login com dilneysantos@gmail.com (conta santos-car, plano Pro)
+3. Clicar "Conectar canal" → QR aparece → escanear
 ```
 
 ```bash
@@ -78,65 +70,61 @@ ssh root@2.24.67.84
 curl -s http://localhost:8081/instance/fetchInstances -H "apikey: revendaclick123" | python3 -m json.tool
 ```
 
-### AÇÃO 2 — Assinar devecar antes de 2026-05-31 (URGENTE — 3 dias)
+### 2. Configurar super_admin no Supabase para acesso ao /admin
 
-Trial de `dilneysantos.developer@gmail.com` expira **2026-05-31**.
-**Nota:** plano Start não inclui Central de Atendimento — assinar Pro+ para ter acesso ao QR.
+Para usar o painel admin em produção, atualizar `app_metadata` do usuário admin:
 
-```
-1. https://app.revendaclick.com.br/login
-2. Login com dilneysantos.developer@gmail.com
-3. Menu → Billing → Planos
-4. Badge "Trial" visível no plano Start
-5. Clicar "Antecipar assinatura" no plano desejado (Pro recomendado) → PIX → informar CPF
-6. Esperado: redirect para link Asaas → pagar → status active após confirmação
+```sql
+-- Executar no Supabase SQL editor (service_role):
+UPDATE auth.users
+SET raw_app_meta_data = raw_app_meta_data || '{"user_role": "super_admin"}'::jsonb
+WHERE email = 'dilneysantos.developer@gmail.com';
 ```
 
-Após assinar: acessar Central de Atendimento → conectar canal (instância `devecar`).
+Após isso: acessar `https://app.revendaclick.com.br/admin` com esse usuário.
 
----
+### 3. FASE 2 — Etapas pendentes (próximas sessões)
 
-## Próximos Passos (por prioridade)
+- **Etapa 5** — Billing gateway abstraction (desvincular do Asaas → interface BillingGateway)
+- **Etapa 9** — Add-ons architecture (WhatsApp extra, IA extra, leads extras — tabelas DB)
+- **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
-### 3. Leaked Password Protection (Baixa — Supabase Dashboard)
+### 4. Leaked Password Protection (Baixa — Supabase Dashboard)
 
-Não acessível via SQL ou MCP — apenas via interface:
 ```
 Supabase Dashboard → Authentication → Settings → Security → "Leaked Password Protection" → ON
 ```
 
-### 4. Testar login em produção no browser (Baixa)
+### 5. Testar login em produção no browser (Baixa)
 
 ```
 https://app.revendaclick.com.br/login → dilneysantos@gmail.com → /dashboard sem loop
 ```
 
-### 5. Uptime Monitoring (Baixa)
+### 6. Uptime Monitoring (Baixa)
 
 UptimeRobot ou BetterStack Uptime → `https://api.revendaclick.com.br/health` → alerta por email
 
-### 6. Backup S3 (Baixa)
+### 7. Backup S3 (Baixa)
 
 ```bash
-# No VPS — adicionar ao .env:
 BACKUP_S3_BUCKET=meu-bucket-s3
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 AWS_DEFAULT_REGION=sa-east-1
 ```
 
-### 7. METRICS_TOKEN ausente no .env VPS (Baixa)
+### 8. METRICS_TOKEN ausente no .env VPS (Baixa)
 
-Endpoint `/metrics` retorna 403 porque `METRICS_TOKEN` não está configurado.
-Adicionar no VPS `/opt/revendaclick/.env` e reiniciar container.
+Endpoint `/metrics` retorna 403. Adicionar no VPS `/opt/revendaclick/.env` e reiniciar container.
 
-### 8. Rotação de Secrets (Baixa — política semestral)
+### 9. Rotação de Secrets (Baixa — política semestral)
 
 `ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN` — atualizar no .env VPS + reiniciar containers.
 
-### 9. Evolution schema isolado (Baixa — D19)
+### 10. Evolution schema isolado (Baixa — D19)
 
-Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution para isolar tabelas Prisma do schema `public`. Ver D19 em `21_DECISOES_TECNICAS.md`.
+Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 em `21_DECISOES_TECNICAS.md`.
 
 ---
 

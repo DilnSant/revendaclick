@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 28/05/2026 (sessão 18)
+> Atualizado em: 28/05/2026 (sessão 19)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -71,7 +71,7 @@
 | CONCLUÍDA | Fix WhatsApp QR Code não aparecia | — | 3 bugs corrigidos: condição frontend + handleRefreshQR + normalização "close"→"disconnected" backend (commit 3248b30) |
 | CONCLUÍDA | Fix Evolution API não gerava QR (Baileys silent failure) | — | 8 bugs: imagem 14m defasada → upgrade v2.3.7, DATABASE_ENABLED, CACHE_REDIS desabilitado, parser fetchInstances, webhook internal IP (commits d4eb26d→ce103a0) |
 | PENDENTE | Reconectar Central de Atendimento santos-car | CRÍTICA | Instâncias Evolution foram resetadas na sessão 14. Acessar /whatsapp (Central de Atendimento) → "Conectar canal" → escanear QR |
-| PENDENTE | devecar subscribe antes de 2026-05-31 | Alta | Trial expira 31/05 — fazer login com dilneysantos.developer@gmail.com e assinar starter |
+| CONCLUÍDA | devecar subscribe antes de 2026-05-31 | — | Assinatura ativada via Supabase MCP (sessão 19): status=active, plano Pro, period_end=2026-06-27 |
 | CONCLUÍDA | Fix vehicle detail 500 (digest 4250320451) | — | features null + photo_urls→images — commit 2ee68ab |
 | CONCLUÍDA | Fix billing trial — botão bloqueado durante trialing | — | isActiveAndCurrent = isCurrent && !isTrialing — commit 81eceb5 |
 | CONCLUÍDA | Fix cabeçalho duplo na loja pública | — | Removido header sticky do layout.tsx — commit 81eceb5 |
@@ -95,6 +95,10 @@
 | CONCLUÍDA | Refatoração estratégica WhatsApp (sessão 17) | — | Separação CONCEITO 1 (Central de Atendimento: Evolution/CRM) e CONCEITO 2 (Contato Público da Loja: vitrine). Menu → "Central de Atendimento". Settings → aba "Contato Público". Vitrine pública exibe contato público. Ver `22_HISTORICO_ALTERACOES.md` sessão 17 |
 | CONCLUÍDA | Billing screens | — | Assinatura, planos, faturas |
 | CONCLUÍDA | Reestruturação planos Start/Pro/Performance/Scale (sessão 18) | — | Migration 019: renomear planos, tagline, limites, features, gate central_atendimento; backend gate + tagline; billing plans premium redesign |
+| CONCLUÍDA | FASE 2: feature flags reais + tenant_features (sessão 19) | — | Migration 020: tenant_features table, PlanGate UNION ALL, super_admin role, onboarding v2 triggers |
+| CONCLUÍDA | FASE 2: painel admin super_admin (sessão 19) | — | /admin com layout protegido, tabela de tenants, ações admin (ativar/bloquear/feature/trial), API proxy catch-all |
+| CONCLUÍDA | FASE 2: OnboardingChecklist widget no dashboard (sessão 19) | — | 4 passos obrigatórios + WhatsApp opcional; integrado no /dashboard; triggers DB automáticos |
+| CONCLUÍDA | FASE 2: fix hardcode plan_name em /whatsapp (sessão 19) | — | Substituído `planName !== 'start'` por `usage?.has_central_atendimento` |
 
 ---
 
@@ -110,6 +114,7 @@
 | CONCLUÍDA | Migration 013: leads insert + storage | — | leads_public_insert restrito a anon + tenant ativo; vehicles_public_read removida (26/05/2026) |
 | CONCLUÍDA | Migration 018: tenant_public_contacts + tenant_whatsapp_sessions | — | Tabelas separadas para contato público da vitrine e sessão da Central de Atendimento — RLS, indexes, triggers (28/05/2026 — sessão 17) |
 | CONCLUÍDA | Migration 019: reestruturação de planos | — | Planos renomeados (start/pro/performance/scale), tagline, limites, features, gate central_atendimento, ENUM→TEXT, plan_usage view recriada (28/05/2026 — sessão 18) |
+| CONCLUÍDA | Migration 020: feature flags + super_admin + onboarding v2 | — | tenant_features table, super_admin role, onboarding received_first_lead/whatsapp_connected + triggers (28/05/2026 — sessão 19) |
 
 ---
 

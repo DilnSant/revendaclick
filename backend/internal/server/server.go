@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
+	"revendaclick/backend/internal/admin"
 	"revendaclick/backend/internal/ai"
 	"revendaclick/backend/internal/analytics"
 	"revendaclick/backend/internal/audit"
@@ -75,6 +76,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	)
 	analyticsH := analytics.NewHandler(analytics.NewService(analytics.NewRepository(pool)))
 	auditH     := audit.NewHandler(audit.NewRepository(pool))
+	adminH     := admin.NewHandler(admin.NewRepository(pool))
 	aiH        := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
 	billingH   := billing.NewHandler(
 		billing.NewService(billing.NewRepository(pool), cfg.AsaasAPIKey, cfg.AsaasEnv),
@@ -85,6 +87,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	resolveTenant := appMiddleware.TenantResolver(pool)
 	subGate       := appMiddleware.SubscriptionGate(pool)
 	ownerAdmin    := appMiddleware.RequireRole("owner", "admin")
+	superAdmin    := appMiddleware.RequireRole("super_admin")
 
 	// ── Metrics (Prometheus text format) ─────────────────────────────────────
 	r.GET("/metrics", observability.MetricsHandler(cfg.MetricsToken))
@@ -165,6 +168,20 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		if !cfg.IsProd() {
 			free.POST("/billing/dev/activate", ownerAdmin, billingH.DevActivate)
 		}
+	}
+
+	// ── Admin routes — super_admin only, no tenant required ─────────────────
+	adminGroup := r.Group("/api/admin")
+	adminGroup.Use(jwtAuth, superAdmin)
+	{
+		adminGroup.GET("/tenants",                              adminH.ListTenants)
+		adminGroup.POST("/tenants/:id/activate",               adminH.ActivateTenant)
+		adminGroup.POST("/tenants/:id/extend-trial",           adminH.ExtendTrial)
+		adminGroup.POST("/tenants/:id/block",                  adminH.BlockTenant)
+		adminGroup.POST("/tenants/:id/unblock",                adminH.UnblockTenant)
+		adminGroup.GET("/tenants/:id/features",                adminH.ListFeatures)
+		adminGroup.POST("/tenants/:id/features",               adminH.GrantFeature)
+		adminGroup.DELETE("/tenants/:id/features/:feature",    adminH.RevokeFeature)
 	}
 
 	// ── Gated routes — blocked when subscription past_due/canceled ───────────

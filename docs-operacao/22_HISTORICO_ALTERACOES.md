@@ -12,6 +12,52 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 19) — FASE 2: Consolidação SaaS — feature flags reais, onboarding v2, painel admin, correção /whatsapp, widget checklist dashboard
+
+**Commits:** feat: FASE 2 — feature flags, onboarding v2, admin panel, checklist widget
+**Migration:** 020 aplicada ao Supabase
+**Deploy:** commit + CI/CD push
+
+### Problema
+
+Plataforma precisava: (1) feature flags reais por plano/tenant (sem hardcode de plan_name), (2) onboarding reformulado (QR opcional), (3) painel admin para gerenciar tenants, (4) devecar ativado para testes.
+
+### Alterações
+
+#### Banco de dados — Migration 020
+
+- `ALTER TYPE user_role ADD VALUE 'super_admin'` — novo papel sem tenant_id
+- Tabela `tenant_features` — overrides por tenant (admin-granted features com expiração opcional; RLS service_role only)
+- `onboarding_checklists` — colunas `received_first_lead`, `whatsapp_connected` adicionadas
+- Trigger `_mark_vehicle_added()` — marca `added_vehicle=true` no INSERT de veículo
+- Trigger `_mark_first_lead_received()` — marca `received_first_lead=true` no INSERT de lead
+- Trigger BEFORE UPDATE `_update_onboarding_completed()` — `completed_at` automático quando `added_vehicle AND published_store AND received_first_lead`
+- `auto_create_onboarding_checklist()` recriado com novas colunas
+
+#### Backend
+
+- `middleware/plan_gate.go` — query UNION ALL: verifica `plans.features` OU `tenant_features` (admin overrides)
+- `onboarding/onboarding.go` — Checklist com 8 campos; GET/PUT atualizados; aceita `received_first_lead` e `whatsapp_connected`
+- `admin/` (pacote novo) — model.go, repository.go, handler.go
+  - `ListTenants`: JOIN tenants+subscriptions+plans, COUNT veículos/usuários/leads
+  - `ActivateTenant`, `ExtendTrial`, `BlockTenant`, `UnblockTenant`
+  - `GrantFeature`, `RevokeFeature`, `ListGrantedFeatures`
+- `server/server.go` — importa `admin`, registra `/api/admin/*` (jwtAuth + superAdmin, sem resolveTenant)
+- `billing/repository.go` + `billing/service.go` + `billing/handler.go` — `DevActivate` (apenas ENV != production)
+
+#### Frontend
+
+- `app/(admin)/layout.tsx` — valida `super_admin`, redireciona para /dashboard se não autorizado
+- `app/(admin)/admin/page.tsx` — server component; stats grid; `GET /api/admin/tenants`
+- `app/(admin)/admin/_components/AdminTenantsTable.tsx` — client component; busca + ações por tenant (Ativar Pro, +7 dias trial, + Atendimento feature, Block/Unblock)
+- `app/api/admin/[...path]/route.ts` — catch-all proxy: valida super_admin no frontend → proxy para backend `/api/admin/*`
+- `app/api/billing/dev-activate-action/route.ts` — proxy para `/api/billing/dev/activate` (só quando NEXT_PUBLIC_DEV_BILLING=true)
+- `components/onboarding/OnboardingChecklist.tsx` — widget do checklist de onboarding (4 passos obrigatórios + 1 opcional WhatsApp)
+- `app/(dashboard)/dashboard/page.tsx` — integra OnboardingChecklist; fetchChecklist + merges has_central_atendimento de usage
+- `app/(dashboard)/whatsapp/page.tsx` — corrigido: usa `usage?.has_central_atendimento` em vez de `planName !== 'start'` (hardcode removido)
+
+---
+
 ## 2026-05-28 (sessão 18) — Reestruturação estratégica: novos planos (Start/Pro/Performance/Scale), billing premium redesign, gate Central de Atendimento
 
 **Commit:** pendente (próxima ação)

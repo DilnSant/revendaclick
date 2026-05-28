@@ -8,13 +8,11 @@ import (
 )
 
 // PlanGate returns a middleware that blocks access if the tenant's current plan
-// does not include the specified feature flag (from plans.features JSONB array).
+// does not include the specified feature flag.
 //
-// Features defined in seed data:
-//   marketplace, whatsapp_button, lead_capture, crm, kanban,
-//   custom_domain, analytics, priority_support, api_access, white_label
-//
-// Usage: planGate("analytics"), planGate("api_access")
+// Access is granted when EITHER:
+//   (a) the tenant's active/trialing subscription plan includes the feature, OR
+//   (b) a tenant_features override grants the feature explicitly (admin-granted).
 func PlanGate(pool *pgxpool.Pool, feature string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tenantID := c.GetString(CtxTenantID)
@@ -26,12 +24,21 @@ func PlanGate(pool *pgxpool.Pool, feature string) gin.HandlerFunc {
 		var hasFeature bool
 		err := pool.QueryRow(c.Request.Context(), `
 			SELECT EXISTS (
+				-- Plan-level feature (subscription must be active or trialing)
 				SELECT 1
 				FROM subscriptions s
 				JOIN plans p ON p.id = s.plan_id
-				WHERE s.tenant_id      = $1
-				  AND s.status         IN ('active', 'trialing')
-				  AND p.features       @> to_jsonb($2::text)
+				WHERE s.tenant_id = $1
+				  AND s.status    IN ('active', 'trialing')
+				  AND p.features  @> to_jsonb($2::text)
+				UNION ALL
+				-- Admin-granted tenant-level override
+				SELECT 1
+				FROM tenant_features tf
+				WHERE tf.tenant_id = $1
+				  AND tf.feature   = $2
+				  AND tf.enabled   = true
+				  AND (tf.expires_at IS NULL OR tf.expires_at > NOW())
 			)`, tenantID, feature,
 		).Scan(&hasFeature)
 

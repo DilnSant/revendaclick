@@ -27,18 +27,27 @@ var (
 
 type Checklist struct {
 	TenantID           string     `json:"tenant_id"`
+	// v2 steps (required for completion)
 	AddedVehicle       bool       `json:"added_vehicle"`
-	ConfiguredWhatsApp bool       `json:"configured_whatsapp"`
 	PublishedStore     bool       `json:"published_store"`
+	ReceivedFirstLead  bool       `json:"received_first_lead"`
+	// v2 optional step
+	WhatsAppConnected  bool       `json:"whatsapp_connected"`
+	// legacy fields (kept for backwards compat)
+	ConfiguredWhatsApp bool       `json:"configured_whatsapp"`
 	AddedSeller        bool       `json:"added_seller"`
 	CompletedAt        *time.Time `json:"completed_at,omitempty"`
 	UpdatedAt          time.Time  `json:"updated_at"`
 }
 
 type UpdateRequest struct {
-	AddedVehicle       *bool `json:"added_vehicle"`
+	// v2 steps
+	AddedVehicle      *bool `json:"added_vehicle"`
+	PublishedStore    *bool `json:"published_store"`
+	ReceivedFirstLead *bool `json:"received_first_lead"`
+	WhatsAppConnected *bool `json:"whatsapp_connected"`
+	// legacy (still accepted)
 	ConfiguredWhatsApp *bool `json:"configured_whatsapp"`
-	PublishedStore     *bool `json:"published_store"`
 	AddedSeller        *bool `json:"added_seller"`
 }
 
@@ -284,11 +293,17 @@ func (h *Handler) Get(c *gin.Context) {
 
 	cl := &Checklist{}
 	err := h.pool.QueryRow(c.Request.Context(), `
-		SELECT tenant_id, added_vehicle, configured_whatsapp,
-		       published_store, added_seller, completed_at, updated_at
+		SELECT tenant_id,
+		       added_vehicle, published_store, received_first_lead, whatsapp_connected,
+		       configured_whatsapp, added_seller,
+		       completed_at, updated_at
 		FROM onboarding_checklists WHERE tenant_id = $1`, tenantID,
-	).Scan(&cl.TenantID, &cl.AddedVehicle, &cl.ConfiguredWhatsApp,
-		&cl.PublishedStore, &cl.AddedSeller, &cl.CompletedAt, &cl.UpdatedAt)
+	).Scan(
+		&cl.TenantID,
+		&cl.AddedVehicle, &cl.PublishedStore, &cl.ReceivedFirstLead, &cl.WhatsAppConnected,
+		&cl.ConfiguredWhatsApp, &cl.AddedSeller,
+		&cl.CompletedAt, &cl.UpdatedAt,
+	)
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		response.NotFound(c)
@@ -311,27 +326,30 @@ func (h *Handler) Update(c *gin.Context) {
 		return
 	}
 
+	// completed_at is now managed by the DB trigger _update_onboarding_completed
 	cl := &Checklist{}
 	err := h.pool.QueryRow(c.Request.Context(), `
 		UPDATE onboarding_checklists SET
 			added_vehicle        = COALESCE($2, added_vehicle),
-			configured_whatsapp  = COALESCE($3, configured_whatsapp),
-			published_store      = COALESCE($4, published_store),
-			added_seller         = COALESCE($5, added_seller),
-			completed_at = CASE
-				WHEN COALESCE($2, added_vehicle) AND COALESCE($3, configured_whatsapp)
-				     AND COALESCE($4, published_store) AND COALESCE($5, added_seller)
-				     AND completed_at IS NULL
-				THEN NOW()
-				ELSE completed_at
-			END
+			published_store      = COALESCE($3, published_store),
+			received_first_lead  = COALESCE($4, received_first_lead),
+			whatsapp_connected   = COALESCE($5, whatsapp_connected),
+			configured_whatsapp  = COALESCE($6, configured_whatsapp),
+			added_seller         = COALESCE($7, added_seller)
 		WHERE tenant_id = $1
-		RETURNING tenant_id, added_vehicle, configured_whatsapp,
-		          published_store, added_seller, completed_at, updated_at`,
-		tenantID, req.AddedVehicle, req.ConfiguredWhatsApp,
-		req.PublishedStore, req.AddedSeller,
-	).Scan(&cl.TenantID, &cl.AddedVehicle, &cl.ConfiguredWhatsApp,
-		&cl.PublishedStore, &cl.AddedSeller, &cl.CompletedAt, &cl.UpdatedAt)
+		RETURNING tenant_id,
+		          added_vehicle, published_store, received_first_lead, whatsapp_connected,
+		          configured_whatsapp, added_seller,
+		          completed_at, updated_at`,
+		tenantID,
+		req.AddedVehicle, req.PublishedStore, req.ReceivedFirstLead, req.WhatsAppConnected,
+		req.ConfiguredWhatsApp, req.AddedSeller,
+	).Scan(
+		&cl.TenantID,
+		&cl.AddedVehicle, &cl.PublishedStore, &cl.ReceivedFirstLead, &cl.WhatsAppConnected,
+		&cl.ConfiguredWhatsApp, &cl.AddedSeller,
+		&cl.CompletedAt, &cl.UpdatedAt,
+	)
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		response.NotFound(c)

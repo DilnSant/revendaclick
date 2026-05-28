@@ -3,6 +3,8 @@ import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/t
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabaseServer'
 import UsageBar from '@/components/ui/UsageBar'
+import OnboardingChecklist from '@/components/onboarding/OnboardingChecklist'
+import type { ChecklistData } from '@/components/onboarding/OnboardingChecklist'
 import type { Lead } from '@/lib/crm'
 
 export const metadata = { title: 'Dashboard' }
@@ -23,8 +25,9 @@ export default async function DashboardPage() {
   const { data: { session } } = await supabase.auth.getSession()
   const token = session?.access_token ?? ''
 
-  const [usage, sales, cashFlow, followUps] = await Promise.all([
+  const [usage, checklist, sales, cashFlow, followUps] = await Promise.all([
     getUsageFromAPI(token),
+    fetchChecklist(token),
     fetchSales(token),
     fetchCashFlow(token),
     fetchFollowUps(token),
@@ -36,12 +39,19 @@ export default async function DashboardPage() {
   const monthExpense   = cashFlow[cashFlow.length - 1]?.total_expense ?? 0
   const monthBalance   = monthRevenue - monthExpense
 
+  const checklistWithFlags: ChecklistData | null = checklist
+    ? { ...checklist, has_central_atendimento: usage?.has_central_atendimento ?? false }
+    : null
+
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-heading font-bold text-graphite">Dashboard</h1>
         <p className="mt-1 text-sm text-gray-500">Bem-vindo, {tenant.name}</p>
       </div>
+
+      {/* Onboarding checklist — visible until completed */}
+      {checklistWithFlags && <OnboardingChecklist checklist={checklistWithFlags} />}
 
       {/* Revenue KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -273,6 +283,19 @@ async function fetchCashFlow(token: string): Promise<CashFlowMonth[]> {
     const json = await res.json()
     return (json.data ?? json ?? []) as CashFlowMonth[]
   } catch { return [] }
+}
+
+async function fetchChecklist(token: string): Promise<ChecklistData | null> {
+  if (!token) return null
+  try {
+    const res = await fetch(`${API}/api/onboarding`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    return (json.data ?? null) as ChecklistData | null
+  } catch { return null }
 }
 
 async function fetchFollowUps(token: string): Promise<Lead[]> {
