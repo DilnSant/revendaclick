@@ -132,7 +132,59 @@
 
 ---
 
-## D16 — public_vehicle_listings view mantém SECURITY DEFINER (26/05/2026)
+## D16 — public_vehicle_listings view REMOVIDA (27/05/2026 — sessão 14)
+
+**Status ALTERADO:** A view `public_vehicle_listings` foi removida na migration 015 (sessão 14).
+**Por quê:** O backend Go não usava a view — acessava as tabelas diretamente via queries com RLS. A view SECURITY DEFINER era desnecessária e disparava o Supabase Security Advisor (`security_definer_view`).
+**Impacto:** Nenhum. Backend continua funcionando normalmente via queries diretas.
+**Decisão original (obsoleta) preservada abaixo para histórico:**
+
+~~**Decisão:** A view `public_vehicle_listings` permanece com `SECURITY DEFINER`.~~
+~~**Por quê:** Converter para `SECURITY INVOKER` exigiria adicionar uma política SELECT pública na tabela `tenants`.~~
+
+---
+
+## D19 — Evolution API deve usar schema separado no banco (27/05/2026 — sessão 14)
+
+**Decisão:** Decisão futura — ao reformular o ambiente Evolution, configurar `DATABASE_SCHEMA=evolution` no docker-compose para isolar as tabelas Prisma do schema `public`.
+**Por quê:** Na sessão 14 foi necessário dropar 37 tabelas PascalCase criadas pelo Prisma da Evolution no schema `public`. Essas tabelas desabilitavam o RLS (Supabase Security Advisor), poluíam o schema e exigiram uma sequência complexa de migrations para limpeza e recovery (P3005 → P3009 → ENUM types órfãos).
+**Como implementar:** `DATABASE_SCHEMA=evolution` na evolution API. Exige suporte pelo Prisma schema da versão usada.
+**Status:** PENDENTE — não urgente, mas deve ser feito antes de reiniciar o ambiente Evolution em uma nova VPS ou reset.
+**Ver:** FC026, FC027, FC028 em `docs-operacao/FalhasCorrigidas/`.
+
+---
+
+## D20 — Tailwind primary color usa CSS channel variables (28/05/2026 — sessão 15)
+
+**Decisão:** `tailwind.config.ts` define `primary.DEFAULT = 'rgb(var(--primary) / <alpha-value>)'` e `primary.dark = 'rgb(var(--primary-dark) / <alpha-value>)'`.
+**Por quê:** Antes, `primary: '#E53935'` era estático. Classes como `bg-primary`, `hover:bg-primary-dark`, `focus:ring-primary` compilavam para vermelho fixo independentemente do CSS variable `--color-primary`. Isso impedia que a loja pública da tenant usasse sua cor personalizada.
+**Como funciona:**
+- `globals.css` `:root` define os defaults: `--primary: 229 57 53` e `--primary-dark: 198 40 40` (RevendaClick brand)
+- `[slug]/layout.tsx` converte o `primary_color` hex do tenant para canais RGB via `hexToRgb()` e injeta `--primary: R G B` e `--primary-dark: R' G' B'` (com 17% escurecimento) no SSR
+- Dashboard: usa os defaults de globals.css → cor RevendaClick `#E53935` inalterada
+- Loja pública: usa os canais do tenant → cor dinâmica por tenant
+**Suporte a opacity modifiers:** `bg-primary/10`, `bg-primary/5`, `ring-primary/20` funcionam corretamente com o formato `rgb(var(...) / <alpha-value>)` (padrão Tailwind v3 documentado)
+**Manter:** `primary.light`, `primary.50`, `primary.100` continuam hardcoded (usados apenas em badges do dashboard, não na loja pública)
+**Ver:** `frontend/tailwind.config.ts`, `frontend/app/globals.css`, `frontend/app/(public)/[slug]/layout.tsx`
+
+---
+
+## D21 — Billing trial: botão de assinatura desbloqueado durante trialing (28/05/2026 — sessão 15)
+
+**Decisão:** `PlanCard.tsx` bloqueia o botão de assinatura apenas quando `subscription.status === 'active'` no plano atual. Durante `trialing`, todos os planos têm botão clicável.
+**Por quê:** O tenant precisa poder antecipar a assinatura durante o trial ou mudar de plano. O backend guard (`billing/service.go:Subscribe`) já trata isso corretamente: só bloqueia re-subscribe quando `asaas_subscription_id != ""`. Durante trial, a subscription não tem `asaas_subscription_id` → guard não dispara.
+**Lógica:**
+```ts
+const isActiveAndCurrent = isCurrent && subscription?.status === 'active'
+// disabled={isActiveAndCurrent || loading}
+// Trialing: isActiveAndCurrent = false → botão habilitado
+// Active:   isActiveAndCurrent = true  → botão desabilitado
+```
+**UX:** Plano atual em trial mostra badge "Trial ativo" + botão "Antecipar assinatura". Planos diferentes mostram "Assinar" normalmente.
+
+---
+
+## D15 — Redis adicionado ao stack de produção para cache da Evolution API (25/05/2026)
 
 **Decisão:** A view `public_vehicle_listings` (usada nas páginas de vitrine pública) permanece com `SECURITY DEFINER`.
 **Por quê:** Converter para `SECURITY INVOKER` exigiria adicionar uma política SELECT pública na tabela `tenants`. Isso exporia colunas como `email`, `asaas_customer_id` e outras via PostgREST para qualquer request anônimo. O `SECURITY DEFINER` na view controla exatamente quais colunas são expostas (somente `slug`, `name`, `logo_url`, `phone_whatsapp`).

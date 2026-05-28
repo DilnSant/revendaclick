@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 26/05/2026 (sessão 8)
+> Atualizado em: 28/05/2026 (sessão 15)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -69,8 +69,12 @@
 | CONCLUÍDA | Deploy guard re-subscribe | — | commit 4cd5dee deployado via CI/CD |
 | CONCLUÍDA | Fix WhatsApp QR Code não aparecia | — | 3 bugs corrigidos: condição frontend + handleRefreshQR + normalização "close"→"disconnected" backend (commit 3248b30) |
 | CONCLUÍDA | Fix Evolution API não gerava QR (Baileys silent failure) | — | 8 bugs: imagem 14m defasada → upgrade v2.3.7, DATABASE_ENABLED, CACHE_REDIS desabilitado, parser fetchInstances, webhook internal IP (commits d4eb26d→ce103a0) |
+| PENDENTE | Reconectar WhatsApp santos-car | CRÍTICA | Instâncias Evolution foram resetadas na sessão 14 (limpeza do banco). Acessar /whatsapp → "Conectar WhatsApp" → escanear QR |
 | PENDENTE | devecar subscribe antes de 2026-05-31 | Alta | Trial expira 31/05 — fazer login com dilneysantos.developer@gmail.com e assinar starter |
 | CONCLUÍDA | Fix vehicle detail 500 (digest 4250320451) | — | features null + photo_urls→images — commit 2ee68ab |
+| CONCLUÍDA | Fix billing trial — botão bloqueado durante trialing | — | isActiveAndCurrent = isCurrent && !isTrialing — commit 81eceb5 |
+| CONCLUÍDA | Fix cabeçalho duplo na loja pública | — | Removido header sticky do layout.tsx — commit 81eceb5 |
+| CONCLUÍDA | Fix cores hardcoded na loja pública | — | Tailwind primary usa rgb(var(--primary)/α), store layout injeta canais RGB do tenant — commit 81eceb5 |
 | CONCLUÍDA | Settings: logo upload + cor + localização | — | /api/upload/logo, logos bucket, theme.primary_color, address.city/state — commit fa18153 |
 | CONCLUÍDA | Vitrine pública profissional com filtros | — | Hero c/ logo/slogan/cidade, filtros chip, ordenação, busca, paginação — commit fa18153 |
 | CONCLUÍDA | Billing plans: badge + status + trial/renovação | — | Banner summary + PlanCard "Plano atual ✓" + trial days/renewal date — commit fa18153 |
@@ -144,4 +148,4 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | FLUTTERFLOW_MIGRATION.md | — | Guia completo de migração |
 | CONCLUÍDA | Runbook de incidentes | — | `24_RUNBOOK_INCIDENTES.md` — 10 cenários com diagnóstico e solução |
 | CONCLUÍDA | Sync docs ↔ código (sessão 5) | — | 11_DOCKER.md, 16_EVOLUTION.md, 19_RISCOS.md, 24_RUNBOOK atualizados para refletir commit d17025e (Redis + 768m + NODE_OPTIONS) |
-| CONCLUÍDA | FalhasCorrigidas/ — histórico permanente de bugs | — | 23 falhas documentadas em `docs-operacao/FalhasCorrigidas/` (FC001–FC023) com causa raiz, correção, commits e prevenção |
+| CONCLUÍDA | FalhasCorrigidas/ — histórico permanente de bugs | — | 28 falhas documentadas em `docs-operacao/FalhasCorrigidas/` (FC001–FC028) com causa raiz, correção, commits e prevenção |

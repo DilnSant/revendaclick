@@ -12,6 +12,184 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 15) — Correções finais: billing trial + header duplo + cores tenant
+
+**Commits:** `81eceb5`
+**Smoke test:** 22/22 PASS
+
+### PROBLEMA 1 — Billing: usuário em trial não conseguia assinar
+
+**Causa raiz:** `PlanCard.tsx` usava `isCurrent = plan.name === currentPlanName` para desabilitar o botão. Como `isCurrent = true` durante o trial, o botão ficava desabilitado para qualquer `status` — incluindo `trialing`.
+
+**Análise backend:** Guard em `billing/service.go:Subscribe` só bloqueia quando `asaas_subscription_id != ""`. Durante trial, não há `asaas_subscription_id` → guard não dispara → backend aceita o subscribe normalmente. Problema era **somente no frontend**.
+
+**Fix (`PlanCard.tsx`):**
+```ts
+// Antes:
+disabled={isCurrent || loading}   // bloqueava trialing
+
+// Depois:
+const isActiveAndCurrent = isCurrent && !isTrialing  // bloqueia APENAS active
+disabled={isActiveAndCurrent || loading}
+```
+
+**UX implementada:**
+- `trialing` (plano atual): badge "Trial ativo" + botão "Antecipar assinatura" clicável
+- `trialing` (outro plano): botão "Assinar" clicável
+- `active` (plano atual): botão "Plano atual ✓" desabilitado + data de renovação
+- Formulário de pagamento (forma + CPF) visível para todos os planos não-bloqueados
+
+---
+
+### PROBLEMA 2 — Cabeçalho duplo na loja pública
+
+**Causa raiz:** `[slug]/layout.tsx` renderizava `<header className="sticky top-0 z-40 ...">` com logo + botão WhatsApp. `[slug]/page.tsx` já tinha Hero section completa (logo + nome + descrição + cidade/estado + botão WhatsApp). Dois headers empilhados visualmente.
+
+**Fix (`[slug]/layout.tsx`):**
+- Removido o bloco `<header>` completo
+- Layout agora: `<style>` + `<main>{children}</main>` + `<footer>`
+- O Hero da `page.tsx` é o único cabeçalho da loja — mais rico e com todas as informações
+
+**Impacto:** Afeta tanto `/[slug]` quanto `/[slug]/[vehicleSlug]` (ambos usam o mesmo layout).
+
+---
+
+### PROBLEMA 3 — Cores hardcoded na loja pública
+
+**Causa raiz:** `tailwind.config.ts` definia `primary: { DEFAULT: '#E53935' }` — valor estático. Classes Tailwind como `bg-primary`, `text-primary`, `hover:bg-primary-dark` compilavam para vermelho fixo. O CSS variable `--color-primary` só funcionava em `style={}` inline.
+
+**Fix em 3 camadas:**
+
+**Camada 1 — `tailwind.config.ts`:**
+```ts
+primary: {
+  DEFAULT: 'rgb(var(--primary) / <alpha-value>)',  // era: '#E53935'
+  dark:    'rgb(var(--primary-dark) / <alpha-value>)',  // era: '#C62828'
+}
+```
+Suporte nativo a opacity modifiers: `bg-primary/10`, `ring-primary/20`, etc.
+
+**Camada 2 — `globals.css`:**
+```css
+:root {
+  --primary:      229 57 53;  /* canais RGB de #E53935 — default dashboard */
+  --primary-dark: 198 40 40;  /* canais RGB de #C62828 */
+}
+```
+
+**Camada 3 — `[slug]/layout.tsx`:**
+```ts
+function hexToRgb(hex) { /* hex → {r,g,b} */ }
+function darken(r,g,b, factor=0.83) { /* 17% escurecimento */ }
+
+const { r, g, b } = hexToRgb(hexColor)       // tenant primary_color
+const darkChannels = darken(r, g, b)
+
+<style>{`
+  :root {
+    --color-primary: ${hexColor};         /* para inline style={{ color: 'var(...)' }} */
+    --primary: ${r} ${g} ${b};           /* para Tailwind bg-primary */
+    --primary-dark: ${darkChannels};      /* para Tailwind hover:bg-primary-dark */
+  }
+`}</style>
+```
+
+**Elementos agora usando cor do tenant:**
+- `bg-primary` (Buscar, chips ativos, filtros, etc.) — via Tailwind
+- `hover:bg-primary-dark` (hover de botões) — via Tailwind
+- `focus:border-primary`, `focus:ring-primary` (inputs) — via Tailwind
+- `btn-primary` em globals.css (vehicle detail "Quero este veículo") — via @apply bg-primary
+- `style={{ backgroundColor: 'var(--color-primary)' }}` (VehicleCard "Tenho interesse") — via CSS var hex
+- `style={{ color: 'var(--color-primary)' }}` (preço) — via CSS var hex
+- Botão WhatsApp do hero: `bg-green-500` → `bg-primary`
+
+**Dashboard:** Usa defaults de globals.css (`--primary: 229 57 53` = `#E53935`) → sem mudança visual.
+
+---
+
+**Arquivos modificados (sessão 15):**
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx`
+- `frontend/app/(public)/[slug]/layout.tsx`
+- `frontend/app/(public)/[slug]/page.tsx`
+- `frontend/app/globals.css`
+- `frontend/tailwind.config.ts`
+
+**Validação produção:**
+```
+curl "https://www.revendaclick.com.br/santos-car" → HTTP 200
+  → --primary: 229 57 53 presente no HTML
+  → sem sticky top-0 header no markup
+  → bg-primary no botão WhatsApp (não bg-green-500)
+22/22 smoke test PASS
+```
+
+---
+
+## 2026-05-27/28 (sessão 14) — Evolution recovery: P3005+P3009+ENUMs + security advisors
+
+**Commits:** `76ddc51`
+**Smoke test:** 22/22 PASS
+
+### Security cleanup Supabase
+
+**Problema:** Supabase Security Advisor mostrava:
+- `rls_disabled_in_public`: 37 tabelas PascalCase da Evolution API (criadas pelo Prisma) sem RLS no schema `public`
+- `security_definer_view`: view `public_vehicle_listings` com SECURITY DEFINER desnecessária
+- `public_bucket_allows_listing`: policy `logos_public_read` dava acesso de listagem ao bucket `logos`
+
+**Migration 015 — `cleanup_evolution_tables_and_security_fixes`:**
+- Dropadas 37 tabelas PascalCase da Evolution (`Chat`, `Contact`, `Instance`, `Message`, etc.)
+- Dropada tabela `_prisma_migrations`
+- Dropada view `public_vehicle_listings`
+- Dropada policy `logos_public_read` (bucket público não precisa de SELECT explícito)
+
+**Resultado:** Security advisors zerados (exceto Leaked Password Protection — só via Dashboard UI).
+
+### Recovery Evolution API (P3005 → P3009 → ENUM types órfãos)
+
+**Erro P3005:** Ao dropar `_prisma_migrations`, Prisma viu schema não vazio sem histórico → recusou executar.
+- **Fix migration 016:** Recriada tabela `_prisma_migrations` vazia com schema correto + RLS habilitado.
+
+**Erro P3009:** Ao iniciar com `_prisma_migrations` vazia, Prisma tentou aplicar `20240609181238_init` que executa `CREATE TYPE "InstanceConnectionStatus"`. O `DROP TABLE CASCADE` NÃO remove ENUM types → tipo já existia → `ERROR 42710` → registro de migration falha travou tudo.
+
+**Diagnóstico ENUM types órfãos:**
+```sql
+SELECT typname FROM pg_type WHERE typnamespace = 'public'::regnamespace AND typtype = 'e'
+-- Retornou 7 tipos PascalCase da Evolution + 18 tipos snake_case do RevendaClick
+```
+
+**Migration 017 — `drop_evolution_enum_types_and_fix_prisma_migration`:**
+```sql
+DROP TYPE IF EXISTS public."DeviceMessage" CASCADE;
+DROP TYPE IF EXISTS public."DifyBotType" CASCADE;
+DROP TYPE IF EXISTS public."InstanceConnectionStatus" CASCADE;
+DROP TYPE IF EXISTS public."OpenaiBotType" CASCADE;
+DROP TYPE IF EXISTS public."SessionStatus" CASCADE;
+DROP TYPE IF EXISTS public."TriggerOperator" CASCADE;
+DROP TYPE IF EXISTS public."TriggerType" CASCADE;
+DELETE FROM public."_prisma_migrations" WHERE migration_name = '20240609181238_init';
+```
+
+**Recovery:** `docker restart rc_evolution` → container aplicou todas as migrations Prisma com sucesso → `healthy`.
+
+**Consequência:** Todas as instâncias WhatsApp foram perdidas (dados estavam nas tabelas dropadas). Usuários precisam reconectar em `/whatsapp`.
+
+### FC024–FC028 documentadas
+
+- FC024: Vehicle detail 500 (features null + photo_urls→images)
+- FC025: Logos bucket policy pública desnecessária
+- FC026: Evolution tables no schema public sem RLS
+- FC027: P3005 + P3009 após drop das tabelas
+- FC028: ENUM types órfãos após DROP TABLE CASCADE
+
+**Arquivos modificados (sessão 14):**
+- `docs-operacao/FalhasCorrigidas/FC024–FC028` (novos)
+- `docs-operacao/FalhasCorrigidas/README.md`
+- `docs-operacao/23_PROXIMO_PASSO.md`
+- Supabase migrations 015, 016, 017 (aplicadas via MCP)
+
+---
+
 ## 2026-05-27 (sessão 13) — Problemas 1-5 produção: 500 vitrine, personalização loja, filtros, billing
 
 **O que foi feito:**
