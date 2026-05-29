@@ -47,6 +47,7 @@
 | [FC026](FC026_EVOLUTION_TABLES_SUPABASE_ADVISORS.md) | Evolution tables no schema public — RLS desabilitado em 37 tabelas | Segurança / Evolution | ALTA | 2026-05-27 |
 | [FC027](FC027_EVOLUTION_P3005_P3009_PRISMA.md) | Evolution P3005 + P3009 — crash loop após drop das tabelas | WhatsApp / Evolution | CRÍTICA | 2026-05-27 |
 | [FC028](FC028_EVOLUTION_ENUM_TYPES_ORFAOS.md) | Evolution ENUM types órfãos após DROP TABLE CASCADE | WhatsApp / Evolution | CRÍTICA | 2026-05-27 |
+| [FC029](FC029_VERCEL_BUILD_FREEZE_STALE_SUPABASE_TYPES.md) | Vercel build freeze — database.types.ts desatualizado bloqueou 8 deploys | Deploy / TypeScript | CRÍTICA | 2026-05-28 |
 
 ---
 
@@ -96,13 +97,16 @@
 - FC027 — Evolution P3005 + P3009 após drop das tabelas
 - FC028 — Evolution ENUM types órfãos após DROP TABLE CASCADE
 
+### Deploy / CI-CD
+- FC029 — Vercel build freeze: database.types.ts desatualizado (8 deploys falhando)
+
 ---
 
 ## Regras desta pasta
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC029.
+3. **Numeração sequencial:** próximo número disponível é FC030.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -114,8 +118,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC029
-# Nome do arquivo: FC029_DESCRICAO_CURTA.md
+# Próximo número: FC030
+# Nome do arquivo: FC030_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 

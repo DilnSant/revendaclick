@@ -12,6 +12,52 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 21) — FASE 3 Auditoria de Regressão: correção do congelamento de deploy no Vercel
+
+**Commits:** `f0e59c0` (regenerar database.types.ts), `5eb241a` (tenant.ts unknown cast)
+**Migration:** nenhuma
+**Deploy:** `dpl_FySkkpdCPWXTHzYJGcwSWvLTiHPa` — estado READY; `app.revendaclick.com.br` ao vivo
+
+### Problema
+
+Produção estava congelada no commit `c885492` (sessão 15). Oito deploys consecutivos (sessões 16–20) falharam com TypeScript error no Vercel, bloqueando silenciosamente todas as features implementadas: sidebar dinâmica, admin panel, feature flags, OnboardingChecklist, billing upgrade.
+
+### Causa raiz
+
+`frontend/lib/database.types.ts` não era atualizado desde antes das migrations 018–021. O arquivo gerado pelo Supabase não incluía as tabelas `tenant_public_contacts`, `tenant_features`, `subscription_addons` e `plan_addons`. Qualquer arquivo que referenciasse essas tabelas causava erro de tipo no build.
+
+### Investigação
+
+1. Confirmado que frontend deploy é exclusivamente via Vercel (nginx.conf não tem entrada para `app.`; `docker-compose.production.yml` não tem serviço frontend; `ci.yml` só builda o backend)
+2. Lido `DashboardShell.tsx` — código local correto (DEFAULT_FEATURES false, gates por feature flag, banner Starter)
+3. Lido `(dashboard)/layout.tsx` — `getUsageFromAPI` passa planFeatures corretamente
+4. Verificado DB via SQL — santos-car=starter sem kanban, devecar=pro com todos os flags ✓
+5. Build logs do Vercel confirmaram o erro no `lib/tenant.ts:332` (referência a `tenant_public_contacts`)
+
+### Correção 1 — Regenerar `database.types.ts` (commit `f0e59c0`)
+
+- Gerado via `mcp__claude_ai_Supabase__generate_typescript_types`
+- Arquivo atualizado de ~1200 para 4263 linhas
+- Tabelas adicionadas: `tenant_public_contacts`, `tenant_features`, `subscription_addons`, `plan_addons`
+
+### Correção 2 — Cast em `lib/tenant.ts` (commit `5eb241a`)
+
+- O tipo gerado para `tenant.theme` é `Json` (correto conforme schema), conflitando com o tipo local `{ primary_color: string; font: string }`
+- `getTenantById` linha 116 e `getTenantBySlug` linha 136: `return data as Tenant` → `return data as unknown as Tenant`
+- Sem impacto em runtime — apenas satisfaz o compilador TypeScript
+
+### Resultado
+
+Deploy `dpl_FySkkpdCPWXTHzYJGcwSWvLTiHPa` (commit `5eb241a`) → **READY** ✓
+Produção agora executa código das sessões 16–21: sidebar dinâmica, admin panel, feature flags, checklist de onboarding.
+
+### Arquivos alterados
+
+- `frontend/lib/database.types.ts` — regenerado (4263 linhas)
+- `frontend/lib/tenant.ts` — linhas 116 e 136: cast unknown intermediário
+
+---
+
 ## 2026-05-28 (sessão 20) — Reestruturação estratégica: sidebar dinâmica, Starter rename, feature flags, add-ons
 
 **Commit:** 6321538

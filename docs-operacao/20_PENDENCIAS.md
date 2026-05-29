@@ -99,6 +99,7 @@
 | CONCLUÍDA | FASE 2: painel admin super_admin (sessão 19) | — | /admin com layout protegido, tabela de tenants, ações admin (ativar/bloquear/feature/trial), API proxy catch-all |
 | CONCLUÍDA | FASE 2: OnboardingChecklist widget no dashboard (sessão 19) | — | 4 passos obrigatórios + WhatsApp opcional; integrado no /dashboard; triggers DB automáticos |
 | CONCLUÍDA | FASE 2: fix hardcode plan_name em /whatsapp (sessão 19) | — | Substituído `planName !== 'start'` por `usage?.has_central_atendimento` |
+| CONCLUÍDA | FASE 3 auditoria regressão: fix deploy freeze Vercel (sessão 21) | — | `database.types.ts` regenerado (migrations 018–021); `tenant.ts` cast unknown; 8 deploys consecutivos falhando desde sessão 15 — FC029 |
 
 ---
 
