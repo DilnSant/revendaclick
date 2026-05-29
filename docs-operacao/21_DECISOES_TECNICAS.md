@@ -262,3 +262,58 @@ const isActiveAndCurrent = isCurrent && subscription?.status === 'active'
 **Decisão:** `frontend/middleware.ts` substituído por `frontend/proxy.ts`.
 **Por quê:** Next.js 16 deprecou a convenção `middleware` em favor de `proxy`. O build logava warning: "The 'middleware' file convention is deprecated. Please use 'proxy' instead." O arquivo antigo foi esvaziado para evitar conflito.
 **Impacto:** A lógica de auth (session refresh, x-user-id header, redirect para /login) continua idêntica. Apenas o nome do arquivo mudou.
+
+---
+
+## D24 — Add-ons concedem feature flags via plan_addons.features JSONB (28/05/2026 — sessão 22)
+
+**Decisão:** A tabela `plan_addons` tem coluna `features JSONB` que lista as feature flags concedidas pelo add-on. A resolução de features do tenant é um merge 3-way:
+1. `plans.features` — features base do plano contratado
+2. `tenant_features` — overrides manuais pelo super_admin
+3. `subscription_addons JOIN plan_addons.features` — features concedidas por add-ons ativos
+
+**Por quê:** Permite que add-ons desbloqueiem funcionalidades sem criar código condicional separado. O `plan_gate.go` já usa UNION ALL nos 3 branches. A UI consome os mesmos feature flags independentemente de onde vieram.
+
+**Exemplo:** `whatsapp_automation` add-on tem `features: ["central_atendimento"]`. Tenant Starter que contrata esse add-on passa no gate de `central_atendimento` automaticamente.
+
+**Impacto ao alterar:** Adicionar uma feature ao add-on basta atualizar o array JSONB em `plan_addons`. Nenhuma mudança de código necessária.
+
+---
+
+## D25 — Plano Scale oculto do grid público (28/05/2026 — sessão 22)
+
+**Decisão:** O plano `scale` (Enterprise) existe no banco mas nunca é exibido no grid de planos (`/billing/plans`). `PlansGrid.tsx` filtra `plans.filter(p => p.name !== 'scale')`. No lugar, exibe uma seção CTA "Escala do seu negócio merece um plano sob medida" com botão WhatsApp para contato.
+
+**Por quê:** Enterprise tem pricing negociado (não público). Exibir um card com preço fixo ou "Consulte" junto aos demais planos dilui o posicionamento premium e cria fricção desnecessária.
+
+**Regra:** Nunca exibir `scale` no grid. CTA Enterprise fica sempre ao final da página de planos.
+
+---
+
+## D26 — Sidebar gate Pro usa has_crm; Starter inclui financial+vendors (28/05/2026 — sessão 22)
+
+**Decisão:** `DashboardShell.tsx` reorganizou os grupos do nav:
+- `NAV_BASE` (Starter+): inclui Financeiro, Comissões, Vendedores
+- `NAV_PRO` (Pro+): apenas CRM (Compradores, Atendimento) — gate = `features.has_crm`
+- Gate anterior usava `features.has_kanban` — incorreto pois Kanban é Pro mas o grupo era "Gestão" misturando financeiro
+
+**Por quê:** Plano Starter deve ter gestão financeira e de equipe (diferencial competitivo). O que distingue Pro é o CRM (funil de leads, Kanban, Analytics). Usar `has_kanban` como gate estava bloqueando Vendedores de Starter desnecessariamente.
+
+**Regra permanente:** Nunca usar `plan_name === 'premium'` ou similar. Sempre feature flags (`has_crm`, `has_analytics`, `has_whatsapp_qr`, etc).
+
+---
+
+## D27 — database.types.ts deve ser regenerado após cada migration Supabase (28/05/2026 — FC029)
+
+**Decisão:** Após aplicar qualquer migration Supabase, regenerar `frontend/lib/database.types.ts` antes de commitar código que referencie as tabelas novas ou colunas alteradas.
+
+**Por quê:** Em 8 deploys consecutivos (sessões 15–21), o build no Vercel falhou com TypeScript error porque `database.types.ts` não incluía as tabelas `tenant_public_contacts`, `tenant_features`, `subscription_addons`, `plan_addons`. O arquivo estava congelado na versão pré-migration 018.
+
+**Como regenerar:**
+```bash
+# Via MCP Supabase (generate_typescript_types) — preferido
+# Ou via CLI:
+supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/database.types.ts
+```
+
+**Ver:** FC029 em `docs-operacao/FalhasCorrigidas/`.

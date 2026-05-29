@@ -117,6 +117,8 @@
 | CONCLUÍDA | Migration 018: tenant_public_contacts + tenant_whatsapp_sessions | — | Tabelas separadas para contato público da vitrine e sessão da Central de Atendimento — RLS, indexes, triggers (28/05/2026 — sessão 17) |
 | CONCLUÍDA | Migration 019: reestruturação de planos | — | Planos renomeados (start/pro/performance/scale), tagline, limites, features, gate central_atendimento, ENUM→TEXT, plan_usage view recriada (28/05/2026 — sessão 18) |
 | CONCLUÍDA | Migration 020: feature flags + super_admin + onboarding v2 | — | tenant_features table, super_admin role, onboarding received_first_lead/whatsapp_connected + triggers (28/05/2026 — sessão 19) |
+| CONCLUÍDA | Migration 022: reestruturação comercial Premium + add-ons features | — | performance→premium, features por plano, features JSONB em plan_addons, get_tenant_usage 3-way merge (28/05/2026 — sessão 22) |
+| PENDENTE | Regenerar database.types.ts após Migration 022 | ALTA | plan_addons ganhou coluna `features JSONB` — tipos desatualizados. Regenerar via MCP (generate_typescript_types) antes do próximo deploy que referencie plan_addons |
 
 ---
 
