@@ -1,6 +1,7 @@
 package evolution
 
 import (
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -22,11 +23,15 @@ func NewHandler(svc *Service, apiKey string, logger *zap.Logger) *Handler {
 // POST /api/webhooks/evolution
 func (h *Handler) Webhook(c *gin.Context) {
 	incomingKey := c.GetHeader("apikey")
-	ip := c.ClientIP()
-	// Evolution API (Docker network) may not include an apikey header.
-	// Trust requests from RFC-1918 addresses inside the container network;
-	// only enforce the key for requests that arrive from outside.
-	internalIP := strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "172.") || strings.HasPrefix(ip, "192.168.")
+	// Use RemoteAddr (real TCP peer) instead of ClientIP() — Evolution v2.3.7 sends
+	// X-Forwarded-For with the VPS public IP, which fools Gin's proxy-trust logic into
+	// treating the request as external even though it arrives on the Docker bridge (10.x).
+	rawAddr := c.Request.RemoteAddr
+	ip, _, _ := net.SplitHostPort(rawAddr)
+	if ip == "" {
+		ip = rawAddr
+	}
+	internalIP := strings.HasPrefix(ip, "10.") || strings.HasPrefix(ip, "172.") || strings.HasPrefix(ip, "192.168.") || ip == "127.0.0.1" || ip == "::1"
 	if !internalIP && h.apiKey != "" && incomingKey != h.apiKey {
 		h.logger.Warn("evolution webhook: invalid apikey", zap.String("ip", ip))
 		c.Status(http.StatusUnauthorized)
