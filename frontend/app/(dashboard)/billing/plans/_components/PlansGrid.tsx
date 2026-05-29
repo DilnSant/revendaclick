@@ -14,10 +14,13 @@ export default function PlansGrid({ plans, subscription }: Props) {
     (subscription?.billing_cycle as 'monthly' | 'yearly') ?? 'monthly'
   )
 
-  const hasYearlyDiscount = plans.some((p) => p.price_yearly < p.price_monthly * 12)
+  // Only show public plans: starter, pro, premium — hide scale/enterprise from grid
+  const publicPlans = plans.filter((p) => p.name !== 'scale')
+  const hasYearlyDiscount = publicPlans.some((p) => p.price_yearly < p.price_monthly * 12)
 
   return (
     <div>
+      {/* Billing cycle toggle */}
       <div className="flex justify-center mb-8">
         <div className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white p-1 shadow-sm">
           <button
@@ -42,9 +45,7 @@ export default function PlansGrid({ plans, subscription }: Props) {
             {hasYearlyDiscount && (
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                  cycle === 'yearly'
-                    ? 'bg-green-500 text-white'
-                    : 'bg-green-100 text-green-700'
+                  cycle === 'yearly' ? 'bg-green-500 text-white' : 'bg-green-100 text-green-700'
                 }`}
               >
                 -20%
@@ -54,8 +55,9 @@ export default function PlansGrid({ plans, subscription }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        {plans.map((plan) => (
+      {/* Public plan cards — max 3 columns */}
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {publicPlans.map((plan) => (
           <PlanCard
             key={plan.id}
             plan={plan}
@@ -64,6 +66,25 @@ export default function PlansGrid({ plans, subscription }: Props) {
             subscription={subscription}
           />
         ))}
+      </div>
+
+      {/* Enterprise CTA */}
+      <div className="mt-10 rounded-2xl border border-gray-200 bg-gray-50 px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div>
+          <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Enterprise</p>
+          <h3 className="text-xl font-bold text-gray-900">Precisa de uma solução corporativa?</h3>
+          <p className="mt-1 text-sm text-gray-500">
+            Volumes ilimitados, white-label, multi-loja, API REST, SLA dedicado e atendimento exclusivo.
+          </p>
+        </div>
+        <a
+          href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20tenho%20interesse%20em%20uma%20solu%C3%A7%C3%A3o%20Enterprise%20para%20o%20RevendaClick."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 rounded-xl border-2 border-gray-900 px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-900 hover:text-white transition-all"
+        >
+          Falar com especialista →
+        </a>
       </div>
     </div>
   )

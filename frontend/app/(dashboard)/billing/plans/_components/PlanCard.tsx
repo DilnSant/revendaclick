@@ -22,71 +22,57 @@ const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
         'Botão WhatsApp na loja',
         'Captura automática de leads',
         'Página pública SEO otimizada',
-        'Domínio personalizado',
+        'Personalização da loja',
+      ],
+    },
+    {
+      section: 'Gestão',
+      items: [
+        'Interessados e Compradores',
+        'Vendedores e equipe',
+        'Financeiro básico',
+        'Pipeline de Vendas',
       ],
     },
   ],
   pro: [
     {
-      section: 'Loja & Marketplace',
-      items: ['Tudo do Starter'],
-    },
-    {
-      section: 'Central de Atendimento',
+      section: 'Tudo do Starter, mais:',
       items: [
-        'WhatsApp operacional (QR Code)',
-        'CRM completo',
+        'CRM de Atendimento completo',
         'Kanban de leads',
         'Analytics avançado',
         'Histórico de conversas',
+        'Funil de vendas',
       ],
     },
   ],
-  performance: [
+  premium: [
     {
-      section: 'Atendimento',
-      items: ['Tudo do Pro'],
-    },
-    {
-      section: 'IA & Automação',
+      section: 'Tudo do Pro, mais:',
       items: [
+        'WhatsApp operacional (QR Code)',
         'IA: sugestão de resposta',
-        'IA: classificação de lead',
-        'Templates de resposta rápida',
-        'Suporte prioritário',
-      ],
-    },
-  ],
-  scale: [
-    {
-      section: 'Automação',
-      items: ['Tudo do Performance'],
-    },
-    {
-      section: 'Enterprise',
-      items: [
-        'White-label completo',
-        'Acesso à API REST',
-        'Volumes ilimitados',
-        'Atendimento dedicado',
-        'SLA garantido',
+        'IA: recuperação de leads',
+        'Automações e campanhas',
+        'Multiatendimento',
       ],
     },
   ],
 }
 
 const PLAN_BADGE: Record<string, { label: string; className: string } | undefined> = {
-  pro: { label: 'Mais popular', className: 'bg-primary text-white' },
-  performance: { label: 'Melhor custo-benefício', className: 'bg-amber-500 text-white' },
+  pro:     { label: 'Mais popular',          className: 'bg-primary text-white' },
+  premium: { label: 'Melhor custo-benefício', className: 'bg-amber-500 text-white' },
 }
 
 export default function PlanCard({ plan, cycle, currentPlanName, subscription }: Props) {
   const [billingType, setBillingType] = useState<'BOLETO' | 'PIX' | 'CREDIT_CARD'>('BOLETO')
-  const [loading, setLoading] = useState(false)
-  const [cpf, setCpf] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [devLoading, setDevLoading] = useState(false)
+  const [loading, setLoading]         = useState(false)
+  const [cpf, setCpf]                 = useState('')
+  const [error, setError]             = useState<string | null>(null)
+  const [success, setSuccess]         = useState<string | null>(null)
+  const [devLoading, setDevLoading]   = useState(false)
 
   const isDevMode = process.env.NEXT_PUBLIC_DEV_BILLING === 'true'
 
@@ -101,8 +87,8 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
 
   const badge    = PLAN_BADGE[plan.name]
   const sections = PLAN_HIGHLIGHTS[plan.name] ?? []
-  const isPro          = plan.name === 'pro'
-  const isPerformance  = plan.name === 'performance'
+  const isPro     = plan.name === 'pro'
+  const isPremium = plan.name === 'premium'
 
   async function handleDevActivate() {
     setDevLoading(true)
@@ -115,16 +101,10 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
         body: JSON.stringify({ plan_name: plan.name }),
       })
       const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? 'Erro ao ativar.')
-        return
-      }
+      if (!res.ok) { setError(data.error ?? 'Erro ao ativar.'); return }
       setSuccess(`Plano ${plan.display_name} ativado! Recarregue a página.`)
-    } catch {
-      setError('Erro de conexão.')
-    } finally {
-      setDevLoading(false)
-    }
+    } catch { setError('Erro de conexão.') }
+    finally { setDevLoading(false) }
   }
 
   async function handleSubscribe() {
@@ -143,21 +123,15 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
         }),
       })
       const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? 'Erro ao processar. Tente novamente.')
-        return
-      }
+      if (!res.ok) { setError(data.error ?? 'Erro ao processar. Tente novamente.'); return }
       if (data.asaas_payment_link) {
         setSuccess('Redirecionando para pagamento…')
         window.open(data.asaas_payment_link, '_blank')
       } else {
         setSuccess('Assinatura ativada! Recarregue a página.')
       }
-    } catch {
-      setError('Erro de conexão. Tente novamente.')
-    } finally {
-      setLoading(false)
-    }
+    } catch { setError('Erro de conexão. Tente novamente.') }
+    finally { setLoading(false) }
   }
 
   async function handleUpgrade() {
@@ -171,16 +145,10 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
         body: JSON.stringify({ plan_name: plan.name, billing_cycle: cycle }),
       })
       const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? 'Erro ao alterar plano. Tente novamente.')
-        return
-      }
+      if (!res.ok) { setError(data.error ?? 'Erro ao alterar plano. Tente novamente.'); return }
       setSuccess('Plano alterado! A nova cobrança será aplicada no próximo ciclo.')
-    } catch {
-      setError('Erro de conexão. Tente novamente.')
-    } finally {
-      setLoading(false)
-    }
+    } catch { setError('Erro de conexão. Tente novamente.') }
+    finally { setLoading(false) }
   }
 
   function ctaLabel(): string {
@@ -196,7 +164,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
       className={`relative flex flex-col rounded-2xl border transition-shadow ${
         isPro
           ? 'border-primary shadow-lg shadow-primary/10 ring-2 ring-primary bg-white'
-          : isPerformance
+          : isPremium
           ? 'border-amber-200 shadow-md shadow-amber-100/50 bg-white'
           : 'border-gray-200 bg-white shadow-sm hover:shadow-md'
       }`}
@@ -284,10 +252,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
                   <li key={item} className="flex items-start gap-2">
                     <svg
                       className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -347,8 +312,8 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
             isActiveAndCurrent
               ? 'cursor-default border border-gray-200 bg-gray-50 text-gray-400'
               : isPro
-              ? 'bg-primary text-white shadow-sm hover:bg-primary-dark disabled:opacity-60'
-              : isPerformance
+              ? 'bg-primary text-white shadow-sm hover:bg-primary/90 disabled:opacity-60'
+              : isPremium
               ? 'bg-amber-500 text-white shadow-sm hover:bg-amber-600 disabled:opacity-60'
               : 'bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60'
           }`}
@@ -374,7 +339,6 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
           {isUpgradeMode && <p>Mudança aplicada no próximo ciclo</p>}
         </div>
 
-        {/* Dev-only activation button — visible only when NEXT_PUBLIC_DEV_BILLING=true */}
         {isDevMode && (
           <button
             onClick={handleDevActivate}

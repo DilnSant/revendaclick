@@ -54,12 +54,15 @@ export type PlanUsage = {
   has_api_access?: boolean
   has_white_label?: boolean
   has_central_atendimento?: boolean
+  has_whatsapp_qr?: boolean
   has_financial?: boolean
   has_vendors?: boolean
   has_ai_assistance?: boolean
   has_automation?: boolean
   has_campaigns?: boolean
+  has_lead_recovery?: boolean
   has_multi_store?: boolean
+  has_extra_user?: boolean
 }
 
 // ─── Header extraction (public routes) ───────────────────────────────────────
@@ -309,6 +312,9 @@ export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> 
       has_api_access: data.has_api_access ?? false,
       has_white_label: data.has_white_label ?? false,
       has_central_atendimento: data.has_central_atendimento ?? false,
+      has_whatsapp_qr:         data.has_whatsapp_qr         ?? false,
+      has_lead_recovery:       data.has_lead_recovery        ?? false,
+      has_extra_user:          data.has_extra_user           ?? false,
     }
   } catch {
     return null

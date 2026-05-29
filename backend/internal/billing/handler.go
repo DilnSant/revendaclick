@@ -129,6 +129,76 @@ func (h *Handler) DevActivate(c *gin.Context) {
 	response.JSON(c, http.StatusOK, sub)
 }
 
+// GET /api/billing/addons — list available add-ons and active ones for the tenant
+func (h *Handler) GetAddons(c *gin.Context) {
+	tenantID := middleware.TenantIDFromGin(c)
+
+	available, err := h.svc.repo.ListAvailableAddons(c.Request.Context())
+	if err != nil {
+		response.InternalError(c)
+		return
+	}
+	active, err := h.svc.repo.ListActiveAddons(c.Request.Context(), tenantID)
+	if err != nil {
+		response.InternalError(c)
+		return
+	}
+
+	if available == nil {
+		available = []*PlanAddon{}
+	}
+	if active == nil {
+		active = []*ActiveAddon{}
+	}
+
+	response.JSON(c, http.StatusOK, gin.H{
+		"available": available,
+		"active":    active,
+	})
+}
+
+// POST /api/billing/addons/:type — activate an add-on for the tenant
+func (h *Handler) ActivateAddon(c *gin.Context) {
+	tenantID := middleware.TenantIDFromGin(c)
+	addonType := c.Param("type")
+	if addonType == "" {
+		response.BadRequest(c, "addon type is required")
+		return
+	}
+
+	sub, err := h.svc.GetSubscription(c.Request.Context(), tenantID)
+	if err != nil || sub == nil {
+		response.BadRequest(c, "assinatura ativa não encontrada")
+		return
+	}
+	if !sub.IsActive && !sub.IsTrialing {
+		response.BadRequest(c, "assinatura deve estar ativa para adicionar add-ons")
+		return
+	}
+
+	if err := h.svc.repo.ActivateAddon(c.Request.Context(), tenantID, sub.ID, addonType); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, gin.H{"activated": true, "addon_type": addonType})
+}
+
+// DELETE /api/billing/addons/:type — cancel an add-on
+func (h *Handler) CancelAddon(c *gin.Context) {
+	tenantID := middleware.TenantIDFromGin(c)
+	addonType := c.Param("type")
+	if addonType == "" {
+		response.BadRequest(c, "addon type is required")
+		return
+	}
+
+	if err := h.svc.repo.CancelAddon(c.Request.Context(), tenantID, addonType); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, gin.H{"canceled": true, "addon_type": addonType})
+}
+
 // POST /api/webhooks/asaas — public, validated by access-token header
 func (h *Handler) Webhook(c *gin.Context) {
 	if h.asaasToken != "" {

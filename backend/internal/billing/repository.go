@@ -2,6 +2,7 @@ package billing
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -298,6 +299,92 @@ func (r *Repository) FindTenantByAsaasSubID(ctx context.Context, asaasSubID stri
 		return "", nil
 	}
 	return tid, err
+}
+
+// ── Add-ons ───────────────────────────────────────────────────────────────────
+
+func (r *Repository) ListAvailableAddons(ctx context.Context) ([]*PlanAddon, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT addon_type, display_name, COALESCE(description,''), price_monthly, features
+		FROM plan_addons
+		WHERE is_active = TRUE
+		ORDER BY price_monthly ASC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*PlanAddon
+	for rows.Next() {
+		a := &PlanAddon{}
+		var featJSON []byte
+		if err := rows.Scan(&a.AddonType, &a.DisplayName, &a.Description, &a.PriceMonthly, &featJSON); err != nil {
+			return nil, err
+		}
+		_ = json.Unmarshal(featJSON, &a.Features)
+		list = append(list, a)
+	}
+	return list, rows.Err()
+}
+
+func (r *Repository) ListActiveAddons(ctx context.Context, tenantID string) ([]*ActiveAddon, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT sa.id, sa.addon_type, pa.display_name, COALESCE(pa.description,''),
+		       pa.price_monthly, sa.quantity, sa.status, sa.started_at::text, pa.features
+		FROM subscription_addons sa
+		JOIN plan_addons pa ON pa.addon_type = sa.addon_type
+		WHERE sa.tenant_id = $1 AND sa.status = 'active'
+		ORDER BY sa.started_at ASC`, tenantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*ActiveAddon
+	for rows.Next() {
+		a := &ActiveAddon{}
+		var featJSON []byte
+		if err := rows.Scan(
+			&a.ID, &a.AddonType, &a.DisplayName, &a.Description,
+			&a.PriceMonthly, &a.Quantity, &a.Status, &a.StartedAt, &featJSON,
+		); err != nil {
+			return nil, err
+		}
+		_ = json.Unmarshal(featJSON, &a.Features)
+		list = append(list, a)
+	}
+	return list, rows.Err()
+}
+
+func (r *Repository) ActivateAddon(ctx context.Context, tenantID, subscriptionID, addonType string) error {
+	_, err := r.pool.Exec(ctx, `
+		INSERT INTO subscription_addons (tenant_id, subscription_id, addon_type, quantity, price_monthly, status)
+		SELECT $1, $2::uuid, pa.addon_type, 1, pa.price_monthly, 'active'
+		FROM plan_addons pa
+		WHERE pa.addon_type = $3 AND pa.is_active = TRUE
+		ON CONFLICT (tenant_id, addon_type) DO UPDATE SET
+			status      = 'active',
+			canceled_at = NULL,
+			updated_at  = NOW()`,
+		tenantID, nullStr(subscriptionID), addonType,
+	)
+	return err
+}
+
+func (r *Repository) CancelAddon(ctx context.Context, tenantID, addonType string) error {
+	result, err := r.pool.Exec(ctx, `
+		UPDATE subscription_addons
+		SET status = 'canceled', canceled_at = NOW(), updated_at = NOW()
+		WHERE tenant_id = $1 AND addon_type = $2 AND status = 'active'`,
+		tenantID, addonType,
+	)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("add-on não encontrado ou já cancelado")
+	}
+	return nil
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────

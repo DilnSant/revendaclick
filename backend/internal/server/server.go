@@ -162,6 +162,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		free.DELETE("/billing/subscription", ownerAdmin, billingH.Cancel)
 		free.POST("/billing/reactivate", ownerAdmin, appMiddleware.StrictRateLimit(), billingH.Reactivate)
 		free.GET("/billing/invoices", billingH.ListInvoices)
+		free.GET("/billing/addons", billingH.GetAddons)
+		free.POST("/billing/addons/:type", ownerAdmin, billingH.ActivateAddon)
+		free.DELETE("/billing/addons/:type", ownerAdmin, billingH.CancelAddon)
 
 		// Dev/staging only — bypasses Asaas, activates subscription directly in DB.
 		// Not registered in production (ENV=production).

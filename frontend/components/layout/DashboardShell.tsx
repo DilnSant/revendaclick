@@ -17,17 +17,23 @@ interface PlanFeatures {
   has_api_access: boolean
   has_white_label: boolean
   has_central_atendimento: boolean
+  has_whatsapp_qr: boolean
+  has_financial: boolean
+  has_vendors: boolean
 }
 
 // Defaults restrictive: unlock progressively from plan
 const DEFAULT_FEATURES: PlanFeatures = {
-  has_crm:                false,
-  has_analytics:          false,
-  has_whatsapp:           false,
-  has_kanban:             false,
-  has_api_access:         false,
-  has_white_label:        false,
+  has_crm:                 false,
+  has_analytics:           false,
+  has_whatsapp:            false,
+  has_kanban:              false,
+  has_api_access:          false,
+  has_white_label:         false,
   has_central_atendimento: false,
+  has_whatsapp_qr:         false,
+  has_financial:           false,
+  has_vendors:             false,
 }
 
 const PlanFeaturesCtx = createContext<PlanFeatures>(DEFAULT_FEATURES)
@@ -45,7 +51,7 @@ type NavItem = {
   exact?: boolean
 }
 
-// Base items — visible to all active users
+// Base items — visible to all active users (Starter+)
 const NAV_BASE: NavItem[] = [
   {
     href: '/dashboard',
@@ -84,28 +90,6 @@ const NAV_BASE: NavItem[] = [
       </svg>
     ),
   },
-]
-
-// Pro+ items — visible when has_kanban = true
-const NAV_PRO: NavItem[] = [
-  {
-    href: '/customers',
-    label: 'Compradores',
-    icon: (
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/crm',
-    label: 'Atendimento',
-    icon: (
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-      </svg>
-    ),
-  },
   {
     href: '/financial',
     label: 'Financeiro',
@@ -130,6 +114,28 @@ const NAV_PRO: NavItem[] = [
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+    ),
+  },
+]
+
+// Pro+ items — visible when has_crm = true (Pro, Premium, Scale)
+const NAV_PRO: NavItem[] = [
+  {
+    href: '/customers',
+    label: 'Compradores',
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+  {
+    href: '/crm',
+    label: 'Atendimento',
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
       </svg>
     ),
   },
@@ -164,6 +170,9 @@ export default function DashboardShell(props: Props) {
     has_api_access:          planFeatures?.has_api_access          ?? DEFAULT_FEATURES.has_api_access,
     has_white_label:         planFeatures?.has_white_label         ?? DEFAULT_FEATURES.has_white_label,
     has_central_atendimento: planFeatures?.has_central_atendimento ?? DEFAULT_FEATURES.has_central_atendimento,
+    has_whatsapp_qr:         planFeatures?.has_whatsapp_qr         ?? DEFAULT_FEATURES.has_whatsapp_qr,
+    has_financial:           planFeatures?.has_financial           ?? DEFAULT_FEATURES.has_financial,
+    has_vendors:             planFeatures?.has_vendors             ?? DEFAULT_FEATURES.has_vendors,
   }
 
   return (
@@ -213,22 +222,22 @@ export default function DashboardShell(props: Props) {
             {/* Base — always visible */}
             <NavGroup items={NAV_BASE} pathname={pathname} />
 
-            {/* Pro+ — only when has_kanban */}
-            {features.has_kanban && (
+            {/* Pro+ — only when has_crm (Pro, Premium, Scale) */}
+            {features.has_crm && (
               <div>
                 <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                  Gestão
+                  CRM
                 </p>
                 <NavGroup items={NAV_PRO} pathname={pathname} />
               </div>
             )}
 
             {/* Starter upgrade prompt — visible only when NOT Pro+ */}
-            {!features.has_kanban && (
+            {!features.has_crm && (
               <div className="mx-1 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-3 py-3">
                 <p className="text-xs font-medium text-gray-500">Desbloqueie com Pro</p>
                 <p className="mt-0.5 text-[11px] text-gray-400 leading-snug">
-                  CRM, Financeiro, Compradores e mais
+                  CRM, Kanban, Analytics e mais
                 </p>
                 <a
                   href="/billing/plans"
@@ -281,6 +290,18 @@ export default function DashboardShell(props: Props) {
                   icon={
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                  }
+                />
+
+                {/* Add-ons — always */}
+                <NavItem
+                  href="/billing/addons"
+                  label="Add-ons"
+                  pathname={pathname}
+                  icon={
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
                   }
                 />
@@ -473,6 +494,7 @@ const ROUTE_LABELS: Record<string, string> = {
   whatsapp:    'Central de Atendimento',
   billing:     'Assinatura',
   plans:       'Planos',
+  addons:      'Add-ons',
   history:     'Histórico',
   settings:    'Configurações',
 }

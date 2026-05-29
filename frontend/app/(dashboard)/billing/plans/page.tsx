@@ -15,6 +15,9 @@ export default async function PlansPage() {
 
   const [sub, plans] = await Promise.all([getSubscription(), getPlans()])
 
+  // Only public plans in the comparison table
+  const publicPlans = (plans as Plan[]).filter((p) => p.name !== 'scale')
+
   return (
     <div className="space-y-10">
       {/* Page header */}
@@ -63,8 +66,8 @@ export default async function PlansPage() {
         />
       )}
 
-      {/* Full comparison table */}
-      {plans.length > 0 && (
+      {/* Full comparison table — 3 public plans */}
+      {publicPlans.length > 0 && (
         <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
           <div className="border-b border-gray-100 px-6 py-4">
             <h3 className="text-sm font-semibold text-gray-900">Comparativo completo de recursos</h3>
@@ -76,7 +79,7 @@ export default async function PlansPage() {
                   <th className="py-3 pl-6 pr-4 text-left text-xs font-medium text-gray-500 w-52">
                     Recurso
                   </th>
-                  {(plans as Plan[]).map((p) => (
+                  {publicPlans.map((p) => (
                     <th
                       key={p.id}
                       className={`py-3 px-4 text-center text-xs font-semibold ${
@@ -89,47 +92,48 @@ export default async function PlansPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                <SectionRow label="LIMITES" colSpan={(plans as Plan[]).length + 1} />
+                <SectionRow label="LIMITES" colSpan={publicPlans.length + 1} />
                 <ValueRow
                   label="Veículos"
-                  values={(plans as Plan[]).map((p) => fmtLimit(p.max_vehicles))}
-                  plans={plans as Plan[]}
+                  values={publicPlans.map((p) => fmtLimit(p.max_vehicles))}
+                  plans={publicPlans}
                 />
                 <ValueRow
                   label="Usuários"
-                  values={(plans as Plan[]).map((p) => fmtLimit(p.max_users))}
-                  plans={plans as Plan[]}
+                  values={publicPlans.map((p) => fmtLimit(p.max_users))}
+                  plans={publicPlans}
                 />
                 <ValueRow
                   label="Leads / mês"
-                  values={(plans as Plan[]).map((p) => fmtLimit(p.max_leads))}
-                  plans={plans as Plan[]}
+                  values={publicPlans.map((p) => fmtLimit(p.max_leads))}
+                  plans={publicPlans}
                 />
 
-                <SectionRow label="LOJA & MARKETPLACE" colSpan={(plans as Plan[]).length + 1} />
-                <BoolRow label="Marketplace público" feat="marketplace" plans={plans as Plan[]} />
-                <BoolRow label="WhatsApp da Loja (contato)" feat="whatsapp_button" plans={plans as Plan[]} />
-                <BoolRow label="Captura de leads" feat="lead_capture" plans={plans as Plan[]} />
+                <SectionRow label="LOJA & MARKETPLACE" colSpan={publicPlans.length + 1} />
+                <BoolRow label="Marketplace público" feat="marketplace" plans={publicPlans} />
+                <BoolRow label="WhatsApp da Loja (contato)" feat="whatsapp_button" plans={publicPlans} />
+                <BoolRow label="Captura de leads" feat="lead_capture" plans={publicPlans} />
+                <BoolRow label="Página pública SEO" feat="marketplace" plans={publicPlans} />
 
-                <SectionRow label="GESTÃO" colSpan={(plans as Plan[]).length + 1} />
-                <BoolRow label="Kanban de Interessados" feat="kanban" plans={plans as Plan[]} />
-                <BoolRow label="Analytics avançado" feat="analytics" plans={plans as Plan[]} />
-                <BoolRow label="Financeiro & Comissões" feat="financial" plans={plans as Plan[]} />
-                <BoolRow label="Equipe / Vendedores" feat="vendors" plans={plans as Plan[]} />
+                <SectionRow label="GESTÃO" colSpan={publicPlans.length + 1} />
+                <BoolRow label="Financeiro básico" feat="financial" plans={publicPlans} />
+                <BoolRow label="Vendedores / equipe" feat="vendors" plans={publicPlans} />
+                <BoolRow label="CRM Atendimento" feat="crm" plans={publicPlans} />
+                <BoolRow label="Kanban de leads" feat="kanban" plans={publicPlans} />
+                <BoolRow label="Analytics avançado" feat="analytics" plans={publicPlans} />
 
-                <SectionRow label="CENTRAL DE ATENDIMENTO" colSpan={(plans as Plan[]).length + 1} />
-                <BoolRow label="WhatsApp operacional (QR Code)" feat="central_atendimento" plans={plans as Plan[]} />
-                <BoolRow label="Follow-up automático" feat="automation" plans={plans as Plan[]} />
-                <BoolRow label="Campanhas" feat="campaigns" plans={plans as Plan[]} />
+                <SectionRow label="WHATSAPP & AUTOMAÇÃO" colSpan={publicPlans.length + 1} />
+                <BoolRow label="WhatsApp operacional (QR Code)" feat="whatsapp_qr" plans={publicPlans} />
+                <BoolRow label="Automações e lembretes" feat="automation" plans={publicPlans} />
+                <BoolRow label="Campanhas" feat="campaigns" plans={publicPlans} />
 
-                <SectionRow label="IA & AUTOMAÇÃO" colSpan={(plans as Plan[]).length + 1} />
-                <BoolRow label="IA: sugestão de resposta" feat="ai_assistance" plans={plans as Plan[]} />
-                <BoolRow label="IA: classificação de lead" feat="ai_assistance" plans={plans as Plan[]} />
+                <SectionRow label="IA" colSpan={publicPlans.length + 1} />
+                <BoolRow label="IA: sugestão de resposta" feat="ai_assistance" plans={publicPlans} />
+                <BoolRow label="IA: recuperação de leads" feat="lead_recovery" plans={publicPlans} />
 
-                <SectionRow label="ENTERPRISE" colSpan={(plans as Plan[]).length + 1} />
-                <BoolRow label="Suporte prioritário" feat="priority_support" plans={plans as Plan[]} />
-                <BoolRow label="Acesso à API REST" feat="api_access" plans={plans as Plan[]} />
-                <BoolRow label="White-label completo" feat="white_label" plans={plans as Plan[]} />
+                <SectionRow label="ENTERPRISE" colSpan={publicPlans.length + 1} />
+                <BoolRow label="Acesso à API REST" feat="api_access" plans={publicPlans} />
+                <BoolRow label="White-label completo" feat="white_label" plans={publicPlans} />
               </tbody>
             </table>
           </div>
@@ -156,15 +160,7 @@ function SectionRow({ label, colSpan }: { label: string; colSpan: number }) {
   )
 }
 
-function ValueRow({
-  label,
-  values,
-  plans,
-}: {
-  label: string
-  values: string[]
-  plans: Plan[]
-}) {
+function ValueRow({ label, values, plans }: { label: string; values: string[]; plans: Plan[] }) {
   return (
     <tr className="hover:bg-gray-50/50">
       <td className="py-2.5 pl-6 pr-4 text-xs text-gray-600">{label}</td>
@@ -182,34 +178,18 @@ function ValueRow({
   )
 }
 
-function BoolRow({
-  label,
-  feat,
-  plans,
-}: {
-  label: string
-  feat: string
-  plans: Plan[]
-}) {
+function BoolRow({ label, feat, plans }: { label: string; feat: string; plans: Plan[] }) {
   return (
     <tr className="hover:bg-gray-50/50">
       <td className="py-2.5 pl-6 pr-4 text-xs text-gray-600">{label}</td>
       {plans.map((p) => (
         <td
           key={p.id}
-          className={`py-2.5 px-4 text-center ${
-            p.name === 'pro' ? 'bg-primary/[0.02]' : ''
-          }`}
+          className={`py-2.5 px-4 text-center ${p.name === 'pro' ? 'bg-primary/[0.02]' : ''}`}
         >
           {p.features.includes(feat) ? (
             <span className="inline-flex items-center justify-center">
-              <svg
-                className="h-4 w-4 text-green-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={3}
-              >
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </span>

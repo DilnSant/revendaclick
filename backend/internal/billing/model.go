@@ -44,10 +44,37 @@ func (s *Subscription) ComputeFlags() {
 }
 
 type SubscribeRequest struct {
-	PlanName     string `json:"plan_name"`    // "start"|"pro"|"performance"|"scale"
+	PlanName     string `json:"plan_name"`     // "starter"|"pro"|"premium"|"scale"
 	BillingCycle string `json:"billing_cycle"` // "monthly"|"yearly"
 	BillingType  string `json:"billing_type"`  // "BOLETO"|"PIX"|"CREDIT_CARD" (default BOLETO)
 	CPFOrCNPJ    string `json:"cpf_or_cnpj,omitempty"`
+}
+
+// ── Add-ons ───────────────────────────────────────────────────────────────────
+
+type PlanAddon struct {
+	AddonType    string   `json:"addon_type"`
+	DisplayName  string   `json:"display_name"`
+	Description  string   `json:"description"`
+	PriceMonthly float64  `json:"price_monthly"`
+	Features     []string `json:"features"`
+}
+
+type ActiveAddon struct {
+	ID           string   `json:"id"`
+	AddonType    string   `json:"addon_type"`
+	DisplayName  string   `json:"display_name"`
+	Description  string   `json:"description"`
+	PriceMonthly float64  `json:"price_monthly"`
+	Quantity     int      `json:"quantity"`
+	Status       string   `json:"status"`
+	StartedAt    string   `json:"started_at"`
+	Features     []string `json:"features"`
+}
+
+type AddonsResponse struct {
+	Available []PlanAddon   `json:"available"`
+	Active    []ActiveAddon `json:"active"`
 }
 
 type UpgradeRequest struct {

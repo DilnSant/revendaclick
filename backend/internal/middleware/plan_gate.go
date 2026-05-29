@@ -39,6 +39,14 @@ func PlanGate(pool *pgxpool.Pool, feature string) gin.HandlerFunc {
 				  AND tf.feature   = $2
 				  AND tf.enabled   = true
 				  AND (tf.expires_at IS NULL OR tf.expires_at > NOW())
+				UNION ALL
+				-- Active add-on grants the feature
+				SELECT 1
+				FROM subscription_addons sa
+				JOIN plan_addons pa ON pa.addon_type = sa.addon_type
+				WHERE sa.tenant_id = $1
+				  AND sa.status    = 'active'
+				  AND pa.features  @> to_jsonb($2::text)
 			)`, tenantID, feature,
 		).Scan(&hasFeature)
 
