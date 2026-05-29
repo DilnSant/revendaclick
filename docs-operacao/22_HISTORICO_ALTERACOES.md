@@ -58,6 +58,26 @@ Reestruturação comercial completa dos planos e add-ons. Três objetivos princi
 
 NUNCA hardcode `plan_name === 'premium'` ou similar. Sempre usar feature flags (`has_crm`, `has_whatsapp_qr`, etc).
 
+## 2026-05-28 (sessão 22 — cont.) — Fix: get_tenant_usage sem tenant_features + reconexão santos-car
+
+**Commit:** `8c323e6`
+**Migration:** `023_fix_get_tenant_usage_tenant_features_merge.sql` — aplicada via Supabase MCP
+
+### Problema
+Migration 022 foi aplicada com versão incompleta de `get_tenant_usage` — o branch `tenant_features` do UNION ALL 3-way estava ausente. Resultado: overrides de super_admin (tenant_features table) eram silenciosamente ignorados pelo RPC. Detectado ao tentar conceder `central_atendimento` à santos-car.
+
+### Correção
+Migration 023 recria `get_tenant_usage` com os 3 branches corretos:
+- Branch 1: `plans.features` (base do plano)
+- Branch 2: `tenant_features` WHERE enabled = true AND expires_at IS NULL OR > NOW()
+- Branch 3: `subscription_addons JOIN plan_addons.features` WHERE status = 'active'
+
+### Central de Atendimento santos-car
+- Instância Evolution `santos-car` já estava `connectionStatus: open` (554888482877, "Método Soluções")
+- Feature `central_atendimento` concedida via `tenant_features` (INSERT + override — sem expiração)
+- RPC corrigido → feature aparece no merge
+- santos-car pode acessar `/whatsapp` sem necessitar add-on nem upgrade de plano
+
 ---
 
 ## 2026-05-28 (sessão 21) — FASE 3 Auditoria de Regressão: correção do congelamento de deploy no Vercel

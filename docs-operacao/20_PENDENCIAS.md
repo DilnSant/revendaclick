@@ -118,6 +118,8 @@
 | CONCLUÍDA | Migration 019: reestruturação de planos | — | Planos renomeados (start/pro/performance/scale), tagline, limites, features, gate central_atendimento, ENUM→TEXT, plan_usage view recriada (28/05/2026 — sessão 18) |
 | CONCLUÍDA | Migration 020: feature flags + super_admin + onboarding v2 | — | tenant_features table, super_admin role, onboarding received_first_lead/whatsapp_connected + triggers (28/05/2026 — sessão 19) |
 | CONCLUÍDA | Migration 022: reestruturação comercial Premium + add-ons features | — | performance→premium, features por plano, features JSONB em plan_addons, get_tenant_usage 3-way merge (28/05/2026 — sessão 22) |
+| CONCLUÍDA | Migration 023: fix get_tenant_usage — branch tenant_features ausente | — | Migration 022 foi aplicada sem o UNION ALL de tenant_features; corrida aplicada e verificada (28/05/2026 — sessão 22) |
+| CONCLUÍDA | Reconectar Central de Atendimento santos-car | — | Instância Evolution `santos-car` já estava `open` (554888482877). Feature `central_atendimento` concedida via tenant_features. Merge RPC corrigido (migration 023) — sessão 22 |
 | CONCLUÍDA | Regenerar database.types.ts após Migration 022 | — | plan_addons.features + get_tenant_usage.features + plan_name/sub_status TEXT; commit `b34e188` — sessão 22 |
 
 ---

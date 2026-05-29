@@ -12,6 +12,7 @@
 | Backend Go | ✓ CI/CD automático — VPS atualizado |
 | Frontend Next.js | ✓ Vercel READY — deploy `bdefe75` ao vivo |
 | Migration 022 | ✓ aplicada — performance→premium, features por plano, add-ons features |
+| Migration 023 | ✓ aplicada — fix get_tenant_usage: branch tenant_features restaurado |
 | database.types.ts | ✓ regenerado — migration 022 incluída (plan_addons.features + get_tenant_usage) — commit `b34e188` |
 | Planos públicos | ✓ Starter/Pro/Premium (3 cards); Scale oculto (CTA Enterprise) |
 | Add-ons | ✓ user_extra(R$20) / whatsapp_automation(R$39) / ia_recovery(R$39) — endpoints ativos |
@@ -22,7 +23,7 @@
 | Admin panel | ✓ /admin — super_admin protegido, ações por tenant |
 | OnboardingChecklist | ✓ widget no dashboard (4 obrigatórios + 1 WhatsApp opcional) |
 | devecar billing | ✓ ativado diretamente no Supabase (Pro, period_end 2026-06-27) |
-| Central de Atendimento santos-car | ⚠️ reconectar — instância perdida na sessão 14 |
+| Central de Atendimento santos-car | ✓ instância Evolution `open` (554888482877); feature central_atendimento concedida; RPC corrigido (migration 023) |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
@@ -46,25 +47,7 @@ supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
 
 ## Próximos Passos (por prioridade)
 
-### 1. Reconectar Central de Atendimento santos-car (URGENTE)
-
-```
-1. https://app.revendaclick.com.br/whatsapp  (menu → "Central de Atendimento")
-2. Login com dilneysantos@gmail.com (conta santos-car, plano Starter)
-3. Clicar "Conectar canal" → QR aparece → escanear
-```
-
-**Atenção:** santos-car usa plano Starter — sem feature `central_atendimento`. Central de Atendimento requer Premium ou add-on `whatsapp_automation`. Opções:
-- Ativar add-on `whatsapp_automation` (R$39/mês) — concede `central_atendimento` via add-on
-- Conceder feature temporária via painel admin (`/admin` com dilneysantos.developer@gmail.com)
-
-```bash
-# Diagnóstico VPS se necessário:
-ssh root@2.24.67.84
-curl -s http://localhost:8081/instance/fetchInstances -H "apikey: revendaclick123" | python3 -m json.tool
-```
-
-### 3. Verificar comportamento em produção no browser (FASE 4)
+### 1. Verificar comportamento em produção no browser (FASE 4)
 
 - **santos-car (Starter):** sidebar com Dashboard, Veículos, Leads, Financeiro, Comissões, Vendedores + banner "Desbloqueie CRM, Kanban, Analytics"
 - **devecar (Pro):** sidebar com CRM, Compradores/Atendimento (CRM), Kanban, Analytics
