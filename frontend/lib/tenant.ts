@@ -113,7 +113,7 @@ export const getTenantById = cache(async (id: string): Promise<Tenant | null> =>
     return null
   }
 
-  return data as Tenant
+  return data as unknown as Tenant
 })
 
 /**
@@ -134,7 +134,7 @@ export const getTenantBySlug = cache(async (slug: string): Promise<Tenant | null
     return null
   }
 
-  return data as Tenant
+  return data as unknown as Tenant
 })
 
 // ─── Dashboard tenant resolution ─────────────────────────────────────────────
