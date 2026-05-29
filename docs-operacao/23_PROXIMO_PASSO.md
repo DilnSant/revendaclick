@@ -12,7 +12,7 @@
 | Backend Go | ✓ CI/CD automático — VPS atualizado |
 | Frontend Next.js | ✓ Vercel READY — deploy `bdefe75` ao vivo |
 | Migration 022 | ✓ aplicada — performance→premium, features por plano, add-ons features |
-| database.types.ts | ⚠️ desatualizado — migration 022 adicionou coluna em plan_addons; regenerar antes do próximo deploy |
+| database.types.ts | ✓ regenerado — migration 022 incluída (plan_addons.features + get_tenant_usage) — commit `b34e188` |
 | Planos públicos | ✓ Starter/Pro/Premium (3 cards); Scale oculto (CTA Enterprise) |
 | Add-ons | ✓ user_extra(R$20) / whatsapp_automation(R$39) / ia_recovery(R$39) — endpoints ativos |
 | Sidebar | ✓ Financeiro/Comissões/Vendedores: Starter+; CRM/Compradores: Pro+; Add-ons nav item |
@@ -46,18 +46,7 @@ supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
 
 ## Próximos Passos (por prioridade)
 
-### 1. Regenerar `database.types.ts` após Migration 022 (URGENTE)
-
-Migration 022 adicionou a coluna `features JSONB` em `plan_addons`. O arquivo de tipos precisa ser atualizado:
-
-```bash
-# Via MCP Supabase (generate_typescript_types) ou CLI:
-supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
-```
-
-Não regenerar pode causar falha de build no próximo deploy que referencie `plan_addons`.
-
-### 2. Reconectar Central de Atendimento santos-car (URGENTE)
+### 1. Reconectar Central de Atendimento santos-car (URGENTE)
 
 ```
 1. https://app.revendaclick.com.br/whatsapp  (menu → "Central de Atendimento")
