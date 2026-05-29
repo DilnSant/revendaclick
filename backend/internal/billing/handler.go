@@ -2,8 +2,11 @@ package billing
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"revendaclick/backend/internal/middleware"
@@ -197,6 +200,89 @@ func (h *Handler) CancelAddon(c *gin.Context) {
 		return
 	}
 	response.JSON(c, http.StatusOK, gin.H{"canceled": true, "addon_type": addonType})
+}
+
+// POST /api/admin/billing/simulate-event
+// Super-admin only. Injects a fake Asaas billing event directly into HandleWebhook
+// without touching Asaas — used to test the full billing pipeline in production
+// without generating real charges.
+//
+// Body:
+//
+//	{
+//	  "event_type":      "PAYMENT_CONFIRMED",          // required
+//	  "subscription_id": "dev_test_<tenant_id>",       // required for payment events
+//	  "value":           97.0,                          // optional, default 0
+//	  "due_date":        "2026-06-28"                   // optional, default today+30d
+//	}
+func (h *Handler) AdminSimulateEvent(c *gin.Context) {
+	var body struct {
+		EventType      string  `json:"event_type"`
+		SubscriptionID string  `json:"subscription_id"`
+		Value          float64 `json:"value"`
+		DueDate        string  `json:"due_date"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil || body.EventType == "" {
+		response.BadRequest(c, "event_type is required")
+		return
+	}
+
+	body.EventType = strings.ToUpper(strings.TrimSpace(body.EventType))
+	validEvents := map[string]bool{
+		EventPaymentReceived: true, EventPaymentConfirmed: true,
+		EventPaymentOverdue: true, EventPaymentRefunded: true,
+		EventSubCreated: true, EventSubUpdated: true,
+		EventSubDeleted: true, EventSubCanceled: true,
+	}
+	if !validEvents[body.EventType] {
+		response.BadRequest(c, "unknown event_type: "+body.EventType)
+		return
+	}
+
+	if body.DueDate == "" {
+		body.DueDate = time.Now().AddDate(0, 1, 0).Format("2006-01-02")
+	}
+
+	// Unique fake ID per call to bypass idempotency check
+	fakePayID := fmt.Sprintf("sim_%s_%d", strings.ToLower(body.EventType), time.Now().UnixMilli())
+
+	var wh AsaasWebhook
+	wh.Event = body.EventType
+
+	switch body.EventType {
+	case EventPaymentReceived, EventPaymentConfirmed, EventPaymentOverdue, EventPaymentRefunded:
+		wh.Payment = &AsaasPayment{
+			ID:           fakePayID,
+			Subscription: body.SubscriptionID,
+			Value:        body.Value,
+			Status:       body.EventType,
+			DueDate:      body.DueDate,
+			BillingType:  "PIX",
+		}
+	case EventSubCanceled, EventSubDeleted:
+		wh.Subscription = &AsaasSubEvent{
+			ID:     body.SubscriptionID,
+			Status: "CANCELLED",
+		}
+	default:
+		wh.Subscription = &AsaasSubEvent{
+			ID:     body.SubscriptionID,
+			Status: "ACTIVE",
+		}
+	}
+
+	rawPayload, _ := json.Marshal(wh)
+	if err := h.svc.HandleWebhook(c.Request.Context(), &wh, rawPayload); err != nil {
+		response.BadRequest(c, "simulate error: "+err.Error())
+		return
+	}
+
+	response.JSON(c, http.StatusOK, gin.H{
+		"simulated":       true,
+		"event_type":      body.EventType,
+		"fake_payment_id": fakePayID,
+		"subscription_id": body.SubscriptionID,
+	})
 }
 
 // POST /api/webhooks/asaas — public, validated by access-token header

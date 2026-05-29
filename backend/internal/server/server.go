@@ -185,6 +185,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		adminGroup.GET("/tenants/:id/features",                adminH.ListFeatures)
 		adminGroup.POST("/tenants/:id/features",               adminH.GrantFeature)
 		adminGroup.DELETE("/tenants/:id/features/:feature",    adminH.RevokeFeature)
+
+		// Billing homologation tools — simulate Asaas events without real charges
+		adminGroup.POST("/billing/simulate-event", billingH.AdminSimulateEvent)
 	}
 
 	// ── Gated routes — blocked when subscription past_due/canceled ───────────
