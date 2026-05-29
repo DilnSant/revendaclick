@@ -1,5 +1,32 @@
 # 22 — HISTÓRICO DE ALTERAÇÕES
 
+## 2026-05-29 (sessão 23 — continuação) — Fix Evolution webhook 401 + rc_backup memory + CI/CD deploy
+
+**Commits:** `7e3f56a`
+**Arquivos alterados:** `backend/internal/evolution/handler.go`, `docker-compose.production.yml`
+
+### Evolution webhook 401 — causa raiz identificada e corrigida
+
+**Sintoma:** Evolution v2.3.7 recebia HTTP 401 ao postar para `http://backend:8080/api/webhooks/evolution`.
+
+**Causa:** Gin v1.12.0 com trusted proxies padrão (`["0.0.0.0/0"]`) usa `X-Forwarded-For` para determinar o IP do cliente. Evolution v2.3.7 envia `X-Forwarded-For: 2.24.67.84` (IP público do VPS) nos seus webhooks. Gin usava esse header em vez do endereço TCP real (`10.0.4.5`), classificando a requisição como "externa". A checagem de IP interno (`10.`, `172.`, `192.168.`) falhava, e como Evolution não envia o cabeçalho `apikey` nos webhooks globais, o backend retornava 401.
+
+**Fix:** `evolution/handler.go` — substituir `c.ClientIP()` por `c.Request.RemoteAddr` + `net.SplitHostPort()` para usar o endereço TCP real, imune a X-Forwarded-For spoofing.
+
+### rc_backup — OOM corrigido
+
+- Limite de memória: `128m` → `256m` (estava em 98% — 126MiB/128MiB)
+- Variáveis shell no `command` do backup escapadas com `$$` (ELAPSED, TARGET_SEC, WAIT) para evitar interpolação do Docker Compose (warnings nas logs)
+- Após restart: **6MiB / 256MiB (2.33%)** ✓
+
+### devecar — instância Evolution desconectada
+
+`connectionStatus: close` desde 2026-05-28T10:57:57. `disconnectionReasonCode: 401`, tipo `device_removed` (conflito — dispositivo removido). **Requer ação do usuário: acessar `/whatsapp` como `devecar` e escanear QR novamente.**
+
+santos-car: `connectionStatus: open` ✓ (554888482877).
+
+---
+
 ## 2026-05-29 (sessão 23) — Auditoria de riscos + reestruturação estratégica verificada + migration 024
 
 **Migration:** `024_fix_plan_addons_rls_rename_performance.sql` — aplicada via Supabase MCP
