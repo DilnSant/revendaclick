@@ -1,11 +1,11 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 29/05/2026 (sessão 23)
+> Atualizado em: 29/05/2026 (sessão 23 — continuação)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 23 — 29/05/2026)
+## Estado Atual do Projeto (sessão 23 continuação — 29/05/2026)
 
 | Componente | Status |
 |---|---|
@@ -32,6 +32,10 @@
 | FalhasCorrigidas | ✓ 29 FCs documentadas (FC001–FC029) |
 | Reestruturação estratégica | ✓ 10 etapas verificadas e implementadas (sessão 23) |
 | Auditoria riscos R4/R5/R9/R10 | ✓ R4 corrigido (plan_addons RLS); R5/R9/R10 verificados OK |
+| Evolution webhook 401 | ✓ corrigido — `RemoteAddr` em vez de `ClientIP()` (X-Forwarded-For bypass) |
+| rc_backup OOM (98%) | ✓ corrigido — 128m → 256m; variáveis shell `$$` escapadas |
+| CI/CD `git pull` vs local changes | ✓ corrigido — `git fetch + git reset --hard origin/main` |
+| devecar Evolution | ⚠ desconectado (device_removed 28/05) — requer rescan QR pelo usuário |
 
 ---
 
@@ -49,6 +53,13 @@ supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
 ---
 
 ## Próximos Passos (por prioridade)
+
+### 0. Reconectar instância devecar no Evolution (URGENTE — usuário)
+
+A instância `devecar` está desconectada desde 28/05 (`device_removed`). Para reconectar:
+1. Fazer login como usuário `devecar` no app
+2. Ir para `/whatsapp` (Central de Atendimento)
+3. Clicar em "Conectar" → escanear QR com WhatsApp do número 554898232010
 
 ### 1. Verificar comportamento em produção no browser (FASE 4)
 
