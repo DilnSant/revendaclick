@@ -2334,6 +2334,7 @@ export type Database = {
           created_at: string
           description: string | null
           display_name: string
+          features: Json
           id: string
           is_active: boolean
           price_monthly: number
@@ -2344,6 +2345,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_name: string
+          features?: Json
           id?: string
           is_active?: boolean
           price_monthly: number
@@ -2354,6 +2356,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_name?: string
+          features?: Json
           id?: string
           is_active?: boolean
           price_monthly?: number
@@ -3956,13 +3959,14 @@ export type Database = {
       get_tenant_usage: {
         Args: { p_tenant_id: string }
         Returns: {
+          features: Json
           leads_count: number
           max_leads: number
           max_users: number
           max_vehicles: number
           plan_display: string
-          plan_name: Database["public"]["Enums"]["plan_type"]
-          sub_status: Database["public"]["Enums"]["subscription_status"]
+          plan_name: string
+          sub_status: string
           users_count: number
           users_pct: number
           vehicles_count: number
