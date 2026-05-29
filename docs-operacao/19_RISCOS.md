@@ -1,6 +1,7 @@
 # 19 — RISCOS
 
 > Riscos mapeados a partir da leitura do código real, infraestrutura e banco de dados.
+> Atualizado em: 29/05/2026 (sessão 23)
 
 ---
 
@@ -39,6 +40,7 @@
 **Impacto:** Cross-tenant data exposure — um tenant vê dados de todos os outros.
 **Como acontece:** `ALTER TABLE ... DISABLE ROW LEVEL SECURITY` por engano ou "para teste".
 **Mitigação:** Nunca desativar RLS. Para debug, usar service role key com cuidado e reativar imediatamente.
+**Status (29/05/2026):** `plan_addons` estava sem RLS — corrigido em migration 024. Todas as tabelas de negócio agora têm RLS habilitado. Verificação: `SELECT tablename, rowsecurity FROM pg_tables WHERE schemaname='public'`.
 
 ---
 
@@ -144,6 +146,20 @@
 **Como diagnosticar:** Ver logs do backend: `docker compose logs backend | grep -i "updateSupabaseAppMetadata\|app_meta"`.
 **Causas conhecidas:** `SUPABASE_SERVICE_ROLE_KEY` incorreta no `.env` do VPS; `SUPABASE_URL` com trailing slash (já tratado com `strings.TrimRight`); timeout de rede para o Supabase Admin API.
 **Fix permanente:** Corrigir `SUPABASE_SERVICE_ROLE_KEY` no VPS se incorreta. O código agora retenta 3 vezes com 500ms de backoff e loga o status HTTP e body de erro exato.
+
+---
+
+## Riscos Resolvidos em Código (29/05/2026 — sessão 23)
+
+| Código | Risco | Resolução |
+|---|---|---|
+| R4 (parcial) | `plan_addons` sem RLS | Migration 024: RLS habilitado + policies para authenticated/anon |
+| R9 | Limites de plano | Verificado: `trg_check_vehicle_limit` + `trg_check_user_limit` ativos ✓ |
+| R10 | Grace period | Verificado: `trg_subscription_grace` ativo em `subscriptions` ✓ |
+| R5 | .env no git | Verificado: `.gitignore` cobre `.env`, `.env.local`, `.env.*.local`, `.env.production` ✓ |
+
+**Riscos operacionais (requerem acesso VPS — não resolvíveis em código):**
+R1, R2, R3, R6, R7, R8, R11, R12, R13, R14, R15, D18 — ver seções abaixo para mitigação manual.
 
 ---
 

@@ -14,7 +14,7 @@ export default function PlansGrid({ plans, subscription }: Props) {
     (subscription?.billing_cycle as 'monthly' | 'yearly') ?? 'monthly'
   )
 
-  // Only show public plans: starter, pro, premium — hide scale/enterprise from grid
+  // Only show public plans: starter, pro, performance — hide scale from grid
   const publicPlans = plans.filter((p) => p.name !== 'scale')
   const hasYearlyDiscount = publicPlans.some((p) => p.price_yearly < p.price_monthly * 12)
 

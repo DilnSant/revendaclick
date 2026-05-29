@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 28/05/2026 (sessão 19)
+> Atualizado em: 29/05/2026 (sessão 23)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -121,6 +121,9 @@
 | CONCLUÍDA | Migration 023: fix get_tenant_usage — branch tenant_features ausente | — | Migration 022 foi aplicada sem o UNION ALL de tenant_features; corrida aplicada e verificada (28/05/2026 — sessão 22) |
 | CONCLUÍDA | Reconectar Central de Atendimento santos-car | — | Instância Evolution `santos-car` já estava `open` (554888482877). Feature `central_atendimento` concedida via tenant_features. Merge RPC corrigido (migration 023) — sessão 22 |
 | CONCLUÍDA | Regenerar database.types.ts após Migration 022 | — | plan_addons.features + get_tenant_usage.features + plan_name/sub_status TEXT; commit `b34e188` — sessão 22 |
+| CONCLUÍDA | Migration 024: RLS plan_addons + rename premium→performance | — | plan_addons sem RLS (risco R4 parcial); plano 3 renomeado para performance/Performance; database.types.ts regenerado — sessão 23 |
+| CONCLUÍDA | Auditoria de riscos conhecidos (sessão 23) | — | R4 parcial corrigido; R9/R10/R5 verificados e OK; riscos operacionais documentados em 19_RISCOS.md |
+| CONCLUÍDA | Verificação reestruturação estratégica completa (sessão 23) | — | Todas as 10 etapas da reestruturação confirmadas como implementadas — ver 22_HISTORICO_ALTERACOES.md |
 
 ---
 

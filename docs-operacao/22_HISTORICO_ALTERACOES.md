@@ -1,5 +1,56 @@
 # 22 — HISTÓRICO DE ALTERAÇÕES
 
+## 2026-05-29 (sessão 23) — Auditoria de riscos + reestruturação estratégica verificada + migration 024
+
+**Migration:** `024_fix_plan_addons_rls_rename_performance.sql` — aplicada via Supabase MCP
+**Arquivos alterados:** `PlanCard.tsx`, `PlansGrid.tsx`, `billing/model.go`, `database.types.ts`, docs
+
+### Verificação da reestruturação estratégica
+
+Leitura integral dos 34 arquivos em `docs-operacao/` + código-fonte real. Resultado: **todas as 10 etapas já estavam implementadas** corretamente desde sessões 17–22:
+
+| Etapa | Status | Sessão |
+|---|---|---|
+| ETAPA 1 — Menu "Central de Atendimento" | ✓ | 17 |
+| ETAPA 2 — /whatsapp reposicionado (sem bulk/spam) | ✓ | 17 |
+| ETAPA 3 — Settings aba "Contato Público da Loja" | ✓ | 17 |
+| ETAPA 4 — Página pública mostra apenas contato público | ✓ | 17 |
+| ETAPA 5 — Billing premium redesign (3 cards + Enterprise CTA) | ✓ | 18/22 |
+| ETAPA 6 — Arquitetura modular (loja/atendimento/IA) | ✓ | 18–22 |
+| ETAPA 7 — tenant_public_contacts + tenant_whatsapp_sessions | ✓ | 18 |
+| ETAPA 8 — Backend store-contact + plan_gate 3-way | ✓ | 17/22 |
+| ETAPA 9 — Frontend refatorado (linguagem CRM, não disparo) | ✓ | 17–22 |
+| ETAPA 10 — Posicionamento CRM automotivo | ✓ | 17–22 |
+
+### Auditoria de riscos (19_RISCOS.md)
+
+| Risco | Resultado | Ação |
+|---|---|---|
+| R4 `plan_addons` sem RLS | ❌ Encontrado | Migration 024: RLS + 2 policies |
+| R5 .env no .gitignore | ✓ OK | Verificado: `.env`, `.env.local`, `.env.*.local`, `.env.production` cobertos |
+| R9 triggers de limite | ✓ OK | `trg_check_vehicle_limit` + `trg_check_user_limit` ativos |
+| R10 grace period | ✓ OK | `trg_subscription_grace` ativo em `subscriptions` |
+| R1/R2/R3/R6/R7/R8/R11–R15 | Operacionais | Requerem acesso VPS — documentados em 19_RISCOS.md |
+
+### Migration 024
+
+- `plan_addons`: RLS habilitado; policies `plan_addons_read` (authenticated) + `plan_addons_read_anon` (anon)
+- Plano 3: `premium` → `performance`, `display_name` → `Performance`, `tagline` → "Automatize sua operação"
+
+### GAP encontrado e corrigido: nome do plano 3
+
+Strategy document especificava `PLANO 3 — PERFORMANCE`. Session 22 (FASE 4) havia renomeado para `premium`. Migration 024 corrige para `performance`.
+
+**Frontend atualizado:**
+- `PlanCard.tsx`: `PLAN_HIGHLIGHTS.premium` → `.performance`; `PLAN_BADGE.premium` → `.performance`; `isPremium` → `isPerformance`
+- `PlansGrid.tsx`: comentário atualizado
+- `billing/model.go`: comentário atualizado
+
+**database.types.ts regenerado:** 131.307 chars (pós-migration 024).
+
+---
+
+
 > Registrar toda alteração significativa feita em cada sessão de trabalho.
 > Formato: data + o que mudou + por quê + arquivos afetados.
 

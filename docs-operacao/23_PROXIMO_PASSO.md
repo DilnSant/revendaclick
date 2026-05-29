@@ -1,11 +1,11 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 28/05/2026 (sessão 22)
+> Atualizado em: 29/05/2026 (sessão 23)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 22 — 28/05/2026)
+## Estado Atual do Projeto (sessão 23 — 29/05/2026)
 
 | Componente | Status |
 |---|---|
@@ -13,8 +13,9 @@
 | Frontend Next.js | ✓ Vercel READY — deploy `bdefe75` ao vivo |
 | Migration 022 | ✓ aplicada — performance→premium, features por plano, add-ons features |
 | Migration 023 | ✓ aplicada — fix get_tenant_usage: branch tenant_features restaurado |
-| database.types.ts | ✓ regenerado — migration 022 incluída (plan_addons.features + get_tenant_usage) — commit `b34e188` |
-| Planos públicos | ✓ Starter/Pro/Premium (3 cards); Scale oculto (CTA Enterprise) |
+| Migration 024 | ✓ aplicada — RLS plan_addons + rename premium→performance |
+| database.types.ts | ✓ regenerado pós-024 — 131.307 chars |
+| Planos públicos | ✓ Starter/Pro/Performance (3 cards); Scale oculto (CTA Enterprise) |
 | Add-ons | ✓ user_extra(R$20) / whatsapp_automation(R$39) / ia_recovery(R$39) — endpoints ativos |
 | Sidebar | ✓ Financeiro/Comissões/Vendedores: Starter+; CRM/Compradores: Pro+; Add-ons nav item |
 | /billing/addons | ✓ página ao vivo — ativar/cancelar add-ons |
@@ -29,6 +30,8 @@
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Supabase security advisors | ✓ limpos |
 | FalhasCorrigidas | ✓ 29 FCs documentadas (FC001–FC029) |
+| Reestruturação estratégica | ✓ 10 etapas verificadas e implementadas (sessão 23) |
+| Auditoria riscos R4/R5/R9/R10 | ✓ R4 corrigido (plan_addons RLS); R5/R9/R10 verificados OK |
 
 ---
 
