@@ -12,6 +12,54 @@ No **fim** de cada sessão: adicionar uma entrada com as alterações feitas.
 
 ---
 
+## 2026-05-28 (sessão 22) — FASE 4 Reestruturação Comercial Definitiva: Premium, Add-ons, Sidebar
+
+**Commit:** `bdefe75` (16 arquivos, 904 inserções)
+**Migration:** `022_commercial_restructure_premium_addons.sql` — aplicada via Supabase MCP
+**Deploy Vercel:** `dpl_DYGETwWoLjxqC8nzjBTFpgXcwx37` — estado READY; `app.revendaclick.com.br` ao vivo
+
+### Objetivo
+
+Reestruturação comercial completa dos planos e add-ons. Três objetivos principais:
+1. Renomear `performance` → `premium`; ocultar plano `scale` do grid (CTA "Falar com especialista")
+2. Criar arquitetura de add-ons real com grant de features por add-on
+3. Reorganizar sidebar: Financeiro/Comissões/Vendedores para Starter+; CRM/Compradores apenas Pro+
+
+### Mudanças de Banco (Migration 022)
+
+- `performance` → `premium` em `plans.name`
+- Features por plano atualizadas conforme spec comercial
+- `plan_addons`: adicionada coluna `features JSONB` — permite que add-ons concedam feature flags
+- `get_tenant_usage` RPC recriada: merge 3-way `plan.features` UNION `tenant_features` UNION `addon.features`
+- Catálogo: `user_extra` (R$20), `whatsapp_automation` (R$39), `ia_recovery` (R$39)
+
+### Mudanças Backend
+
+- `plans/model.go`: 3 novos campos `HasWhatsAppQR`, `HasLeadRecovery`, `HasExtraUser`
+- `plans/repository.go`: `GetUsage` com merge de features de add-ons + incremento `max_users` por `user_extra`
+- `middleware/plan_gate.go`: 3º UNION ALL — verifica `subscription_addons JOIN plan_addons.features`
+- `billing/model.go`: `PlanAddon`, `ActiveAddon`, `AddonsResponse`
+- `billing/repository.go`: `ListAvailableAddons`, `ListActiveAddons`, `ActivateAddon`, `CancelAddon`
+- `billing/handler.go`: `GetAddons`, `ActivateAddon`, `CancelAddon` handlers
+- `server/server.go`: rotas `GET/POST/DELETE /api/billing/addons/:type`
+
+### Mudanças Frontend
+
+- `DashboardShell.tsx`: financial+comissões+vendedores → NAV_BASE (Starter+); gate Pro = `has_crm`; label "CRM"; Add-ons nav item
+- `PlanCard.tsx`: `performance` → `premium`; highlights atualizados por plano
+- `PlansGrid.tsx`: oculta `scale`; grid 3 colunas; CTA Enterprise
+- `billing/plans/page.tsx`: tabela comparativa 3 colunas; `whatsapp_qr`, `lead_recovery` incluídos
+- `billing/addons/page.tsx`: nova página server component
+- `billing/addons/_components/AddonsClient.tsx`: ativar/cancelar add-ons com feedback
+- `app/api/billing/addons-action/[type]/route.ts`: proxy Next.js → backend (POST/DELETE)
+- `lib/tenant.ts`: `has_whatsapp_qr`, `has_lead_recovery`, `has_extra_user` em `PlanUsage`
+
+### Regra de Segurança
+
+NUNCA hardcode `plan_name === 'premium'` ou similar. Sempre usar feature flags (`has_crm`, `has_whatsapp_qr`, etc).
+
+---
+
 ## 2026-05-28 (sessão 21) — FASE 3 Auditoria de Regressão: correção do congelamento de deploy no Vercel
 
 **Commits:** `f0e59c0` (regenerar database.types.ts), `5eb241a` (tenant.ts unknown cast)

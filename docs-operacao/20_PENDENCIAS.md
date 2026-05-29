@@ -100,6 +100,7 @@
 | CONCLUÍDA | FASE 2: OnboardingChecklist widget no dashboard (sessão 19) | — | 4 passos obrigatórios + WhatsApp opcional; integrado no /dashboard; triggers DB automáticos |
 | CONCLUÍDA | FASE 2: fix hardcode plan_name em /whatsapp (sessão 19) | — | Substituído `planName !== 'start'` por `usage?.has_central_atendimento` |
 | CONCLUÍDA | FASE 3 auditoria regressão: fix deploy freeze Vercel (sessão 21) | — | `database.types.ts` regenerado (migrations 018–021); `tenant.ts` cast unknown; 8 deploys consecutivos falhando desde sessão 15 — FC029 |
+| CONCLUÍDA | FASE 4: reestruturação comercial Premium + Add-ons (sessão 22) | — | Migration 022: performance→premium, features por plano, features em plan_addons, get_tenant_usage 3-way merge; plan_gate 3º UNION ALL; billing add-ons endpoints; /billing/addons page; sidebar reorganizada; /billing/plans 3 cards — commit `bdefe75` |
 
 ---
 

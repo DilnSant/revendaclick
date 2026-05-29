@@ -1,20 +1,24 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 28/05/2026 (sessão 21)
+> Atualizado em: 28/05/2026 (sessão 22)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 21 — 28/05/2026)
+## Estado Atual do Projeto (sessão 22 — 28/05/2026)
 
 | Componente | Status |
 |---|---|
 | Backend Go | ✓ CI/CD automático — VPS atualizado |
-| Frontend Next.js | ✓ Vercel READY — deploy `5eb241a` ao vivo |
-| Migration 021 | ✓ aplicada — starter rename, add-ons, feature flags financial/vendors |
-| database.types.ts | ✓ regenerado (migrations 018–021 incluídas) — FC029 |
-| Sidebar dinâmica | ✓ ao vivo em produção: Starter vê menu reduzido; Pro+ vê gestão completa |
-| Feature flags | ✓ PlanGate usa UNION ALL (plans.features OR tenant_features) |
+| Frontend Next.js | ✓ Vercel READY — deploy `bdefe75` ao vivo |
+| Migration 022 | ✓ aplicada — performance→premium, features por plano, add-ons features |
+| database.types.ts | ✓ regenerado (migrations 018–021) — FC029 (migration 022 ainda pendente) |
+| Planos públicos | ✓ Starter/Pro/Premium (3 cards); Scale oculto (CTA Enterprise) |
+| Add-ons | ✓ user_extra(R$20) / whatsapp_automation(R$39) / ia_recovery(R$39) — endpoints ativos |
+| Sidebar | ✓ Financeiro/Comissões/Vendedores: Starter+; CRM/Compradores: Pro+; Add-ons nav item |
+| /billing/addons | ✓ página ao vivo — ativar/cancelar add-ons |
+| Feature flags 3-way | ✓ plan.features UNION tenant_features UNION addon.features |
+| plan_gate.go | ✓ 3 UNION ALL — plano + tenant_features + add-on features |
 | Admin panel | ✓ /admin — super_admin protegido, ações por tenant |
 | OnboardingChecklist | ✓ widget no dashboard (4 obrigatórios + 1 WhatsApp opcional) |
 | devecar billing | ✓ ativado diretamente no Supabase (Pro, period_end 2026-06-27) |
@@ -42,7 +46,18 @@ supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
 
 ## Próximos Passos (por prioridade)
 
-### 1. Reconectar Central de Atendimento santos-car (URGENTE)
+### 1. Regenerar `database.types.ts` após Migration 022 (URGENTE)
+
+Migration 022 adicionou a coluna `features JSONB` em `plan_addons`. O arquivo de tipos precisa ser atualizado:
+
+```bash
+# Via MCP Supabase (generate_typescript_types) ou CLI:
+supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
+```
+
+Não regenerar pode causar falha de build no próximo deploy que referencie `plan_addons`.
+
+### 2. Reconectar Central de Atendimento santos-car (URGENTE)
 
 ```
 1. https://app.revendaclick.com.br/whatsapp  (menu → "Central de Atendimento")
@@ -50,7 +65,9 @@ supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
 3. Clicar "Conectar canal" → QR aparece → escanear
 ```
 
-**Atenção:** santos-car usa plano Starter — sem feature `central_atendimento`. Verificar antes se o gate de plano bloqueia. Se necessário, conceder feature temporária via painel admin (`/admin` com dilneysantos.developer@gmail.com, super_admin).
+**Atenção:** santos-car usa plano Starter — sem feature `central_atendimento`. Central de Atendimento requer Premium ou add-on `whatsapp_automation`. Opções:
+- Ativar add-on `whatsapp_automation` (R$39/mês) — concede `central_atendimento` via add-on
+- Conceder feature temporária via painel admin (`/admin` com dilneysantos.developer@gmail.com)
 
 ```bash
 # Diagnóstico VPS se necessário:
@@ -58,30 +75,16 @@ ssh root@2.24.67.84
 curl -s http://localhost:8081/instance/fetchInstances -H "apikey: revendaclick123" | python3 -m json.tool
 ```
 
-### 2. Configurar super_admin no Supabase para acesso ao /admin
+### 3. Verificar comportamento em produção no browser (FASE 4)
 
-Para usar o painel admin em produção, atualizar `app_metadata` do usuário admin:
+- **santos-car (Starter):** sidebar com Dashboard, Veículos, Leads, Financeiro, Comissões, Vendedores + banner "Desbloqueie CRM, Kanban, Analytics"
+- **devecar (Pro):** sidebar com CRM, Compradores/Atendimento (CRM), Kanban, Analytics
+- **`/billing/addons`:** lista add-ons disponíveis (user_extra, whatsapp_automation, ia_recovery)
+- **`/billing/plans`:** 3 cards (Starter/Pro/Premium) + seção Enterprise ao fundo (sem card Scale)
 
-```sql
--- Executar no Supabase SQL editor (service_role):
-UPDATE auth.users
-SET raw_app_meta_data = raw_app_meta_data || '{"user_role": "super_admin"}'::jsonb
-WHERE email = 'dilneysantos.developer@gmail.com';
-```
-
-Após isso: acessar `https://app.revendaclick.com.br/admin` com esse usuário.
-**Nota:** Após alterar app_metadata, fazer logout + login para renovar o JWT.
-
-### 3. Verificar comportamento em produção no browser
-
-- santos-car (Starter): sidebar com Dashboard, Veículos, Interessados, Vendas + banner "Desbloqueie com Pro"
-- devecar (Pro): sidebar completa com Kanban, Analytics, Financeiro, Central de Atendimento
-- super_admin (`dilneysantos.developer@gmail.com`): acessa `/admin` sem layout de tenant
-
-### 4. FASE 2 — Etapas pendentes (próximas sessões)
+### 4. Etapas comerciais pendentes (próximas sessões)
 
 - **Etapa 5** — Billing gateway abstraction (desvincular do Asaas → interface BillingGateway)
-- **Etapa 9** — Add-ons architecture (WhatsApp extra, IA extra, leads extras — tabelas DB)
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
 ### 5. Leaked Password Protection (Baixa — Supabase Dashboard)
