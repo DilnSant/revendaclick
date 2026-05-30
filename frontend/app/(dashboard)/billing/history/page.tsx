@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { getInvoices } from '@/lib/billing'
 import { invoiceStatusLabel, invoiceStatusColor, formatCurrency, formatDate } from '@/lib/billing-utils'
 import type { Invoice } from '@/lib/billing-utils'
+import BillingSubNav from '@/components/billing/BillingSubNav'
 
 export const metadata = { title: 'Histórico de cobranças — RevendaClick' }
 
@@ -18,18 +18,11 @@ export default async function BillingHistoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-graphite">Histórico de cobranças</h1>
-          <p className="mt-1 text-sm text-gray-500">Todos os seus pagamentos e faturas</p>
-        </div>
-        <Link
-          href="/billing"
-          className="text-sm text-primary hover:underline"
-        >
-          ← Voltar
-        </Link>
+      <div>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Assinatura</h1>
+        <p className="mt-1 text-sm text-gray-500">Histórico de pagamentos e faturas</p>
       </div>
+      <BillingSubNav active="history" />
 
       {invoices.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center">

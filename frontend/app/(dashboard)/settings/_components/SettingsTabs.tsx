@@ -47,10 +47,11 @@ export default function SettingsTabs({ tab, tenant, users, subscription, storeCo
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex gap-1">
           {[
-            { key: 'store',   label: 'Loja' },
-            { key: 'contact', label: 'Contato Público' },
-            { key: 'users',   label: 'Usuários' },
-            { key: 'plan',    label: 'Plano' },
+            { key: 'store',     label: 'Loja' },
+            { key: 'contact',   label: 'Contato Público' },
+            { key: 'users',     label: 'Usuários' },
+            { key: 'plan',      label: 'Plano' },
+            { key: 'whatsapp',  label: 'WhatsApp' },
           ].map(({ key, label }) => (
             <a
               key={key}
@@ -68,10 +69,11 @@ export default function SettingsTabs({ tab, tenant, users, subscription, storeCo
       </div>
 
       {/* Tab content */}
-      {tab === 'store'   && <StoreTab tenant={tenant} onToast={addToast} />}
-      {tab === 'contact' && <ContactTab storeContact={storeContact} onToast={addToast} />}
-      {tab === 'users'   && <UsersTab users={users} subscription={subscription} />}
-      {tab === 'plan'    && <PlanTab initialSubscription={subscription} />}
+      {tab === 'store'    && <StoreTab tenant={tenant} onToast={addToast} />}
+      {tab === 'contact'  && <ContactTab storeContact={storeContact} onToast={addToast} />}
+      {tab === 'users'    && <UsersTab users={users} subscription={subscription} />}
+      {tab === 'plan'     && <PlanTab initialSubscription={subscription} />}
+      {tab === 'whatsapp' && <WhatsAppTab />}
 
       <ToastContainer toasts={toasts} onDismiss={id => setToasts(p => p.filter(t => t.id !== id))} />
     </>
@@ -610,6 +612,39 @@ function UsersTab({ users, subscription }: { users: User[]; subscription: Subscr
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── WhatsApp Tab ─────────────────────────────────────────────────────────────
+
+function WhatsAppTab() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
+        <h2 className="text-base font-semibold text-gray-900">Central de Atendimento</h2>
+        <p className="text-sm text-gray-600">
+          Conecte um número WhatsApp para receber e responder leads diretamente na plataforma.
+          O atendimento centralizado está disponível nos planos Pro+ com o add-on de WhatsApp ativado.
+        </p>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <a
+            href="/whatsapp"
+            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 transition-colors"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Abrir Central de Atendimento
+          </a>
+          <a
+            href="/billing/addons"
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            Ver add-ons disponíveis →
+          </a>
+        </div>
+      </div>
     </div>
   )
 }

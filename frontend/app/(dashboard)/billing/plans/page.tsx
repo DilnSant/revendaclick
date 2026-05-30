@@ -3,6 +3,7 @@ import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { getSubscription, getPlans, statusLabel, statusColor } from '@/lib/billing'
 import type { Plan, Subscription } from '@/lib/billing-utils'
 import PlansGrid from './_components/PlansGrid'
+import BillingSubNav from '@/components/billing/BillingSubNav'
 
 export const metadata = { title: 'Planos — RevendaClick' }
 
@@ -21,10 +22,16 @@ export default async function PlansPage() {
   return (
     <div className="space-y-10">
       {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Assinatura</h1>
+        <p className="mt-1 text-sm text-gray-500">Planos flexíveis para cada etapa da sua revenda.</p>
+      </div>
+      <BillingSubNav active="plans" />
+
       <div className="text-center">
-        <h1 className="text-3xl font-heading font-bold text-graphite">Escolha seu plano</h1>
+        <h2 className="text-2xl font-heading font-bold text-graphite">Escolha seu plano</h2>
         <p className="mt-2 text-sm text-gray-500">
-          Planos flexíveis para cada etapa da sua revenda. Cancele quando quiser.
+          Cancele quando quiser.
         </p>
       </div>
 

@@ -4,6 +4,7 @@ import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { getSubscription } from '@/lib/billing'
 import { statusLabel, statusColor, formatCurrency, formatDate } from '@/lib/billing-utils'
 import CancelButton from './_components/CancelButton'
+import BillingSubNav from '@/components/billing/BillingSubNav'
 
 export const metadata = { title: 'Assinatura — RevendaClick' }
 
@@ -34,18 +35,12 @@ export default async function BillingPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-graphite">Assinatura</h1>
-          <p className="mt-1 text-sm text-gray-500">Gerencie seu plano e pagamentos</p>
-        </div>
-        <Link
-          href="/billing/plans"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90"
-        >
-          Ver planos
-        </Link>
+      <div>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Assinatura</h1>
+        <p className="mt-1 text-sm text-gray-500">Gerencie seu plano e pagamentos</p>
       </div>
+
+      <BillingSubNav active="subscription" />
 
       {!sub ? (
         <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center">

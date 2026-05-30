@@ -82,11 +82,11 @@ const NAV_BASE: NavItem[] = [
     ),
   },
   {
-    href: '/sales',
-    label: 'Vendas',
+    href: '/customers',
+    label: 'Clientes',
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     ),
   },
@@ -99,43 +99,47 @@ const NAV_BASE: NavItem[] = [
       </svg>
     ),
   },
-  {
-    href: '/financial/commissions',
-    label: 'Comissões',
-    icon: (
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-      </svg>
-    ),
-  },
-  {
-    href: '/vendors',
-    label: 'Vendedores',
-    icon: (
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
-  },
 ]
 
-// Pro+ items — visible when has_crm = true (Pro, Premium, Scale)
+// Pro+ items — visible when has_crm = true (Pro, Performance, Scale)
 const NAV_PRO: NavItem[] = [
-  {
-    href: '/customers',
-    label: 'Compradores',
-    icon: (
-      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-    ),
-  },
   {
     href: '/crm',
     label: 'Atendimento',
     icon: (
       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    ),
+  },
+  {
+    href: '/analytics',
+    label: 'Analytics',
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+  },
+]
+
+// Premium items — visible when has_api_access = true (Performance, Scale)
+const NAV_PREMIUM: NavItem[] = [
+  {
+    href: '/automations',
+    label: 'Automações',
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+  },
+  {
+    href: '/campaigns',
+    label: 'Campanhas',
+    icon: (
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
       </svg>
     ),
   },
@@ -219,25 +223,22 @@ export default function DashboardShell(props: Props) {
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
 
-            {/* Base — always visible */}
+            {/* Base — Starter+ */}
             <NavGroup items={NAV_BASE} pathname={pathname} />
 
-            {/* Pro+ — only when has_crm (Pro, Premium, Scale) */}
-            {features.has_crm && (
+            {/* Pro+ — Atendimento + Analytics */}
+            {features.has_crm ? (
               <div>
                 <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                  CRM
+                  Pro
                 </p>
                 <NavGroup items={NAV_PRO} pathname={pathname} />
               </div>
-            )}
-
-            {/* Starter upgrade prompt — visible only when NOT Pro+ */}
-            {!features.has_crm && (
+            ) : (
               <div className="mx-1 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-3 py-3">
                 <p className="text-xs font-medium text-gray-500">Desbloqueie com Pro</p>
                 <p className="mt-0.5 text-[11px] text-gray-400 leading-snug">
-                  CRM, Kanban, Analytics e mais
+                  Atendimento, Analytics e mais
                 </p>
                 <a
                   href="/billing/plans"
@@ -248,77 +249,39 @@ export default function DashboardShell(props: Props) {
               </div>
             )}
 
-            {/* Sistema */}
-            <div>
-              <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                Sistema
-              </p>
-              <div className="space-y-0.5">
-                {/* Central de Atendimento — Pro+ */}
-                {features.has_central_atendimento && (
-                  <NavItem
-                    href="/whatsapp"
-                    label="Central de Atendimento"
-                    pathname={pathname}
-                    icon={
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    }
-                  />
-                )}
-
-                {/* Analytics — Pro+ */}
-                {features.has_analytics && (
-                  <NavItem
-                    href="/analytics"
-                    label="Analytics"
-                    pathname={pathname}
-                    icon={
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    }
-                  />
-                )}
-
-                {/* Assinatura — always */}
-                <NavItem
-                  href="/billing"
-                  label="Assinatura"
-                  pathname={pathname}
-                  icon={
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                  }
-                />
-
-                {/* Add-ons — always */}
-                <NavItem
-                  href="/billing/addons"
-                  label="Add-ons"
-                  pathname={pathname}
-                  icon={
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  }
-                />
-
-                {/* Configurações — always */}
-                <NavItem
-                  href="/settings"
-                  label="Configurações"
-                  pathname={pathname}
-                  icon={
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  }
-                />
+            {/* Premium — Automações + Campanhas */}
+            {features.has_api_access && (
+              <div>
+                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                  Premium
+                </p>
+                <NavGroup items={NAV_PREMIUM} pathname={pathname} />
               </div>
+            )}
+
+            {/* Always — Assinatura + Configurações */}
+            <div className="space-y-0.5">
+              <NavItem
+                href="/billing"
+                label="Assinatura"
+                pathname={pathname}
+                icon={
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                }
+              />
+              <NavItem
+                href="/settings"
+                label="Configurações"
+                pathname={pathname}
+                icon={
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                }
+              />
             </div>
           </nav>
 
@@ -484,14 +447,16 @@ const ROUTE_LABELS: Record<string, string> = {
   dashboard:   'Dashboard',
   vehicles:    'Veículos',
   leads:       'Interessados',
-  customers:   'Compradores',
+  customers:   'Clientes',
   vendors:     'Vendedores',
   sales:       'Vendas',
   analytics:   'Analytics',
   crm:         'Atendimento',
   financial:   'Financeiro',
   commissions: 'Comissões',
-  whatsapp:    'Central de Atendimento',
+  whatsapp:    'WhatsApp',
+  automations: 'Automações',
+  campaigns:   'Campanhas',
   billing:     'Assinatura',
   plans:       'Planos',
   addons:      'Add-ons',

@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import AddonsClient from './_components/AddonsClient'
+import BillingSubNav from '@/components/billing/BillingSubNav'
 
 export const metadata = { title: 'Add-ons — RevendaClick' }
 
@@ -41,11 +42,14 @@ export default async function AddonsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-graphite">Add-ons</h1>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Assinatura</h1>
         <p className="mt-1 text-sm text-gray-500">
           Expanda sua assinatura com recursos adicionais. Ative ou cancele a qualquer momento.
         </p>
       </div>
+
+      <BillingSubNav active="addons" />
+
       <AddonsClient available={addons.available ?? []} active={addons.active ?? []} />
     </div>
   )

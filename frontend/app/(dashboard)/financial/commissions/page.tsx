@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import CommissionsClient from './_components/CommissionsClient'
+import FinancialSubNav from '@/components/financial/FinancialSubNav'
 
 export const metadata = { title: 'Comissões — RevendaClick' }
 
@@ -43,12 +44,11 @@ export default async function CommissionsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-heading font-bold text-graphite">Comissões</h1>
-          <p className="mt-0.5 text-sm text-gray-500">Gerencie o pagamento de comissões dos vendedores</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Financeiro</h1>
+        <p className="mt-0.5 text-sm text-gray-500">Comissões dos vendedores</p>
       </div>
+      <FinancialSubNav active="comissoes" />
       <CommissionsClient commissions={commissions} sellers={sellers} />
     </div>
   )

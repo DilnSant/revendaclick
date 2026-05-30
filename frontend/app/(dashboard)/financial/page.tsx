@@ -1,9 +1,9 @@
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import NewEntryModal from '@/components/financial/NewEntryModal'
 import ExportCSVButton from '@/components/financial/ExportCSVButton'
+import FinancialSubNav from '@/components/financial/FinancialSubNav'
 
 export const metadata = { title: 'Financeiro' }
 
@@ -91,9 +91,10 @@ export default async function FinancialPage() {
         <div className="flex items-center gap-3">
           <ExportCSVButton entries={entries} filename="financeiro" />
           <NewEntryModal />
-          <Link href="/sales" className="btn-secondary shrink-0">+ Registrar venda</Link>
         </div>
       </div>
+
+      <FinancialSubNav active="resumo" />
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -172,7 +173,6 @@ export default async function FinancialPage() {
         <div className="rounded-xl border border-gray-100 bg-white shadow-sm overflow-hidden">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3.5">
             <h2 className="text-base font-semibold text-gray-900">Vendas recentes</h2>
-            <Link href="/sales" className="text-xs font-medium text-red-600 hover:text-red-700">Ver todas →</Link>
           </div>
           {sales.length === 0 ? (
             <p className="py-10 text-center text-sm text-gray-400">Nenhuma venda registrada.</p>

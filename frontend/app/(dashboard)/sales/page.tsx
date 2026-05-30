@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import SalesView from '@/components/sales/SalesView'
+import FinancialSubNav from '@/components/financial/FinancialSubNav'
 import type { Sale } from './actions'
 
 export const metadata = { title: 'Vendas' }
@@ -31,12 +32,19 @@ export default async function SalesPage() {
   ])
 
   return (
-    <SalesView
-      sales={sales}
-      vehicles={vehicles}
-      sellers={sellers}
-      customers={customers}
-    />
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Financeiro</h1>
+        <p className="mt-0.5 text-sm text-gray-500">Vendas registradas</p>
+      </div>
+      <FinancialSubNav active="vendas" />
+      <SalesView
+        sales={sales}
+        vehicles={vehicles}
+        sellers={sellers}
+        customers={customers}
+      />
+    </div>
   )
 }
 
