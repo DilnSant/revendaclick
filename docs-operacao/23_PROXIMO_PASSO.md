@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 30/05/2026 (sessão 24 — governança /prompts)
+> Atualizado em: 30/05/2026 (sessão 25 — migration 026 + encerramento)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -34,7 +34,7 @@
 | Migration 024 | ✓ aplicada — RLS plan_addons + rename premium→performance |
 | Migration 025 | ✓ aplicada — users.tenant_id nullable (super_admin sem tenant) |
 | database.types.ts | ✓ regenerado pós-024 — 131.307 chars |
-| Planos públicos | ✓ Starter/Pro/Performance (3 cards); Scale oculto (CTA Enterprise) |
+| Planos públicos | ✓ Starter/Pro/Premium (3 cards); Scale oculto (CTA Enterprise) |
 | Add-ons | ✓ user_extra(R$20) / whatsapp_automation(R$39) / ia_recovery(R$39) — endpoints ativos |
 | Sidebar | ✓ **REFATORADA** — Starter/Pro/Premium por feature flag; sub-navs Financeiro+Billing |
 | Feature flags 3-way | ✓ plan.features UNION tenant_features UNION addon.features |
@@ -49,6 +49,9 @@
 | /campaigns | ✓ placeholder gated has_api_access |
 | Testes unitários billing | ✓ +4 funções: webhookAsaasID, asaasUserErr, capitalize, event key |
 | Prompts operacionais | ✓ /prompts/ (raiz) — 5 arquivos; procedimento oficial de sessão |
+| Migration 026 | ✓ performance → premium (definitivo); DB + código + docs sincronizados |
+| FC030 | ✓ SettingsTabs name:'premium' vs DB 'performance' — corrigido via migration 026 |
+| D29 | ✓ plan.name = 'premium' definitivo — decisão técnica registrada |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
@@ -178,8 +181,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **29 falhas documentadas (FC001–FC029)**.
-Próximo número disponível: **FC030**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **30 falhas documentadas (FC001–FC030)**.
+Próximo número disponível: **FC031**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

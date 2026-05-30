@@ -338,3 +338,16 @@ supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/d
 ```
 
 **Ver:** FC029 em `docs-operacao/FalhasCorrigidas/`.
+
+
+---
+
+## D29 — plan.name no banco é 'premium' (definitivo — 30/05/2026)
+
+**Decisão:** `plans.name` do plano 3 passa a ser `'premium'` permanentemente (migration 026). Nome interno no banco = nome comercial ao cliente.
+
+**Por quê:** Eliminar a divergência entre o nome interno (`performance`) e o nome comercial ("Premium") que causava: (1) bug em SettingsTabs.tsx — `name:'premium'` hardcoded não casava com DB `'performance'`; (2) risco de confusão em qualquer código novo que usasse o nome literal.
+
+**Impacto:** `plans.name = 'premium'`. `subscriptions` usa `plan_id` (FK UUID) — sem campo denormalizado afetado. `get_tenant_usage()` retorna `premium` via JOIN automaticamente. Frontend atualizado: PLAN_HIGHLIGHTS, PLAN_BADGE, variável `isPremium`.
+
+**Regra derivada:** Nunca usar `'performance'` como plan_name em qualquer contexto novo — não existe mais no banco.

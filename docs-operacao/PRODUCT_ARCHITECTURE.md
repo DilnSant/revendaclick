@@ -75,8 +75,7 @@ SaaS (RevendaClick)
 | `performance` | **Premium** | `has_api_access` libera seção Premium na sidebar | Sim |
 | `scale` | Scale | Igual Premium + limites maiores | **Não** — CTA "Enterprise" no grid é label de grade para contato comercial |
 
-> **CRÍTICO:** `plan.name` no banco é `performance`. Nome comercial exibido ao cliente é **"Premium"**.
-> Nunca usar `plan_name === 'premium'` no código — não existe no banco.
+> **`plan.name` no banco é `premium` (migration 026 — definitivo).** DB e nome comercial agora coincidem.
 > "Enterprise" não é plan.name; é o texto do CTA que aparece no grid quando o plano `scale` está oculto.
 
 ### Feature Flags
@@ -271,7 +270,7 @@ Limites verificados em tempo real via `get_tenant_usage()`. Alertas: warning (80
 
 | Decisão | Status | Detalhe |
 |---|---|---|
-| Nome comercial do plano 3 | **Premium** | `plan.name = 'performance'` no banco; exibido como "Premium" ao cliente |
+| Nome comercial do plano 3 | **Premium** | `plan.name = 'premium'` no banco (migration 026 — definitivo) |
 | Plano Scale (4º plano) | **Oculto do grid público** | CTA "Enterprise" no grid leva ao contato comercial; não há checkout automático |
 | WhatsApp automação | **Add-on pago** (R$39/mês) | Não incluído em nenhum plano — sempre contratado separadamente |
 | Usuário extra | **Add-on pago** (R$20/mês) | Limites por plano: Starter 2 / Pro 5 / Premium 15 |

@@ -64,8 +64,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 025 (sem novas em sessão 24) |
-| Próxima migration | `026_...` |
+| Migrations aplicadas | 001 → 026 |
+| Próxima migration | `027_...` |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
 
@@ -74,8 +74,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 29 (FC001–FC029) |
-| Próxima FC | **FC030** |
+| Total documentadas | 30 (FC001–FC030) |
+| Próxima FC | **FC031** |
 
 ## Comandos frequentes
 
@@ -107,8 +107,8 @@ has_analytics            → Pro+
 has_central_atendimento  → add-on whatsapp_automation ou tenant_feature override
 has_whatsapp             → Pro+
 has_kanban               → Pro+
-has_api_access           → Performance+
-has_white_label          → Performance+
+has_api_access           → Premium+
+has_white_label          → Premium+
 has_financial            → Starter+
 has_vendors              → Starter+
 has_whatsapp_qr          → add-on
@@ -120,10 +120,10 @@ has_whatsapp_qr          → add-on
 |---|---|---|
 | `starter` | Starter | 1 |
 | `pro` | Pro | 2 |
-| `performance` | **Premium** | 3 — `plan.name = 'performance'`; nome comercial = "Premium" |
+| `premium` | **Premium** | 3 — `plan.name = 'premium'` (migration 026); nome comercial = "Premium" |
 | `scale` | Scale | 4 — oculto do grid público; CTA "Enterprise" é apenas label de grid |
 
-> **CRÍTICO:** `plan.name` no banco é `performance`, nunca `premium`. O nome comercial exibido ao cliente é "Premium".
+> **CRÍTICO:** `plan.name` no banco é `premium` (migration 026 — definitivo). Nome comercial e nome interno agora coincidem.
 
 ## Add-ons (nomes exatos no banco)
 

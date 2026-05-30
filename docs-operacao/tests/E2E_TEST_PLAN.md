@@ -78,7 +78,7 @@ Sidebar não mostra seção Pro (has_crm=false)
   ↓
 /billing exibe sub-nav: Assinatura / Add-ons / Cobranças / Planos
   ↓
-/billing/plans exibe 3 planos (Starter, Pro, Performance)
+/billing/plans exibe 3 planos (Starter, Pro, Premium)
   ↓
 Scale oculto do grid público
 ```
@@ -172,7 +172,7 @@ Tenant loga: não vê seção Pro
 |---|---|
 | Starter (`santos-car`) | Base + upgrade prompt Pro |
 | Pro (`has_crm`) | Base + seção Pro (Atendimento, Analytics) |
-| Performance (`has_api_access`) | Base + Pro + seção Premium (Automações, Campanhas) |
+| Premium (`has_api_access`) | Base + Pro + seção Premium (Automações, Campanhas) |
 
 **Validação manual:** Login com cada perfil no browser.
 

@@ -17,7 +17,8 @@
 | 2026-05-22 | `middleware.ts` no Next.js | Removido para corrigir loop de SSR (ver FC) | `frontend/lib/proxy.ts` |
 | 2026-05-22 | Migração para FlutterFlow | Descartada antes de iniciar | Next.js continua como stack oficial (ver D12) |
 | 2026-05-28 | Plano "Start" | Renomeado via migration 019 | `starter` (DB) / "Starter" (display) |
-| 2026-05-28 | Plano "Performance" como display_name comercial | migration 024 reverteu renomeação; nome comercial oficial agora é "Premium" | `performance` (DB `plan.name`) / "Premium" (display comercial e label sidebar) |
+| 2026-05-28 | Plano "Performance" como display_name comercial | migration 024 reverteu renomeação; nome comercial oficial agora é "Premium" | `performance` (DB `plan.name` até migration 026) |
+| 2026-05-30 | `performance` como `plan.name` no banco | migration 026 renomeou definitivamente para `premium` | `premium` — DB e nome comercial agora coincidem |
 | 2026-05-30 | "Enterprise" como nome de plano | Nunca foi plan.name no banco; era apenas label de CTA no grid de planos | CTA "Enterprise" = grade pública; plan.name real = `scale` (oculto) |
 | 2026-05-29 | super_admin com tenant_id preenchido | migration 025 tornou nullable para super_admin | `super_admin` tem `tenant_id = NULL` |
 | 2026-05-30 | devecar como tenant operacional de referência | Evolution desconectado 28/05 (device_removed); não é loja real | Histórico apenas; novo tenant de ref.: `sandbox-revendaclick` (a criar) |
@@ -35,7 +36,7 @@
 |---|---|---|---|
 | `starter` | Starter | — (base) | Funcionalidades básicas |
 | `pro` | Pro | `has_crm` | Seção Pro na sidebar |
-| `performance` | **Premium** | `has_api_access` | `plan.name = 'performance'`; nome comercial = "Premium" |
+| `premium` | **Premium** | `has_api_access` | `plan.name = 'premium'` (migration 026 — definitivo) |
 | `scale` | Scale | `has_api_access` | Oculto do grid; CTA "Enterprise" é label de grade, não plan.name |
 
 > **CRÍTICO:** `plan.name` no banco é sempre `performance`. Nome comercial ao cliente é "Premium".
@@ -51,8 +52,8 @@
 | `has_analytics` | Pro+ |
 | `has_whatsapp` | Pro+ |
 | `has_kanban` | Pro+ |
-| `has_api_access` | Performance+ |
-| `has_white_label` | Performance+ |
+| `has_api_access` | Premium+ |
+| `has_white_label` | Premium+ |
 | `has_central_atendimento` | Add-on `whatsapp_automation` |
 | `has_whatsapp_qr` | Add-on |
 | `has_lead_recovery` | Add-on `ia_recovery` |
@@ -123,7 +124,7 @@ Financeiro sub-nav: Resumo (`/financial`) | Vendas (`/sales`) | Comissões (`/fi
 6. **Sidebar gate Pro = `has_crm`; Premium = `has_api_access`** (ver D28)
 7. **Add-ons são cobrados separadamente** da assinatura principal
 8. **WhatsApp automação é add-on**, não funcionalidade de plano
-9. **`plan.name = 'performance'` no banco; nome comercial ao cliente = "Premium"** — nunca escrever `premium` como plan.name
+9. **`plan.name = 'premium'` no banco (migration 026 — definitivo)** — DB e nome comercial coincidem; nunca usar `performance` como plan.name
 10. **WhatsApp da Loja** (Contato Público) ≠ **Central de Atendimento** (Evolution/add-on) — são conceitos distintos
 11. **Financeiro incorpora Vendas e Comissões** via sub-nav — não são módulos separados na sidebar
 12. **Assinatura incorpora Add-ons** via sub-nav — `/billing/addons` é acessado pelo BillingSubNav

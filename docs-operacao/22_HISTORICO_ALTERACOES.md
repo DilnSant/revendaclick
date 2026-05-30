@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 30/05/2026 (sessão 24 — governança /prompts)
+> Última atualização: 30/05/2026 (sessão 25 — migration 026 performance → premium)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -25,6 +25,7 @@
 | **Central de Atendimento** | ✓ Produção (`has_central_atendimento`) | Acessível via Configurações → WhatsApp; devecar desconectado |
 | **Automações** | ✓ Placeholder produção (`has_api_access`) | Gated; CTA WhatsApp add-on condicional |
 | **Campanhas** | ✓ Placeholder produção (`has_api_access`) | Gated; "Em breve" com links Analytics/CRM |
+| **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
 | **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
 | **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
@@ -33,6 +34,60 @@
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN pendente no .env VPS |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection pendente (Supabase Dashboard) |
+
+---
+
+## 2026-05-30 (sessão 25) — Renomeação definitiva performance → premium + auditoria nomenclatura
+
+**Commits:** `b2ea6a0`, `e43271a`, (docs — a confirmar)
+**Arquivos alterados:**
+- `database/migrations/026_rename_performance_to_premium.sql` (novo)
+- `frontend/lib/database.types.ts` (regenerado)
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx` (performance→premium; isPerformance→isPremium)
+- `frontend/app/(dashboard)/billing/plans/_components/PlansGrid.tsx` (comentário)
+- `backend/internal/billing/model.go` (comentário)
+- `docs-operacao/REFERENCE.md` (planos + feature flags)
+- `docs-operacao/MEMORY.md` (planos + flags + OBSOLETO + regra 9)
+- `docs-operacao/PRODUCT_ARCHITECTURE.md` (planos + DECISÕES COMERCIAIS)
+- `docs-operacao/features/FEATURE_FLAGS_SNAPSHOT.md` (coluna Performance → Premium)
+- `docs-operacao/tests/E2E_TEST_PLAN.md` (Performance → Premium)
+- `docs-operacao/15_BILLING_ASAAS.md` (plan_name examples)
+- `docs-operacao/00_LEIA_PRIMEIRO.md` (seção planos unificada)
+- `docs-operacao/21_DECISOES_TECNICAS.md` (D29 adicionado)
+- `docs-operacao/FalhasCorrigidas/FC030_SettingsTabs_plan_name_premium_vs_performance.md` (novo)
+
+### Alterações realizadas
+
+**Migration 026 (Supabase):**
+- `UPDATE plans SET name='premium', display_name='Premium' WHERE name='performance'`
+- `subscriptions` usa `plan_id` (FK) — sem campo denormalizado afetado
+- `get_tenant_usage()` retorna `premium` automaticamente via JOIN
+
+**Frontend:**
+- PlanCard.tsx: PLAN_HIGHLIGHTS e PLAN_BADGE usam chave `premium`
+- PlanCard.tsx: `isPerformance` → `isPremium`; `plan.name === 'performance'` → `'premium'`
+- FC030 corrigido como efeito colateral: SettingsTabs.tsx usava `name:'premium'` que não casava com DB `'performance'`
+
+**Auditoria de nomenclatura:**
+- Todos os docs operacionais atualizados: `performance` → `premium` onde era plan.name
+- `Performance+` → `Premium+` em feature flags
+- Docs históricos (01, 06, 10_INFRA, 18_MIGRACAO) não atualizados — são históricos e corretos no contexto
+
+### Deploy
+
+Frontend: Vercel — EXECUTADO (push `e43271a`)
+Backend: CI/CD — EXECUTADO (sem alteração de lógica Go)
+Banco: migration 026 aplicada via MCP Supabase ✓
+
+### Testes
+
+TypeScript: ✓ zero erros (`npx tsc --noEmit`)
+Go build/vet: executado em CI (go não disponível localmente)
+E2E: NÃO EXECUTADO (requer .env.e2e)
+
+### Rollback
+
+NÃO necessário. Reversão: migration 027 com `UPDATE plans SET name='performance' WHERE name='premium'`
 
 ---
 

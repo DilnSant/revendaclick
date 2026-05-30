@@ -1,6 +1,6 @@
 # Feature Flags — Snapshot Atual
 
-> Última atualização: 2026-05-30 (sessão 24)
+> Última atualização: 2026-05-30 (sessão 25 — migration 026: performance → premium)
 > Fonte de verdade: função `get_tenant_usage()` no Supabase (3-way UNION)
 
 ---
@@ -22,7 +22,7 @@ O resultado é consolidado em um array único. A presença do nome já indica ac
 
 ## Mapa de Flags por Plano
 
-| Feature Flag | Starter | Pro | Performance | Scale | Add-on |
+| Feature Flag | Starter | Pro | Premium | Scale | Add-on |
 |---|---|---|---|---|---|
 | `has_financial` | ✓ | ✓ | ✓ | ✓ | — |
 | `has_vendors` | ✓ | ✓ | ✓ | ✓ | — |
@@ -74,7 +74,7 @@ Isso insere na tabela `tenant_features` e fica disponível via 3-way UNION imedi
 
 ## Limites por Plano (estado atual)
 
-| Limite | Starter | Pro | Performance | Scale |
+| Limite | Starter | Pro | Premium | Scale |
 |---|---|---|---|---|
 | `max_vehicles` | 50 | 200 | 500 | -1 (ilimitado) |
 | `max_users` | 2 | 5 | 15 | -1 |
