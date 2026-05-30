@@ -490,34 +490,33 @@ Before finishing any task validate:
 
 # CURRENT OFFICIAL STATUS
 
-Operational:
-- full-stack runtime — Next.js 15 SSR + Go backend
-- PostgreSQL Supabase + PgBouncer
-- Docker Compose V2 (dev + prod)
-- nginx reverse proxy com gzip, rate limiting, security headers
-- standalone frontend runtime (outputFileTracingRoot configurado)
-- multi-tenant RLS completo
-- CI/CD GitHub Actions → GHCR → Coolify webhook
-- Evolution API integrada (webhook receiver + lead sync por WhatsApp)
-- OpenRouter AI integrado (classify lead, suggest reply)
-- Módulos: leads, CRM, Kanban, vehicles, customers, financial, sales, analytics
-- Register flow de 2 etapas (Supabase Auth + setupTenant)
-- Página pública de veículo com schema.org + Open Graph + SEO
-- Settings (loja, equipe, plano)
-- Vendors (gestão de equipe)
-- Onboarding completo
-- Domínios: revendaclick.com.br / api.revendaclick.com.br / evolution.revendaclick.com.br
+> Esta seção é um ponteiro — não reflete estado em tempo real.
+> Estado atualizado: `docs-operacao/23_PROXIMO_PASSO.md`
+> Valores de referência rápida: `docs-operacao/REFERENCE.md`
+
+Stack em produção:
+- Frontend: Next.js 16 no Vercel (`app.revendaclick.com.br`) — deploy automático via GitHub
+- Backend Go: VPS Hostinger `2.24.67.84` via Docker + CI/CD self-hosted runner
+- Evolution API v2.3.7: VPS (`evolution.revendaclick.com.br`)
+- Database: Supabase PostgreSQL cloud (`ibgaywezfcbbiiziaoac`)
+- CI/CD: GitHub Actions → GHCR → self-hosted runner no VPS
+
+Todos os módulos em produção: auth, onboarding, vehicles, leads, CRM, customers,
+financial, sales, commissions, analytics, billing (Asaas), add-ons, evolution
+(WhatsApp), AI (OpenRouter), admin panel, observability (Prometheus).
 
 ---
 
 # OFFICIAL NEXT PHASES
 
+> Todas as fases de lançamento estão concluídas. Itens abaixo são histórico.
+
 1. ~~GitHub clean repository~~ (CI/CD pronto)
 2. ~~VPS Hostinger~~ (contratada)
-3. ~~Production Docker~~ (docker-compose.prod.yml pronto)
-4. ~~Coolify~~ (instalado, labels configuradas)
+3. ~~Production Docker~~ (docker-compose.production.yml ativo)
+4. ~~Coolify~~ (não utilizado — deploy via CI/CD self-hosted runner)
 5. ~~Domain~~ (DNS apontado)
-6. SSL via Coolify (automático com Let's Encrypt)
+6. ~~SSL~~ (Let's Encrypt via VPS nginx — não via Coolify)
 7. ~~CI/CD~~ (GitHub Actions configurado)
 8. ~~Evolution API~~ (integrada)
 9. ~~Multi-tenant authentication~~ (Supabase SSR completo)

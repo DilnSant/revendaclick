@@ -1,5 +1,41 @@
 # 22 — HISTÓRICO DE ALTERAÇÕES
 
+## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
+
+> Última atualização: 30/05/2026 (sessão 23 fim)
+> Este bloco é um snapshot do estado de cada módulo/feature em produção.
+> Para histórico cronológico, ver as entradas abaixo.
+
+| Módulo / Feature | Status | Observações |
+|---|---|---|
+| **Auth / Onboarding** | ✓ Produção | Hybrid session+service role; checklist v2; triggers automáticos |
+| **Dashboard** | ✓ Produção | KPIs + OnboardingChecklist widget |
+| **Sidebar** | ✓ Refatorado (sessão 23) | Starter/Pro/Premium por feature flag — ver D28 |
+| **Veículos** | ✓ Produção | CRUD + vitrine pública SEO + filtros |
+| **Leads / CRM / Kanban** | ✓ Produção | Lista, kanban, atividades, follow-ups |
+| **Clientes** | ✓ Produção (Starter+) | Movido para base na sessão 23 |
+| **Financeiro** | ✓ Produção + sub-nav | Tabs: Resumo / Vendas / Comissões |
+| **Vendas** | ✓ Produção | Acessível via sub-nav Financeiro |
+| **Comissões** | ✓ Produção | Acessível via sub-nav Financeiro |
+| **Vendedores** | ✓ Produção | Acessível via Configurações → Usuários |
+| **Analytics** | ✓ Produção (Pro+, `has_analytics`) | — |
+| **Assinatura** | ✓ Produção + sub-nav | Tabs: Assinatura / Add-ons / Cobranças / Planos |
+| **Add-ons** | ✓ Produção | user_extra / whatsapp_automation / ia_recovery; acessível via sub-nav Billing |
+| **Configurações** | ✓ Produção + WhatsApp tab | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp |
+| **Central de Atendimento** | ✓ Produção (`has_central_atendimento`) | Acessível via Configurações → WhatsApp; devecar desconectado |
+| **Automações** | ⚠ Nav existe, página é 404 | Placeholder `/automations` pendente (sessão 24) |
+| **Campanhas** | ⚠ Nav existe, página é 404 | Placeholder `/campaigns` pendente (sessão 24) |
+| **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
+| **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent |
+| **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
+| **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open; devecar desconectado |
+| **OpenRouter AI** | ✓ Produção | classify-lead, suggest-reply |
+| **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN pendente no .env VPS |
+| **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
+| **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection pendente (Supabase Dashboard) |
+
+---
+
 ## 2026-05-29 (sessão 23 — continuação 2) — Sidebar Refactor + Sub-navs Financeiro/Billing + WhatsApp em Configurações
 
 **Commits:** `b22fb2a`, `51def30`

@@ -1,6 +1,7 @@
 package billing
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -109,6 +110,104 @@ func TestComputeFlags(t *testing.T) {
 			t.Error("expected IsBlocked=true for paused status")
 		}
 	})
+}
+
+func TestWebhookAsaasID(t *testing.T) {
+	cases := []struct {
+		name string
+		wh   AsaasWebhook
+		want string
+	}{
+		{
+			name: "payment ID present",
+			wh:   AsaasWebhook{Payment: &AsaasPayment{ID: "pay_123"}},
+			want: "pay_123",
+		},
+		{
+			name: "subscription ID present, no payment",
+			wh:   AsaasWebhook{Subscription: &AsaasSubEvent{ID: "sub_456"}},
+			want: "sub_456",
+		},
+		{
+			name: "both present — payment wins",
+			wh:   AsaasWebhook{Payment: &AsaasPayment{ID: "pay_789"}, Subscription: &AsaasSubEvent{ID: "sub_000"}},
+			want: "pay_789",
+		},
+		{
+			name: "neither present",
+			wh:   AsaasWebhook{},
+			want: "",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := webhookAsaasID(&tc.wh)
+			if got != tc.want {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestAsaasUserErr(t *testing.T) {
+	cases := []struct {
+		name string
+		raw  string
+		want string
+	}{
+		{
+			name: "IP whitelist error",
+			raw:  "Error: not_allowed_ip",
+			want: "IP do servidor não autorizado no Asaas. Acesse o painel Asaas → API → Whitelist de IPs e adicione o IP do servidor.",
+		},
+		{
+			name: "generic error passes through",
+			raw:  "some other asaas error",
+			want: "some other asaas error",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := asaasUserErr(tc.raw)
+			if got != tc.want {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestCapitalize(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+		want string
+	}{
+		{name: "normal string", in: "hello", want: "Hello"},
+		{name: "already capitalized", in: "World", want: "World"},
+		{name: "single char", in: "a", want: "A"},
+		{name: "empty string", in: "", want: ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := capitalize(tc.in)
+			if got != tc.want {
+				t.Errorf("got %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestWebhookEventKey(t *testing.T) {
+	wh := &AsaasWebhook{
+		Event:   "PAYMENT_RECEIVED",
+		Payment: &AsaasPayment{ID: "pay_abc"},
+	}
+	asaasID := webhookAsaasID(wh)
+	key := fmt.Sprintf("%s:%s", wh.Event, asaasID)
+	want := "PAYMENT_RECEIVED:pay_abc"
+	if key != want {
+		t.Errorf("got %q, want %q", key, want)
+	}
 }
 
 func TestNextPeriodEnd(t *testing.T) {

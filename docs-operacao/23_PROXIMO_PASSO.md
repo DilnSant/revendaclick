@@ -1,7 +1,25 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 29/05/2026 (sessão 23 — fim)
+> Atualizado em: 30/05/2026 (sessão 23 — fim)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
+
+---
+
+## Guia de Leitura por Tipo de Tarefa
+
+> Leia isso PRIMEIRO, antes de abrir qualquer outro arquivo.
+
+| Tipo de tarefa | Arquivos para ler |
+|---|---|
+| Qualquer tarefa | `23_PROXIMO_PASSO.md` (este) + `20_PENDENCIAS.md` |
+| Alterar banco / migrations | `05_SUPABASE.md` → aplicar → regenerar `database.types.ts` |
+| Alterar backend Go | `04_BACKEND.md` + `08_API_ROTAS_REAIS.md` |
+| Alterar infra / docker | `10_INFRA_VPS.md` + `11_DOCKER.md` |
+| Fazer deploy | `13_DEPLOY.md` + `12_CICD.md` |
+| Diagnosticar bug | `FalhasCorrigidas/README.md` → buscar padrão similar |
+| Precisar de valor fixo (IP, ID, URL) | `REFERENCE.md` |
+| Entender decisão arquitetural | `21_DECISOES_TECNICAS.md` |
+| Ver estado atual de qualquer feature | `22_HISTORICO_ALTERACOES.md` (topo — ESTADO ATUAL) |
 
 ---
 
