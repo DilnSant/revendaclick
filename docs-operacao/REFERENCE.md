@@ -64,7 +64,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 025 |
+| Migrations aplicadas | 001 → 025 (sem novas em sessão 24) |
 | Próxima migration | `026_...` |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
@@ -143,8 +143,11 @@ has_whatsapp_qr          → add-on
 
 | Tenant | Plano | Notas |
 |---|---|---|
-| `santos-car` | Starter | tenant de homologação do owner |
-| `devecar` | Pro (até 2026-06-27) | Evolution desconectado (device_removed 28/05) |
+| `santos-car` | Starter | tenant de homologação do owner (ativo) |
+
+> **devecar** foi removido como tenant operacional de referência (2026-05-30).
+> Era usado para testar plano Pro; Evolution desconectado desde 28/05 (device_removed).
+> Histórico em `22_HISTORICO_ALTERACOES.md`. Novo tenant de referência Pro: criar `sandbox-revendaclick` via onboarding.
 
 ## super_admin
 

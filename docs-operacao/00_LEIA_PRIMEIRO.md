@@ -25,7 +25,7 @@ Cada cliente (revenda) tem sua própria conta isolada com:
 **Tecnologia:** Next.js (JavaScript/TypeScript)
 **Pasta:** `/frontend/`
 **URL em produção:** `https://revendaclick.com.br` / `https://app.revendaclick.com.br`
-**Hospedagem:** Coolify (no mesmo VPS)
+**Hospedagem:** Vercel (cloud — deploy automático via push para `main` no GitHub)
 
 O que está aqui:
 - Tela de login, registro, onboarding
@@ -183,15 +183,15 @@ O que acontece quando alguém faz `git push main`:
 
 ---
 
-## Status atual (2026-05-22)
+## Status atual
 
 O sistema está **em produção** com:
-- Frontend Next.js (Coolify)
-- Backend Go (Docker no VPS)
-- Evolution API (Docker no VPS)
+- Frontend Next.js (**Vercel** — auto-deploy via GitHub push)
+- Backend Go (Docker no VPS Hostinger)
+- Evolution API v2.3.7 (Docker no VPS)
 - Supabase Cloud (externo)
 - Asaas (externo — billing)
-- Nginx com SSL (VPS)
-- CI/CD GitHub Actions → self-hosted runner
+- Nginx com SSL Let's Encrypt (VPS)
+- CI/CD GitHub Actions → self-hosted runner no VPS
 
-Veja detalhes em `23_PROXIMO_PASSO.md`.
+Veja estado detalhado em `23_PROXIMO_PASSO.md`.

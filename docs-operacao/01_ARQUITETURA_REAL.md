@@ -46,7 +46,7 @@
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│               Frontend Next.js (Coolify)                    │
+│               Frontend Next.js (Vercel)                    │
 │  Server Components → INTERNAL_API_URL → Backend Go          │
 │  Client Components → NEXT_PUBLIC_API_URL → via Nginx        │
 │  Auth → Supabase Auth (cookies)                             │
@@ -60,8 +60,8 @@
 ```
 Browser
   → GET https://revendaclick.com.br/leads
-  → Coolify (Next.js standalone)
-    → middleware.ts: verifica cookie Supabase → ok
+  → Vercel (Next.js standalone)
+    → proxy.ts: verifica cookie Supabase → ok
     → injeta x-user-id no header
     → (dashboard)/layout.tsx: resolve tenant, sub, usage
     → leads/page.tsx: Server Component
@@ -162,8 +162,8 @@ Veja detalhes em `07_MULTI_TENANT.md`.
 
 | Domínio | Destino | Porta |
 |---|---|---|
-| `revendaclick.com.br` | Frontend Next.js (Coolify) | 443 → Coolify |
-| `app.revendaclick.com.br` | Frontend Next.js (Coolify) | 443 → Coolify |
+| `revendaclick.com.br` | Frontend Next.js (Vercel) | 443 → Vercel |
+| `app.revendaclick.com.br` | Frontend Next.js (Vercel) | 443 → Vercel |
 | `api.revendaclick.com.br` | Backend Go (Docker) | 443 → 127.0.0.1:8080 |
 | `evolution.revendaclick.com.br` | Evolution API (Docker) | 443 → 127.0.0.1:8081 |
 | `revendaclick.com.br/:slug` | Vitrine pública da revenda | → Next.js → Backend /api/public/:slug |

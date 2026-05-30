@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 30/05/2026 (sessão 23 — fim)
+> Atualizado em: 30/05/2026 (sessão 24 — auditoria estrutural)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 23 fim — 29/05/2026)
+## Estado Atual do Projeto (sessão 24 — 30/05/2026)
 
 | Componente | Status |
 |---|---|
@@ -44,17 +44,22 @@
 | DevActivate | ✓ POST /api/billing/dev/activate — ativo apenas fora de produção |
 | OnboardingChecklist | ✓ widget no dashboard (4 obrigatórios + 1 WhatsApp opcional) |
 | super_admin | ✓ dilneysantos.developer@gmail.com — tenant_id=NULL, role=super_admin |
-| devecar billing | ✓ ativado diretamente no Supabase (Pro, period_end 2026-06-27) |
 | Central de Atendimento santos-car | ✓ instância Evolution `open` (554888482877); feature central_atendimento concedida |
+| /automations | ✓ placeholder gated has_api_access; CTA WhatsApp add-on condicional |
+| /campaigns | ✓ placeholder gated has_api_access |
+| Testes unitários billing | ✓ +4 funções: webhookAsaasID, asaasUserErr, capitalize, event key |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Supabase security advisors | ✓ limpos |
 | FalhasCorrigidas | ✓ 29 FCs documentadas (FC001–FC029) |
-| Evolution webhook 401 | ✓ corrigido — `RemoteAddr` em vez de `ClientIP()` (X-Forwarded-For bypass) |
-| rc_backup OOM (98%) | ✓ corrigido — 128m → 256m; variáveis shell `$$` escapadas |
-| CI/CD `git pull` vs local changes | ✓ corrigido — `git fetch + git reset --hard origin/main` |
-| devecar Evolution | ⚠ desconectado (device_removed 28/05) — requer rescan QR pelo usuário |
+| PRODUCT_ARCHITECTURE.md | ✓ criado — fonte única da arquitetura de negócio |
+| DEPENDENCIES.md | ✓ criado — mapa de dependências por módulo |
+| ENVIRONMENTS.md | ✓ criado — produção / homologação / desenvolvimento |
+| Testes E2E (Playwright) | ✓ estrutura criada — 5 specs / 6 fluxos; Playwright instalado |
+| Auditoria devecar | ✓ removido como tenant operacional; Coolify → Vercel corrigido em docs |
+| Memory OBSOLETO | ✓ seção OBSOLETO criada em MEMORY.md (8 itens) |
+| Governança sessão | ✓ protocolo de fim de sessão em 23_PROXIMO_PASSO.md |
 
 ---
 
@@ -97,40 +102,34 @@ Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / 
 
 ## Próximos Passos (por prioridade)
 
-### 0. Reconectar instância devecar no Evolution (URGENTE — usuário)
-
-Instância `devecar` desconectada desde 28/05 (`device_removed`). Para reconectar:
-1. Login como usuário `devecar` no app
-2. Ir para `/whatsapp` (ou Configurações → WhatsApp)
-3. Clicar em "Conectar" → escanear QR com WhatsApp do número 554898232010
-
 ### 1. Verificar sidebar no browser em produção (ALTA)
 
-Testar os 3 perfis:
+Testar os 2 perfis disponíveis:
 
 | Perfil | Esperado |
 |---|---|
 | **santos-car (Starter)** | Dashboard/Veículos/Interessados/Clientes/Financeiro + upgrade prompt "Desbloqueie com Pro" + Assinatura/Configurações |
-| **devecar (Pro)** | + seção Pro: Atendimento, Analytics |
-| **qualquer (Premium/has_api_access)** | + seção Premium: Automações, Campanhas |
+| **qualquer (Pro/has_crm)** | + seção Pro: Atendimento, Analytics |
 
 Verificar:
 - Financeiro → sub-nav mostrando Resumo/Vendas/Comissões
 - Assinatura → sub-nav mostrando Assinatura/Add-ons/Cobranças/Planos
 - Configurações → aba WhatsApp visível (5ª aba)
 
-### 2. Criar páginas placeholder para Premium (Média)
+### 2. Criar tenant sandbox-revendaclick (ALTA)
 
-`/automations` e `/campaigns` não têm page.tsx ainda. Criar placeholder:
-```tsx
-// app/(dashboard)/automations/page.tsx
-export default function AutomationsPage() {
-  return <div className="...">Em breve — Automações</div>
-}
-```
-Sem essas páginas, o link no nav vai para 404.
+Tenant de referência Pro para testes (substituto do devecar). Criar via onboarding normal:
+1. Registrar conta com email de teste
+2. Onboarding → slug `sandbox-revendaclick`
+3. Via admin panel: ativar plano Pro via simulate-event
+4. Atualizar REFERENCE.md e ENVIRONMENTS.md com o novo tenant_id
 
-### 3. Vendedores — acessibilidade (Média)
+### 3. Configurar E2E credentials (Média)
+
+Criar `frontend/.env.e2e` com credenciais do tenant `santos-car` para rodar os specs de Playwright.
+Ver `frontend/e2e/README.md`.
+
+### 4. Vendedores — acessibilidade (Média)
 
 `/vendors` foi removido do sidebar mas não tem acesso visível em Configurações.
 Opção A: Adicionar link "Vendedores →" dentro da aba Usuários (já existe em SettingsTabs — `<Link href="/vendors">`)
@@ -182,6 +181,41 @@ Pasta `docs-operacao/FalhasCorrigidas/` — **29 falhas documentadas (FC001–FC
 Próximo número disponível: **FC030**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
+
+---
+
+## GOVERNANÇA — Protocolo Obrigatório de Fim de Sessão
+
+Toda sessão encerrada **deve** executar os seguintes passos antes do último commit:
+
+### 1. Atualizar 22_HISTORICO_ALTERACOES.md
+- Adicionar entrada com data, sessão e resumo das alterações
+- Atualizar a tabela **ESTADO ATUAL POR FEATURE** no topo
+
+### 2. Atualizar 23_PROXIMO_PASSO.md (este arquivo)
+- Atualizar data no topo
+- Atualizar tabela "Estado Atual do Projeto"
+- Atualizar seção "Próximos Passos" com prioridades corretas
+
+### 3. Atualizar Snapshot de Features
+A tabela ESTADO ATUAL em `22_HISTORICO_ALTERACOES.md` deve refletir o estado real.
+Nunca deixar features como "⚠ 404" se já foram implementadas.
+
+### 4. Atualizar Memory (project_status.md)
+Atualizar `/home/dilneysantos/.claude/projects/.../memory/project_status.md` com:
+- Migrações aplicadas
+- Features concluídas
+- Pendências atuais
+
+### 5. Mover itens obsoletos
+Se algo deixou de ser válido (plano renomeado, serviço trocado, rota removida):
+- Mover para a seção **OBSOLETO** em `MEMORY.md`
+- Incluir: data, motivo, substituto
+
+### 6. Verificar consistência
+- `REFERENCE.md` reflete valores reais (migrations, FCs, URLs)?
+- `CLAUDE.md` CURRENT STATUS ainda aponta para docs corretos?
+- Algum arquivo diz "Coolify" quando deveria dizer "Vercel"?
 
 ---
 
