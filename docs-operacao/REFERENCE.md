@@ -116,28 +116,44 @@ has_whatsapp_qr          → add-on
 
 ## Planos (nomes exatos no banco)
 
-| name | display_name | Posição |
+| name | display_name comercial | Posição |
 |---|---|---|
 | `starter` | Starter | 1 |
 | `pro` | Pro | 2 |
-| `performance` | Performance | 3 |
-| `scale` | Scale | 4 — oculto do grid público |
+| `performance` | **Premium** | 3 — `plan.name = 'performance'`; nome comercial = "Premium" |
+| `scale` | Scale | 4 — oculto do grid público; CTA "Enterprise" é apenas label de grid |
+
+> **CRÍTICO:** `plan.name` no banco é `performance`, nunca `premium`. O nome comercial exibido ao cliente é "Premium".
 
 ## Add-ons (nomes exatos no banco)
 
-| type | Preço | Feature concedida |
-|---|---|---|
-| `user_extra` | R$20/mês | max_users +1 |
-| `whatsapp_automation` | R$39/mês | `central_atendimento` |
-| `ia_recovery` | R$39/mês | `has_lead_recovery` |
+| type | Nome comercial | Preço | Feature concedida |
+|---|---|---|---|
+| `user_extra` | Usuário Extra | R$20/mês | `max_users +1` |
+| `whatsapp_automation` | Central de Atendimento | R$39/mês | `has_central_atendimento` |
+| `ia_recovery` | IA Recovery | R$39/mês | `has_lead_recovery` |
 
 ## Sidebar — gates (definitivo — ver D28)
 
-| Seção | Gate |
-|---|---|
-| Base (Starter+) | sempre |
-| Pro | `has_crm` |
-| Premium | `has_api_access` |
+| Seção | Gate | Módulos |
+|---|---|---|
+| Base (Starter+) | sempre | Dashboard, Veículos, Interessados, Clientes, Financeiro¹ |
+| Pro | `has_crm` | Atendimento (CRM), Analytics |
+| Premium | `has_api_access` | Automações, Campanhas |
+| Sempre visível | — | Assinatura², Configurações³ |
+
+¹ Financeiro tem sub-nav interno: **Resumo** / **Vendas** / **Comissões**
+² Assinatura tem sub-nav: **Assinatura** / **Add-ons** / **Cobranças** / **Planos**
+³ Configurações tem tabs: **Loja** / **Contato Público** / **Usuários** / **Plano** / **WhatsApp**
+
+## WhatsApp — dois conceitos distintos
+
+| Conceito | Origem | Função | Tecnologia |
+|---|---|---|---|
+| **WhatsApp da Loja** | Número público do tenant (campo "Contato Público") | Botão "Falar no WhatsApp" na vitrine `/:slug`; contato público da revenda | Link `wa.me/{telefone}` — **sem Evolution** |
+| **Central de Atendimento** | Evolution API v2.3.7 | Atendimento CRM via WhatsApp, mensagens, IA Recovery | Add-on `whatsapp_automation` → `has_central_atendimento` |
+
+> Nunca confundir: WhatsApp da Loja é configurado em Configurações → Contato Público. Central de Atendimento é contratada separadamente em Add-ons.
 
 ## Tenants de referência
 

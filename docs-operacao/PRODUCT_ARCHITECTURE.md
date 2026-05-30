@@ -68,14 +68,16 @@ SaaS (RevendaClick)
 
 ### Planos
 
-| name | display_name | Gate principal |
-|---|---|---|
-| `starter` | Starter | Funcionalidades básicas |
-| `pro` | Pro | Gate `has_crm` libera seção Pro na sidebar |
-| `performance` | Performance (billing) / "Premium" (label sidebar) | Gate `has_api_access` libera seção Premium na sidebar |
-| `scale` | Scale | Igual Performance + limites maiores; oculto do grid público |
+| name (banco) | Nome comercial | Gate principal | Visível no grid público |
+|---|---|---|---|
+| `starter` | **Starter** | Funcionalidades básicas | Sim |
+| `pro` | **Pro** | `has_crm` libera seção Pro na sidebar | Sim |
+| `performance` | **Premium** | `has_api_access` libera seção Premium na sidebar | Sim |
+| `scale` | Scale | Igual Premium + limites maiores | **Não** — CTA "Enterprise" no grid é label de grade para contato comercial |
 
-> **ATENÇÃO:** O banco usa `performance` como `plan.name`. O label de UX da seção sidebar é "Premium". Nunca usar `plan_name === 'premium'` — não existe no banco.
+> **CRÍTICO:** `plan.name` no banco é `performance`. Nome comercial exibido ao cliente é **"Premium"**.
+> Nunca usar `plan_name === 'premium'` no código — não existe no banco.
+> "Enterprise" não é plan.name; é o texto do CTA que aparece no grid quando o plano `scale` está oculto.
 
 ### Feature Flags
 
@@ -133,9 +135,10 @@ Flags disponíveis (nomes exatos):
 - Base de clientes que concluíram negócio
 - Requires: qualquer plano ativo (Starter+)
 
-### Financeiro (`/financial`)
+### Financeiro (`/financial`) — incorpora Vendas e Comissões
 - Entradas, saídas, fluxo de caixa
-- Sub-nav: Resumo | Vendas | Comissões
+- **Sub-nav interno (FinancialSubNav):** Resumo (`/financial`) | Vendas (`/sales`) | Comissões (`/financial/commissions`)
+- Vendas e Comissões não são itens separados na sidebar — são acessados via sub-nav do Financeiro
 - Requires: `has_financial` (Starter+)
 
 ### Analytics (`/analytics`)
@@ -156,8 +159,9 @@ Flags disponíveis (nomes exatos):
 - Abas: Loja | Contato Público | Usuários | Plano | WhatsApp
 - WhatsApp tab: link para Central de Atendimento + CTA add-on
 
-### Assinatura (`/billing`)
-- Sub-nav: Assinatura | Add-ons | Cobranças | Planos
+### Assinatura (`/billing`) — incorpora Add-ons
+- **Sub-nav interno (BillingSubNav):** Assinatura | Add-ons (`/billing/addons`) | Cobranças (`/billing/history`) | Planos (`/billing/plans`)
+- Add-ons não são módulo separado na sidebar — acessados via sub-nav do Billing
 - Checkout via Asaas (Boleto/PIX/Cartão)
 - Upgrade/downgrade de plano em tempo real
 
@@ -170,21 +174,33 @@ Flags disponíveis (nomes exatos):
 
 ## ADD-ONS
 
-| type (banco) | Nome | Preço | Feature concedida |
+| type (banco) | Nome comercial | Preço | Feature concedida |
 |---|---|---|---|
 | `user_extra` | Usuário Extra | R$20/mês | `max_users +1` |
-| `whatsapp_automation` | WhatsApp Automação | R$39/mês | `has_central_atendimento` |
+| `whatsapp_automation` | Central de Atendimento | R$39/mês | `has_central_atendimento` |
 | `ia_recovery` | IA Recovery | R$39/mês | `has_lead_recovery` |
 
-**Central de Atendimento (WhatsApp):**
+**Central de Atendimento:**
 - Requer add-on `whatsapp_automation` ativo
 - Conecta via QR Code ao WhatsApp do responsável pela loja
 - Instância gerenciada pela Evolution API v2.3.7
+- **Distinto do WhatsApp da Loja** — ver seção abaixo
 
 **IA Recovery:**
 - Requer add-on `ia_recovery` ativo
 - Usa OpenRouter (`openai/gpt-4o-mini` por padrão)
 - Funções: `classify-lead`, `suggest-reply`
+
+---
+
+## WHATSAPP — DOIS CONCEITOS DISTINTOS
+
+| Conceito | O que é | Configurado em | Tecnologia | Visível para |
+|---|---|---|---|---|
+| **WhatsApp da Loja** | Número público de contato da revenda | Configurações → Contato Público | Link `wa.me/{telefone}` — sem Evolution | Qualquer visitante da vitrine `/:slug` |
+| **Central de Atendimento** | Integração de WhatsApp para atendimento interno e CRM | `/whatsapp` (add-on ativo) | Evolution API v2.3.7 | Operadores internos; requer `has_central_atendimento` |
+
+**Regra:** Nunca implementar ou documentar como se fossem a mesma coisa. São fluxos, tecnologias e usuários-alvo distintos.
 
 ---
 
@@ -246,6 +262,24 @@ Limites verificados em tempo real via `get_tenant_usage()`. Alertas: warning (80
 - `POST /api/billing/subscribe`: retorna assinatura existente se já ativa
 - `POST /api/onboarding/setup`: retorna tenant existente se slug já registrado
 - Webhooks Asaas: chave de idempotência `event:asaas_id` — duplicatas ignoradas
+
+---
+
+## DECISÕES COMERCIAIS ATIVAS
+
+> Decisões de produto e go-to-market vigentes. Alterar aqui ao mudar estratégia.
+
+| Decisão | Status | Detalhe |
+|---|---|---|
+| Nome comercial do plano 3 | **Premium** | `plan.name = 'performance'` no banco; exibido como "Premium" ao cliente |
+| Plano Scale (4º plano) | **Oculto do grid público** | CTA "Enterprise" no grid leva ao contato comercial; não há checkout automático |
+| WhatsApp automação | **Add-on pago** (R$39/mês) | Não incluído em nenhum plano — sempre contratado separadamente |
+| Usuário extra | **Add-on pago** (R$20/mês) | Limites por plano: Starter 2 / Pro 5 / Premium 15 |
+| IA Recovery | **Add-on pago** (R$39/mês) | Não incluído em plano; contratado separadamente |
+| Financeiro | **Módulo único com sub-nav** | Vendas e Comissões acessados via FinancialSubNav — não há itens separados na sidebar |
+| Add-ons no Billing | **Sub-nav do Billing** | `/billing/addons` acessado via BillingSubNav — não há item separado na sidebar |
+| Vitrine pública SEO | **Inclusa em todos os planos** | Gerada em `/:slug`; sem custo extra; WhatsApp da Loja via Contato Público |
+| Sidebar por feature flag | **Ativo** | Nunca usar `plan_name` hardcoded — sempre via `has_*` flags retornadas por `get_tenant_usage()` |
 
 ---
 

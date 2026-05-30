@@ -17,7 +17,8 @@
 | 2026-05-22 | `middleware.ts` no Next.js | Removido para corrigir loop de SSR (ver FC) | `frontend/lib/proxy.ts` |
 | 2026-05-22 | Migração para FlutterFlow | Descartada antes de iniciar | Next.js continua como stack oficial (ver D12) |
 | 2026-05-28 | Plano "Start" | Renomeado via migration 019 | `starter` (DB) / "Starter" (display) |
-| 2026-05-28 | Plano "Performance" como nome do plano 3 | Renomeado de volta via migration 024 (revert do 022) | `performance` (DB name) / "Premium" (label sidebar gate) |
+| 2026-05-28 | Plano "Performance" como display_name comercial | migration 024 reverteu renomeação; nome comercial oficial agora é "Premium" | `performance` (DB `plan.name`) / "Premium" (display comercial e label sidebar) |
+| 2026-05-30 | "Enterprise" como nome de plano | Nunca foi plan.name no banco; era apenas label de CTA no grid de planos | CTA "Enterprise" = grade pública; plan.name real = `scale` (oculto) |
 | 2026-05-29 | super_admin com tenant_id preenchido | migration 025 tornou nullable para super_admin | `super_admin` tem `tenant_id = NULL` |
 | 2026-05-30 | devecar como tenant operacional de referência | Evolution desconectado 28/05 (device_removed); não é loja real | Histórico apenas; novo tenant de ref.: `sandbox-revendaclick` (a criar) |
 | 2026-05-30 | Central de Atendimento como item de menu principal | Removida da sidebar; WhatsApp é add-on separado | Aba "WhatsApp" em Configurações + `/whatsapp` via add-on |
@@ -30,15 +31,15 @@
 
 ### Planos
 
-| DB name | Display name (UI) | Gate sidebar | Nota |
+| DB name | Nome comercial (display) | Gate sidebar | Nota |
 |---|---|---|---|
 | `starter` | Starter | — (base) | Funcionalidades básicas |
-| `pro` | Pro | — | Gate `has_crm` libera seção Pro na sidebar |
-| `performance` | Performance (billing) / "Premium" (sidebar label) | `has_api_access` | Nome DB = `performance`; sidebar chama de "Premium" |
-| `scale` | Scale | — | Oculto do grid público |
+| `pro` | Pro | `has_crm` | Seção Pro na sidebar |
+| `performance` | **Premium** | `has_api_access` | `plan.name = 'performance'`; nome comercial = "Premium" |
+| `scale` | Scale | `has_api_access` | Oculto do grid; CTA "Enterprise" é label de grade, não plan.name |
 
-> **ATENÇÃO:** O banco usa `performance` como `plan.name`. O label de UX da seção sidebar é "Premium".
-> Nunca confundir: `plan_name === 'performance'` (banco) vs `has_api_access` (gate de feature).
+> **CRÍTICO:** `plan.name` no banco é sempre `performance`. Nome comercial ao cliente é "Premium".
+> "Enterprise" nunca foi e nunca deve ser usado como `plan.name` — é apenas texto de CTA no grid público para o plano `scale`.
 
 ### Feature Flags (nomes exatos)
 
@@ -60,15 +61,24 @@
 
 ### Módulos e Labels (corretos)
 
-| Label correto | Label obsoleto | Rota |
-|---|---|---|
-| Clientes | Compradores | `/customers` |
-| Interessados | Leads (como label de nav) | `/leads` |
-| Atendimento | CRM (como label de nav) | `/crm` |
-| Financeiro | — | `/financial` |
-| Central de Atendimento | WhatsApp (menu principal) | `/whatsapp` |
-| Automações | — | `/automations` |
-| Campanhas | — | `/campaigns` |
+| Label correto | Label obsoleto | Rota | Nota |
+|---|---|---|---|
+| Clientes | Compradores | `/customers` | — |
+| Interessados | Leads (como label de nav) | `/leads` | — |
+| Atendimento | CRM (como label de nav) | `/crm` | — |
+| Financeiro | — | `/financial` | Sub-nav: Resumo / Vendas (`/sales`) / Comissões (`/financial/commissions`) |
+| Assinatura | Billing (como label de nav) | `/billing` | Sub-nav: Assinatura / Add-ons / Cobranças / Planos |
+| Central de Atendimento | WhatsApp (menu principal) | `/whatsapp` | Add-on; Evolution API; distinto do WhatsApp da Loja |
+| WhatsApp da Loja | — | Configurações → Contato Público | Número público; link `wa.me`; **não usa Evolution** |
+| Automações | — | `/automations` | — |
+| Campanhas | — | `/campaigns` | — |
+
+### WhatsApp — dois conceitos distintos
+
+| Conceito | Acesso | Tecnologia | Quem vê |
+|---|---|---|---|
+| **WhatsApp da Loja** | Configurações → Contato Público | Link `wa.me/{telefone}` (sem Evolution) | Qualquer visitante da vitrine `/:slug` |
+| **Central de Atendimento** | `/whatsapp` (add-on ativo) | Evolution API v2.3.7 | Operadores internos; requer `has_central_atendimento` |
 
 ### Sidebar — Estrutura Definitiva
 
@@ -110,6 +120,10 @@ Financeiro sub-nav: Resumo (`/financial`) | Vendas (`/sales`) | Comissões (`/fi
 3. **Variáveis com `$` literal no .env VPS devem usar `$$`** (ver D18)
 4. **RLS obrigatório** em todas as tabelas de negócio
 5. **tenant_id em toda tabela de negócio** (nunca cross-tenant)
-6. **Sidebar gate Pro = `has_crm`**, Premium = `has_api_access`** (ver D28)
+6. **Sidebar gate Pro = `has_crm`; Premium = `has_api_access`** (ver D28)
 7. **Add-ons são cobrados separadamente** da assinatura principal
 8. **WhatsApp automação é add-on**, não funcionalidade de plano
+9. **`plan.name = 'performance'` no banco; nome comercial ao cliente = "Premium"** — nunca escrever `premium` como plan.name
+10. **WhatsApp da Loja** (Contato Público) ≠ **Central de Atendimento** (Evolution/add-on) — são conceitos distintos
+11. **Financeiro incorpora Vendas e Comissões** via sub-nav — não são módulos separados na sidebar
+12. **Assinatura incorpora Add-ons** via sub-nav — `/billing/addons` é acessado pelo BillingSubNav
