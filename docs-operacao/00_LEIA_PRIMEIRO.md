@@ -22,11 +22,17 @@
 | 9 | `docs-operacao/22_HISTORICO_ALTERACOES.md` | Topo: ESTADO ATUAL por feature; abaixo: histórico cronológico |
 | 10 | `docs-operacao/23_PROXIMO_PASSO.md` | O que fazer agora + protocolo de governança |
 | 11 | `docs-operacao/features/` | Snapshots de feature flags e módulos |
-| 12 | `docs-operacao/prompts/` | Prompts de início e encerramento de sessão |
+| 12 | `/prompts/` | **Prompts operacionais oficiais** (pasta raiz do projeto) |
 
-**Prompts operacionais:**
-- Início de sessão: `docs-operacao/prompts/00_PROMPT_INICIO.md`
-- Encerramento de sessão: `docs-operacao/prompts/01_PROMPT_ENCERRAMENTO.md`
+**Prompts operacionais oficiais** (pasta `/prompts/` na raiz do repositório):
+
+| Arquivo | Quando usar |
+|---|---|
+| `prompts/00_PROMPT_INICIO_SESSAO.md` | **Obrigatório** no início de toda sessão |
+| `prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md` | **Obrigatório** ao encerrar toda sessão |
+| `prompts/02_PROMPT_AUDITORIA.md` | Ao revisar módulo ou suspeitar de divergência |
+| `prompts/03_PROMPT_BUG_CRITICO.md` | Imediatamente ao identificar bug/incidente |
+| `prompts/04_PROMPT_DEPLOY.md` | Antes e após qualquer deploy em produção |
 
 **Atenção:** se encontrar conflito de informação entre arquivos → PARAR e reportar antes de alterar qualquer coisa.
 

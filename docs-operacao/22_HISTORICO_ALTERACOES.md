@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 30/05/2026 (sessão 23 fim)
+> Última atualização: 30/05/2026 (sessão 24 — governança /prompts)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -23,8 +23,8 @@
 | **Add-ons** | ✓ Produção | user_extra / whatsapp_automation / ia_recovery; acessível via sub-nav Billing |
 | **Configurações** | ✓ Produção + WhatsApp tab | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp |
 | **Central de Atendimento** | ✓ Produção (`has_central_atendimento`) | Acessível via Configurações → WhatsApp; devecar desconectado |
-| **Automações** | ⚠ Nav existe, página é 404 | Placeholder `/automations` pendente (sessão 24) |
-| **Campanhas** | ⚠ Nav existe, página é 404 | Placeholder `/campaigns` pendente (sessão 24) |
+| **Automações** | ✓ Placeholder produção (`has_api_access`) | Gated; CTA WhatsApp add-on condicional |
+| **Campanhas** | ✓ Placeholder produção (`has_api_access`) | Gated; "Em breve" com links Analytics/CRM |
 | **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
 | **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
@@ -33,6 +33,92 @@
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN pendente no .env VPS |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection pendente (Supabase Dashboard) |
+
+---
+
+## 2026-05-30 (sessão 24) — Governança operacional: /prompts raiz + testes unitários billing + placeholders automations/campaigns + auditoria estrutural
+
+**Commits:** (a confirmar após push)
+
+**Arquivos alterados:**
+- `prompts/00_PROMPT_INICIO_SESSAO.md` (novo)
+- `prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md` (novo)
+- `prompts/02_PROMPT_AUDITORIA.md` (novo)
+- `prompts/03_PROMPT_BUG_CRITICO.md` (novo)
+- `prompts/04_PROMPT_DEPLOY.md` (novo)
+- `backend/internal/billing/billing_test.go` (modificado — +4 testes unitários)
+- `frontend/app/(dashboard)/automations/page.tsx` (novo)
+- `frontend/app/(dashboard)/campaigns/page.tsx` (novo)
+- `frontend/playwright.config.ts` (novo)
+- `frontend/e2e/helpers/auth.ts` (novo)
+- `frontend/e2e/01_onboarding.spec.ts` (novo)
+- `frontend/e2e/02_billing_subscribe.spec.ts` (novo)
+- `frontend/e2e/03_upgrade_downgrade.spec.ts` (novo)
+- `frontend/e2e/04_whatsapp_addon.spec.ts` (novo)
+- `frontend/e2e/05_ia_recovery.spec.ts` (novo)
+- `frontend/package.json` (modificado — @playwright/test)
+- `docs-operacao/PRODUCT_ARCHITECTURE.md` (novo)
+- `docs-operacao/DEPENDENCIES.md` (novo)
+- `docs-operacao/ENVIRONMENTS.md` (novo)
+- `docs-operacao/MEMORY.md` (novo — in-repo, OBSOLETO + nomenclatura)
+- `docs-operacao/features/FEATURE_FLAGS_SNAPSHOT.md` (novo)
+- `docs-operacao/features/SIDEBAR_SNAPSHOT.md` (novo)
+- `docs-operacao/tests/E2E_TEST_PLAN.md` (novo)
+- `docs-operacao/architecture/STACK_OVERVIEW.md` (novo)
+- `docs-operacao/00_LEIA_PRIMEIRO.md` (modificado — tabela LEITURA OBRIGATÓRIA + referência /prompts)
+- `docs-operacao/01_ARQUITETURA_REAL.md` (modificado — Coolify→Vercel, middleware.ts→proxy.ts)
+- `docs-operacao/15_BILLING_ASAAS.md` (modificado — fix plan names)
+- `docs-operacao/17_FLUXOS_NEGOCIO.md` (modificado — proxy.ts, novas rotas)
+- `docs-operacao/REFERENCE.md` (modificado — devecar→sandbox-revendaclick)
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx` (modificado — "Compradores"→"Clientes")
+
+### Objetivo
+
+Sessão de governança: solidificar documentação, criar prompts operacionais oficiais, corrigir nomenclatura e estruturar testes E2E.
+
+### Alterações realizadas
+
+**Testes unitários billing:**
+- 4 novos testes: `TestWebhookAsaasID`, `TestAsaasUserErr`, `TestCapitalize`, `TestWebhookEventKey`
+- Table-driven, sem dependência de banco
+
+**Placeholders /automations e /campaigns:**
+- Gateados por `has_api_access` (plano Performance+)
+- /automations: bloco condicional WhatsApp add-on (`has_central_atendimento` → link /whatsapp; else → CTA /billing/addons)
+- /campaigns: "Em breve" com links atalho
+
+**Pasta /prompts (raiz do repositório):**
+- 5 prompts operacionais criados e adaptados para RevendaClick
+- Procedimento oficial de abertura/encerramento de sessão
+
+**Auditoria estrutural de documentação:**
+- Coolify → Vercel em todos os docs
+- middleware.ts → proxy.ts
+- enterprise/premium → scale/performance nos docs e código
+- devecar removido como tenant operacional
+- MEMORY.md criado com seção OBSOLETO (8 itens)
+
+**Testes E2E (Playwright):**
+- Estrutura criada em `frontend/e2e/`
+- 5 specs cobrindo 6 fluxos principais
+- Playwright instalado no frontend
+
+### Deploy
+
+Frontend: Vercel (automático via push)
+Backend: CI/CD GitHub Actions (sem alteração de código Go exceto testes)
+Banco: sem migration nesta sessão
+
+### Testes
+
+TypeScript: ✓ sem novos erros introduzidos
+Go build: validado por estrutura (CI/CD)
+Go unit tests billing: +4 funções (executar em CI)
+E2E: estrutura criada, não executados (requer .env.e2e)
+
+### Rollback
+
+NÃO necessário — apenas documentação, testes e placeholders de UI.
 
 ---
 

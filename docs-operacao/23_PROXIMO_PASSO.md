@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 30/05/2026 (sessão 24 — auditoria estrutural)
+> Atualizado em: 30/05/2026 (sessão 24 — governança /prompts)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -48,6 +48,7 @@
 | /automations | ✓ placeholder gated has_api_access; CTA WhatsApp add-on condicional |
 | /campaigns | ✓ placeholder gated has_api_access |
 | Testes unitários billing | ✓ +4 funções: webhookAsaasID, asaasUserErr, capitalize, event key |
+| Prompts operacionais | ✓ /prompts/ (raiz) — 5 arquivos; procedimento oficial de sessão |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
@@ -184,7 +185,21 @@ Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasC
 
 ---
 
-## GOVERNANÇA — Protocolo Obrigatório de Fim de Sessão
+## GOVERNANÇA — Protocolo Obrigatório de Sessão
+
+### Prompts operacionais oficiais
+
+Localização: **pasta `/prompts/` na raiz do repositório**
+
+| Arquivo | Quando usar |
+|---|---|
+| `prompts/00_PROMPT_INICIO_SESSAO.md` | **Obrigatório** no início de toda sessão |
+| `prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md` | **Obrigatório** ao encerrar toda sessão |
+| `prompts/02_PROMPT_AUDITORIA.md` | Ao revisar módulo ou suspeitar de divergência |
+| `prompts/03_PROMPT_BUG_CRITICO.md` | Imediatamente ao identificar bug/incidente |
+| `prompts/04_PROMPT_DEPLOY.md` | Antes e após qualquer deploy em produção |
+
+### Protocolo de Fim de Sessão
 
 Toda sessão encerrada **deve** executar os seguintes passos antes do último commit:
 
@@ -221,15 +236,27 @@ Se algo deixou de ser válido (plano renomeado, serviço trocado, rota removida)
 
 ## Contexto para a Próxima Sessão
 
+**Copiar e executar ao iniciar:**
+
+```
+prompts/00_PROMPT_INICIO_SESSAO.md
+```
+
+**Copiar e executar ao encerrar:**
+
+```
+prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
+```
+
 Ao iniciar uma nova sessão:
 
-1. Ler `00_LEIA_PRIMEIRO.md` — visão geral do sistema
+1. Executar `prompts/00_PROMPT_INICIO_SESSAO.md` (leitura + diagnóstico completo)
 2. Ler `20_PENDENCIAS.md` — o que está pendente
 3. Ler este arquivo (`23_PROXIMO_PASSO.md`) — o que fazer agora
 4. Se for alterar banco: ver `05_SUPABASE.md` primeiro **e regenerar `database.types.ts` após migration**
 5. Se for alterar infra: ver `10_INFRA_VPS.md` e `11_DOCKER.md`
 6. Se for alterar backend: ver `04_BACKEND.md` e `08_API_ROTAS_REAIS.md`
-7. Se for fazer deploy: ver `13_DEPLOY.md` e `12_CICD.md`
+7. Se for fazer deploy: executar `prompts/04_PROMPT_DEPLOY.md`
 
 **ATENÇÃO .env VPS:** Variáveis com `$` literal devem usar `$$`. Ver D18 em `21_DECISOES_TECNICAS.md`.
 
