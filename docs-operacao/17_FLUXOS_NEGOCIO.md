@@ -33,13 +33,17 @@
 | Financeiro | `/financial` | `/api/financial/entries`, `/api/financial/cash-flow` |
 | Comissões | `/financial/commissions` | `/api/commissions` |
 | Vendas | `/sales` | `/api/sales` |
-| Analytics | `/analytics` | `/api/analytics/summary` (plano Pro+) |
+| Analytics | `/analytics` | `/api/analytics/summary` (gate `has_analytics` — Pro+) |
+| Automações | `/automations` | — (placeholder — gate `has_api_access`) |
+| Campanhas | `/campaigns` | — (placeholder — gate `has_api_access`) |
 | Assinatura | `/billing` | `/api/billing/subscription` |
+| Add-ons | `/billing/addons` | `/api/billing/addon` |
 | Faturas | `/billing/history` | `/api/billing/invoices` |
 | Planos | `/billing/plans` | `/api/plans` |
+| Admin | `/admin` | `/api/admin/*` (super_admin apenas) |
 | Configurações | `/settings` | `/api/tenants/me` |
-| Equipe | `/vendors` | `/api/users` |
-| WhatsApp | `/whatsapp` | `/api/evolution/*` |
+| Vendedores | `/vendors` | `/api/users` (via Configurações → aba Usuários) |
+| Central de Atendimento | `/whatsapp` | `/api/evolution/*` (add-on `whatsapp_automation`) |
 
 ---
 
@@ -75,7 +79,7 @@
   → /dashboard
 
 Dashboard layout verifica:
-  → x-user-id no header (injetado pelo middleware.ts)
+  → x-user-id no header (injetado pelo proxy.ts)
   → getTenantForUser() → carrega tenant
   → GET /api/usage + GET /api/billing/subscription (paralelo)
   → Se sub.is_blocked && não está em /billing → redirect /billing?reason=blocked

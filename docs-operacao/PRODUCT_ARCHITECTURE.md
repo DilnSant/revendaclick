@@ -71,9 +71,11 @@ SaaS (RevendaClick)
 | name | display_name | Gate principal |
 |---|---|---|
 | `starter` | Starter | Funcionalidades básicas |
-| `pro` | Pro | `has_crm` |
-| `premium` | Premium | `has_api_access` |
-| `scale` | Scale | Igual Premium + limites maiores; oculto do grid público |
+| `pro` | Pro | Gate `has_crm` libera seção Pro na sidebar |
+| `performance` | Performance (billing) / "Premium" (label sidebar) | Gate `has_api_access` libera seção Premium na sidebar |
+| `scale` | Scale | Igual Performance + limites maiores; oculto do grid público |
+
+> **ATENÇÃO:** O banco usa `performance` como `plan.name`. O label de UX da seção sidebar é "Premium". Nunca usar `plan_name === 'premium'` — não existe no banco.
 
 ### Feature Flags
 

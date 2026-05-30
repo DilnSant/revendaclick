@@ -5,6 +5,33 @@
 
 ---
 
+## ━━━ LEITURA OBRIGATÓRIA — Para agentes IA e desenvolvedores ━━━
+
+> Ler nesta ordem antes de qualquer alteração. Não pule etapas.
+
+| # | Arquivo | O que contém |
+|---|---|---|
+| 1 | `/CLAUDE.md` | Regras obrigatórias, stack, arquitetura, o que é proibido |
+| 2 | `docs-operacao/REFERENCE.md` | Valores fixos: IPs, IDs, URLs, feature flags, planos, add-ons |
+| 3 | `docs-operacao/MEMORY.md` | Nomenclatura atual + seção OBSOLETO (itens que não valem mais) |
+| 4 | `docs-operacao/PRODUCT_ARCHITECTURE.md` | Módulos, planos, feature flags, regras de negócio |
+| 5 | `docs-operacao/DEPENDENCIES.md` | Dependências por módulo + criticidade + impacto da falha |
+| 6 | `docs-operacao/ENVIRONMENTS.md` | Produção / Homologação / Desenvolvimento — URLs e variáveis |
+| 7 | `docs-operacao/20_PENDENCIAS.md` | O que está pendente |
+| 8 | `docs-operacao/21_DECISOES_TECNICAS.md` | Decisões técnicas tomadas e por quê |
+| 9 | `docs-operacao/22_HISTORICO_ALTERACOES.md` | Topo: ESTADO ATUAL por feature; abaixo: histórico cronológico |
+| 10 | `docs-operacao/23_PROXIMO_PASSO.md` | O que fazer agora + protocolo de governança |
+| 11 | `docs-operacao/features/` | Snapshots de feature flags e módulos |
+| 12 | `docs-operacao/prompts/` | Prompts de início e encerramento de sessão |
+
+**Prompts operacionais:**
+- Início de sessão: `docs-operacao/prompts/00_PROMPT_INICIO.md`
+- Encerramento de sessão: `docs-operacao/prompts/01_PROMPT_ENCERRAMENTO.md`
+
+**Atenção:** se encontrar conflito de informação entre arquivos → PARAR e reportar antes de alterar qualquer coisa.
+
+---
+
 ## O que é o RevendaClick?
 
 É uma plataforma SaaS (software por assinatura) para **revendas de veículos**.

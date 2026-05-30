@@ -28,7 +28,7 @@ const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
     {
       section: 'Gestão',
       items: [
-        'Interessados e Compradores',
+        'Interessados e Clientes',
         'Vendedores e equipe',
         'Financeiro básico',
         'Pipeline de Vendas',
