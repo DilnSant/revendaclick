@@ -17,7 +17,7 @@
 | database.types.ts | ✓ regenerado pós-024 — 131.307 chars |
 | Planos públicos | ✓ Starter/Pro/Performance (3 cards); Scale oculto (CTA Enterprise) |
 | Add-ons | ✓ user_extra(R$20) / whatsapp_automation(R$39) / ia_recovery(R$39) — endpoints ativos |
-| Sidebar | ✓ Financeiro/Comissões/Vendedores: Starter+; CRM/Compradores: Pro+; Add-ons nav item |
+| Sidebar | ✓ Refatorada (sessão 23): Starter(Dashboard/Veículos/Interessados/Clientes/Financeiro/Assinatura/Config); Pro(+Atendimento/Analytics); Premium(+Automações/Campanhas) |
 | /billing/addons | ✓ página ao vivo — ativar/cancelar add-ons |
 | Feature flags 3-way | ✓ plan.features UNION tenant_features UNION addon.features |
 | plan_gate.go | ✓ 3 UNION ALL — plano + tenant_features + add-on features |
@@ -63,10 +63,11 @@ A instância `devecar` está desconectada desde 28/05 (`device_removed`). Para r
 
 ### 1. Verificar comportamento em produção no browser (FASE 4)
 
-- **santos-car (Starter):** sidebar com Dashboard, Veículos, Leads, Financeiro, Comissões, Vendedores + banner "Desbloqueie CRM, Kanban, Analytics"
-- **devecar (Pro):** sidebar com CRM, Compradores/Atendimento (CRM), Kanban, Analytics
-- **`/billing/addons`:** lista add-ons disponíveis (user_extra, whatsapp_automation, ia_recovery)
-- **`/billing/plans`:** 3 cards (Starter/Pro/Premium) + seção Enterprise ao fundo (sem card Scale)
+- **santos-car (Starter):** sidebar com Dashboard, Veículos, Interessados, Clientes, Financeiro, Assinatura, Configurações + upgrade prompt "Desbloqueie com Pro"
+- **devecar (Pro):** sidebar adiciona seção Pro: Atendimento, Analytics
+- **Financeiro:** sub-nav com tabs Resumo / Vendas / Comissões
+- **Assinatura:** sub-nav com tabs Assinatura / Add-ons / Cobranças / Planos
+- **Configurações → WhatsApp:** tab para Central de Atendimento
 
 ### 4. Etapas comerciais pendentes (próximas sessões)
 
