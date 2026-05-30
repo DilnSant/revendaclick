@@ -23,11 +23,11 @@ Ciclos: `MONTHLY` | `YEARLY`
 |---|---|---|
 | `starter` | Starter | Funcionalidades básicas |
 | `pro` | Pro | + CRM, Analytics (gate `has_crm`) |
-| `performance` | Performance / "Premium" (sidebar) | + API access (gate `has_api_access`) |
+| `premium` | Premium | + API access (gate `has_api_access`) |
 | `scale` | Scale | Sem limites; oculto do grid público |
 
-> Nomes exatos no banco: `starter`, `pro`, `performance`, `scale`.
-> Nunca usar `premium` ou `enterprise` como plan_name — não existem mais.
+> Nomes exatos no banco: `starter`, `pro`, `premium`, `scale`.
+> Nunca usar `performance` ou `enterprise` como plan_name — não existem mais (migration 026).
 
 Preços e limites estão na tabela `plans` no banco. Ver `05_SUPABASE.md`.
 
@@ -89,7 +89,7 @@ Header `X-Subscription-Warning` é injetado quando dentro do grace period.
 }
 ```
 
-- `plan_name`: novo plano (`starter` | `pro` | `performance` | `scale`)
+- `plan_name`: novo plano (`starter` | `pro` | `premium` | `scale`)
 - `billing_cycle`: opcional — usa o ciclo atual se omitido
 - Requer `status=active` e `asaas_subscription_id` preenchido
 - Chama Asaas `PUT /subscriptions/{id}` — novo valor/ciclo efetivo no próximo ciclo

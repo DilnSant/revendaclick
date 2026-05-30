@@ -47,7 +47,7 @@ const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
       ],
     },
   ],
-  performance: [
+  premium: [
     {
       section: 'Tudo do Pro, mais:',
       items: [
@@ -62,8 +62,8 @@ const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
 }
 
 const PLAN_BADGE: Record<string, { label: string; className: string } | undefined> = {
-  pro:         { label: 'Mais popular',          className: 'bg-primary text-white' },
-  performance: { label: 'Melhor custo-benefício', className: 'bg-amber-500 text-white' },
+  pro:     { label: 'Mais popular',          className: 'bg-primary text-white' },
+  premium: { label: 'Melhor custo-benefício', className: 'bg-amber-500 text-white' },
 }
 
 export default function PlanCard({ plan, cycle, currentPlanName, subscription }: Props) {
@@ -87,8 +87,8 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
 
   const badge    = PLAN_BADGE[plan.name]
   const sections = PLAN_HIGHLIGHTS[plan.name] ?? []
-  const isPro         = plan.name === 'pro'
-  const isPerformance = plan.name === 'performance'
+  const isPro     = plan.name === 'pro'
+  const isPremium = plan.name === 'premium'
 
   async function handleDevActivate() {
     setDevLoading(true)
@@ -164,7 +164,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
       className={`relative flex flex-col rounded-2xl border transition-shadow ${
         isPro
           ? 'border-primary shadow-lg shadow-primary/10 ring-2 ring-primary bg-white'
-          : isPerformance
+          : isPremium
           ? 'border-amber-200 shadow-md shadow-amber-100/50 bg-white'
           : 'border-gray-200 bg-white shadow-sm hover:shadow-md'
       }`}
@@ -313,7 +313,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
               ? 'cursor-default border border-gray-200 bg-gray-50 text-gray-400'
               : isPro
               ? 'bg-primary text-white shadow-sm hover:bg-primary/90 disabled:opacity-60'
-              : isPerformance
+              : isPremium
               ? 'bg-amber-500 text-white shadow-sm hover:bg-amber-600 disabled:opacity-60'
               : 'bg-gray-900 text-white hover:bg-gray-700 disabled:opacity-60'
           }`}
