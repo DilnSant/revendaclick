@@ -1,37 +1,38 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 29/05/2026 (sessão 23 — continuação)
+> Atualizado em: 29/05/2026 (sessão 23 — fim)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
 
-## Estado Atual do Projeto (sessão 23 continuação — 29/05/2026)
+## Estado Atual do Projeto (sessão 23 fim — 29/05/2026)
 
 | Componente | Status |
 |---|---|
 | Backend Go | ✓ CI/CD automático — VPS atualizado |
-| Frontend Next.js | ✓ Vercel READY — deploy `bdefe75` ao vivo |
+| Frontend Next.js | ✓ Vercel — auto-deploy ativado via push para main |
 | Migration 022 | ✓ aplicada — performance→premium, features por plano, add-ons features |
 | Migration 023 | ✓ aplicada — fix get_tenant_usage: branch tenant_features restaurado |
 | Migration 024 | ✓ aplicada — RLS plan_addons + rename premium→performance |
+| Migration 025 | ✓ aplicada — users.tenant_id nullable (super_admin sem tenant) |
 | database.types.ts | ✓ regenerado pós-024 — 131.307 chars |
 | Planos públicos | ✓ Starter/Pro/Performance (3 cards); Scale oculto (CTA Enterprise) |
 | Add-ons | ✓ user_extra(R$20) / whatsapp_automation(R$39) / ia_recovery(R$39) — endpoints ativos |
-| Sidebar | ✓ Refatorada (sessão 23): Starter(Dashboard/Veículos/Interessados/Clientes/Financeiro/Assinatura/Config); Pro(+Atendimento/Analytics); Premium(+Automações/Campanhas) |
-| /billing/addons | ✓ página ao vivo — ativar/cancelar add-ons |
+| Sidebar | ✓ **REFATORADA** — Starter/Pro/Premium por feature flag; sub-navs Financeiro+Billing |
 | Feature flags 3-way | ✓ plan.features UNION tenant_features UNION addon.features |
 | plan_gate.go | ✓ 3 UNION ALL — plano + tenant_features + add-on features |
 | Admin panel | ✓ /admin — super_admin protegido, ações por tenant |
+| AdminSimulateEvent | ✓ POST /api/admin/billing/simulate-event — super_admin injeta eventos fake sem Asaas |
+| DevActivate | ✓ POST /api/billing/dev/activate — ativo apenas fora de produção |
 | OnboardingChecklist | ✓ widget no dashboard (4 obrigatórios + 1 WhatsApp opcional) |
+| super_admin | ✓ dilneysantos.developer@gmail.com — tenant_id=NULL, role=super_admin |
 | devecar billing | ✓ ativado diretamente no Supabase (Pro, period_end 2026-06-27) |
-| Central de Atendimento santos-car | ✓ instância Evolution `open` (554888482877); feature central_atendimento concedida; RPC corrigido (migration 023) |
+| Central de Atendimento santos-car | ✓ instância Evolution `open` (554888482877); feature central_atendimento concedida |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Supabase security advisors | ✓ limpos |
 | FalhasCorrigidas | ✓ 29 FCs documentadas (FC001–FC029) |
-| Reestruturação estratégica | ✓ 10 etapas verificadas e implementadas (sessão 23) |
-| Auditoria riscos R4/R5/R9/R10 | ✓ R4 corrigido (plan_addons RLS); R5/R9/R10 verificados OK |
 | Evolution webhook 401 | ✓ corrigido — `RemoteAddr` em vez de `ClientIP()` (X-Forwarded-For bypass) |
 | rc_backup OOM (98%) | ✓ corrigido — 128m → 256m; variáveis shell `$$` escapadas |
 | CI/CD `git pull` vs local changes | ✓ corrigido — `git fetch + git reset --hard origin/main` |
@@ -45,10 +46,34 @@ Sempre regenerar `frontend/lib/database.types.ts` antes de qualquer commit que r
 
 ```bash
 # Via MCP ou CLI Supabase:
-supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
+supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/database.types.ts
 ```
 
 **Origem:** FC029 — 8 deploys consecutivos falharam por este motivo.
+
+---
+
+## Nova Estrutura da Sidebar (sessão 23 fim — DEFINITIVA)
+
+```
+Dashboard
+Veículos
+Interessados
+Clientes              ← todos os planos (antes era Pro+)
+
+─── Pro ───────────── gated has_crm
+Atendimento (CRM)
+Analytics
+
+─── Premium ────────── gated has_api_access
+Automações
+Campanhas
+
+Assinatura            ← sub-nav: Assinatura / Add-ons / Cobranças / Planos
+Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / Plano / WhatsApp
+```
+
+**Financeiro** tem sub-nav interno: Resumo / Vendas / Comissões
 
 ---
 
@@ -56,18 +81,44 @@ supabase gen types typescript --project-id <id> > frontend/lib/database.types.ts
 
 ### 0. Reconectar instância devecar no Evolution (URGENTE — usuário)
 
-A instância `devecar` está desconectada desde 28/05 (`device_removed`). Para reconectar:
-1. Fazer login como usuário `devecar` no app
-2. Ir para `/whatsapp` (Central de Atendimento)
+Instância `devecar` desconectada desde 28/05 (`device_removed`). Para reconectar:
+1. Login como usuário `devecar` no app
+2. Ir para `/whatsapp` (ou Configurações → WhatsApp)
 3. Clicar em "Conectar" → escanear QR com WhatsApp do número 554898232010
 
-### 1. Verificar comportamento em produção no browser (FASE 4)
+### 1. Verificar sidebar no browser em produção (ALTA)
 
-- **santos-car (Starter):** sidebar com Dashboard, Veículos, Interessados, Clientes, Financeiro, Assinatura, Configurações + upgrade prompt "Desbloqueie com Pro"
-- **devecar (Pro):** sidebar adiciona seção Pro: Atendimento, Analytics
-- **Financeiro:** sub-nav com tabs Resumo / Vendas / Comissões
-- **Assinatura:** sub-nav com tabs Assinatura / Add-ons / Cobranças / Planos
-- **Configurações → WhatsApp:** tab para Central de Atendimento
+Testar os 3 perfis:
+
+| Perfil | Esperado |
+|---|---|
+| **santos-car (Starter)** | Dashboard/Veículos/Interessados/Clientes/Financeiro + upgrade prompt "Desbloqueie com Pro" + Assinatura/Configurações |
+| **devecar (Pro)** | + seção Pro: Atendimento, Analytics |
+| **qualquer (Premium/has_api_access)** | + seção Premium: Automações, Campanhas |
+
+Verificar:
+- Financeiro → sub-nav mostrando Resumo/Vendas/Comissões
+- Assinatura → sub-nav mostrando Assinatura/Add-ons/Cobranças/Planos
+- Configurações → aba WhatsApp visível (5ª aba)
+
+### 2. Criar páginas placeholder para Premium (Média)
+
+`/automations` e `/campaigns` não têm page.tsx ainda. Criar placeholder:
+```tsx
+// app/(dashboard)/automations/page.tsx
+export default function AutomationsPage() {
+  return <div className="...">Em breve — Automações</div>
+}
+```
+Sem essas páginas, o link no nav vai para 404.
+
+### 3. Vendedores — acessibilidade (Média)
+
+`/vendors` foi removido do sidebar mas não tem acesso visível em Configurações.
+Opção A: Adicionar link "Vendedores →" dentro da aba Usuários (já existe em SettingsTabs — `<Link href="/vendors">`)
+Opção B: Adicionar sub-item em Configurações → Usuários → Vendedores
+
+**Status atual:** SettingsTabs UsersTab já tem `<Link href="/vendors" className="text-xs font-medium text-red-600 hover:text-red-700">Vendedores →</Link>` — OK, apenas confirmar no browser.
 
 ### 4. Etapas comerciais pendentes (próximas sessões)
 
@@ -133,3 +184,5 @@ Ao iniciar uma nova sessão:
 **ATENÇÃO Tailwind primary:** Agora usa `rgb(var(--primary) / α)`. Store layout injeta canais RGB do tenant. Ver D20 em `21_DECISOES_TECNICAS.md`.
 
 **ATENÇÃO database.types.ts:** Regenerar após cada migration. Ver FC029.
+
+**ATENÇÃO sidebar:** Nova estrutura definitiva — ver D28 em `21_DECISOES_TECNICAS.md`. Nunca usar `plan_name` hardcoded.

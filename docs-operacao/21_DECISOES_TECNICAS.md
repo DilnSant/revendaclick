@@ -292,14 +292,44 @@ const isActiveAndCurrent = isCurrent && subscription?.status === 'active'
 
 ## D26 — Sidebar gate Pro usa has_crm; Starter inclui financial+vendors (28/05/2026 — sessão 22)
 
-**Decisão:** `DashboardShell.tsx` reorganizou os grupos do nav:
-- `NAV_BASE` (Starter+): inclui Financeiro, Comissões, Vendedores
-- `NAV_PRO` (Pro+): apenas CRM (Compradores, Atendimento) — gate = `features.has_crm`
-- Gate anterior usava `features.has_kanban` — incorreto pois Kanban é Pro mas o grupo era "Gestão" misturando financeiro
+**ATUALIZADO pela D28 (29/05/2026 — sessão 23 cont. 2)** — ver D28 para a estrutura definitiva.
 
-**Por quê:** Plano Starter deve ter gestão financeira e de equipe (diferencial competitivo). O que distingue Pro é o CRM (funil de leads, Kanban, Analytics). Usar `has_kanban` como gate estava bloqueando Vendedores de Starter desnecessariamente.
+**Decisão original (sessão 22):** `NAV_BASE` incluía Financeiro, Comissões, Vendedores. `NAV_PRO` (gate `has_crm`) incluía Compradores, Atendimento.
 
-**Regra permanente:** Nunca usar `plan_name === 'premium'` ou similar. Sempre feature flags (`has_crm`, `has_analytics`, `has_whatsapp_qr`, etc).
+**Regra permanente (inalterada):** Nunca usar `plan_name === 'premium'` ou similar. Sempre feature flags.
+
+---
+
+## D28 — Sidebar definitiva: Starter/Pro/Premium por feature flag (29/05/2026 — sessão 23 cont. 2)
+
+**Decisão:** `DashboardShell.tsx` implementa 3 grupos de nav baseados em feature flags (não em `plan_name`):
+
+- **NAV_BASE** (Starter+, sempre): Dashboard, Veículos, Interessados, **Clientes**, Financeiro
+- **NAV_PRO** (`has_crm`): Atendimento, Analytics — header "Pro"
+- **NAV_PREMIUM** (`has_api_access`): Automações, Campanhas — header "Premium"
+- **Rodapé sempre-visível** (sem header): Assinatura, Configurações
+
+**Itens retirados da sidebar:**
+- Vendas → acessível via Financeiro → sub-nav tab "Vendas"
+- Comissões → acessível via Financeiro → sub-nav tab "Comissões"
+- Vendedores → acessível via Configurações → aba Usuários (ou `/vendors` direto)
+- Add-ons → acessível via Assinatura → sub-nav tab "Add-ons"
+- Central de Atendimento → acessível via Configurações → aba WhatsApp
+
+**Renomeações:**
+- "Compradores" → "Clientes" (label mais natural; `href` permanece `/customers`)
+- "Central de Atendimento" → "WhatsApp" (breadcrumb/ROUTE_LABELS)
+
+**Sub-navegação por seção:**
+- `FinancialSubNav`: tabs Resumo / Vendas / Comissões — adicionado a `financial/page`, `sales/page`, `financial/commissions/page`
+- `BillingSubNav`: tabs Assinatura / Add-ons / Cobranças / Planos — adicionado a todos os sub-pages de billing
+
+**Regra permanente:** Nunca usar `plan_name === X` no frontend. Sempre feature flags.
+
+**Gate Pro:** `has_crm` (inalterado — coerente com D26)
+**Gate Premium:** `has_api_access` — proxy de plano Performance/Scale
+
+**Ver:** `frontend/components/layout/DashboardShell.tsx`, `components/financial/FinancialSubNav.tsx`, `components/billing/BillingSubNav.tsx`
 
 ---
 

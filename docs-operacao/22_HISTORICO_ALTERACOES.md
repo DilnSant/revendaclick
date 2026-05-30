@@ -1,5 +1,85 @@
 # 22 — HISTÓRICO DE ALTERAÇÕES
 
+## 2026-05-29 (sessão 23 — continuação 2) — Sidebar Refactor + Sub-navs Financeiro/Billing + WhatsApp em Configurações
+
+**Commits:** `b22fb2a`, `51def30`
+**Arquivos alterados:** `DashboardShell.tsx`, `FinancialSubNav.tsx` (new), `BillingSubNav.tsx` (new), `financial/page.tsx`, `sales/page.tsx`, `financial/commissions/page.tsx`, `billing/page.tsx`, `billing/addons/page.tsx`, `billing/history/page.tsx`, `billing/plans/page.tsx`, `settings/_components/SettingsTabs.tsx`, `docs-operacao/23_PROXIMO_PASSO.md`
+
+### Objetivo
+
+Refatoração definitiva da UX da sidebar. Problemas anteriores:
+- Vendas, Comissões e Vendedores estavam soltos na nav base — ruído visual
+- Compradores era label inconsistente com "Clientes" (linguagem do domínio)
+- Add-ons e Central de Atendimento poluíam a sidebar principal
+- Usuários Starter não tinham acesso a Clientes
+
+### Alterações DashboardShell.tsx
+
+**NAV_BASE** (Starter+ — todos os planos ativos):
+- Removidos: Vendas, Comissões, Vendedores
+- Adicionado: Clientes (`/customers`) — era exclusivo de Pro, agora disponível para todos
+- Mantidos: Dashboard, Veículos, Interessados, Financeiro
+
+**NAV_PRO** (gated `has_crm`):
+- Removido: Compradores (movido para base como Clientes)
+- Adicionado: Analytics (estava em seção separada "Sistema")
+- Mantido: Atendimento (`/crm`)
+- Header: "Pro"
+
+**NAV_PREMIUM** (gated `has_api_access`) — NOVO:
+- Automações (`/automations`)
+- Campanhas (`/campaigns`)
+- Header: "Premium"
+
+**Seção Sistema — removida**:
+- Central de Atendimento: removido da sidebar
+- Add-ons: removido da sidebar
+- Analytics: movido para seção Pro
+
+**Rodapé sempre-visível**: Assinatura + Configurações (sem header de seção)
+
+**Upgrade prompt**: Atualizado para "Desbloqueie com Pro — Atendimento, Analytics e mais"
+
+**ROUTE_LABELS**: `customers: 'Clientes'`, `whatsapp: 'WhatsApp'` + novas: `automations`, `campaigns`
+
+### Novos componentes de sub-navegação
+
+**`components/financial/FinancialSubNav.tsx`** — tabs Resumo / Vendas / Comissões
+- Adicionado a: `financial/page.tsx`, `sales/page.tsx`, `financial/commissions/page.tsx`
+- Financeiro agora centraliza visualmente todas as sub-páginas financeiras
+
+**`components/billing/BillingSubNav.tsx`** — tabs Assinatura / Add-ons / Cobranças / Planos
+- Adicionado a: `billing/page.tsx`, `billing/addons/page.tsx`, `billing/history/page.tsx`, `billing/plans/page.tsx`
+- Billing é uma seção coesa — Add-ons e Histórico acessíveis por tabs internas
+
+### WhatsApp em Configurações
+
+**`settings/_components/SettingsTabs.tsx`**:
+- Nova aba "WhatsApp" — 5ª tab em Configurações
+- Exibe descrição da Central de Atendimento + botão "Abrir Central de Atendimento" (→ `/whatsapp`) + link "Ver add-ons disponíveis" (→ `/billing/addons`)
+- Usuários sem a feature verão o botão mas serão redirecionados pela lógica da página `/whatsapp`
+
+### TypeScript
+
+`npx tsc --noEmit` — sem erros.
+
+### Validação dos 10 critérios
+
+| # | Critério | Status |
+|---|---|---|
+| 1 | Starter sem Central Atendimento visível | ✓ |
+| 2 | Compradores renomeado para Clientes | ✓ |
+| 3 | Add-ons removido da sidebar | ✓ |
+| 4 | Vendas removido da sidebar | ✓ via sub-nav Financeiro |
+| 5 | Comissões removido da sidebar | ✓ via sub-nav Financeiro |
+| 6 | Financeiro centraliza tudo | ✓ tabs Resumo/Vendas/Comissões |
+| 7 | Configurações contém WhatsApp | ✓ nova aba |
+| 8 | Sem quebra de rotas | ✓ todas as pages existem |
+| 9 | Sem quebra de permissões | ✓ Clientes sem gate; Pro gated has_crm |
+| 10 | Sem regressões | ✓ TypeScript ok |
+
+---
+
 ## 2026-05-29 (sessão 23 — continuação) — Fix Evolution webhook 401 + rc_backup memory + CI/CD deploy
 
 **Commits:** `7e3f56a`
