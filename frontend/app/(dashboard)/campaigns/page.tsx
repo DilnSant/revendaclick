@@ -17,7 +17,7 @@ export default async function CampaignsPage() {
   const token = session?.access_token ?? ''
 
   const usage = await getUsageFromAPI(token)
-  if (!usage?.has_api_access) notFound()
+  if (!usage?.has_campaigns) notFound()
 
   return (
     <div className="space-y-6">

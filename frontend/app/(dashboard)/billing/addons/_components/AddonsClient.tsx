@@ -67,7 +67,7 @@ export default function AddonsClient({ available, active }: Props) {
       if (!res.ok) {
         setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: data.error ?? 'Erro ao ativar.' } }))
       } else {
-        setMessages((m) => ({ ...m, [addonType]: { type: 'success', text: 'Add-on ativado! Recarregue a página para ver as mudanças.' } }))
+        setMessages((m) => ({ ...m, [addonType]: { type: 'success', text: 'Recurso ativado! Recarregue a página para ver as mudanças.' } }))
       }
     } catch {
       setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: 'Erro de conexão.' } }))
@@ -77,7 +77,7 @@ export default function AddonsClient({ available, active }: Props) {
   }
 
   async function handleCancel(addonType: string) {
-    if (!confirm('Deseja cancelar este add-on?')) return
+    if (!confirm('Deseja cancelar este recurso?')) return
     setLoading(addonType)
     setMessages((m) => ({ ...m, [addonType]: undefined as never }))
     try {
@@ -86,7 +86,7 @@ export default function AddonsClient({ available, active }: Props) {
       if (!res.ok) {
         setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: data.error ?? 'Erro ao cancelar.' } }))
       } else {
-        setMessages((m) => ({ ...m, [addonType]: { type: 'success', text: 'Add-on cancelado. Recarregue a página.' } }))
+        setMessages((m) => ({ ...m, [addonType]: { type: 'success', text: 'Recurso cancelado. Recarregue a página.' } }))
       }
     } catch {
       setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: 'Erro de conexão.' } }))
@@ -101,7 +101,7 @@ export default function AddonsClient({ available, active }: Props) {
       {active.length > 0 && (
         <section>
           <h2 className="mb-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-            Add-ons ativos
+            Recursos adicionais ativos
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {active.map((addon) => (
@@ -142,7 +142,7 @@ export default function AddonsClient({ available, active }: Props) {
                   disabled={loading === addon.addon_type}
                   className="w-full rounded-lg border border-red-200 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
                 >
-                  {loading === addon.addon_type ? 'Processando…' : 'Cancelar add-on'}
+                  {loading === addon.addon_type ? 'Processando…' : 'Cancelar recurso'}
                 </button>
               </div>
             ))}
@@ -153,7 +153,7 @@ export default function AddonsClient({ available, active }: Props) {
       {/* Available add-ons */}
       <section>
         <h2 className="mb-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-          {active.length > 0 ? 'Adicionar mais' : 'Add-ons disponíveis'}
+          {active.length > 0 ? 'Adicionar mais' : 'Recursos disponíveis'}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {available
@@ -181,20 +181,6 @@ export default function AddonsClient({ available, active }: Props) {
                   </div>
 
                   <p className="text-xs text-gray-500 flex-1 mb-4 leading-relaxed">{addon.description}</p>
-
-                  {/* Features granted */}
-                  {addon.features.length > 0 && (
-                    <div className="mb-4 flex flex-wrap gap-1">
-                      {addon.features.map((f) => (
-                        <span
-                          key={f}
-                          className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-600"
-                        >
-                          {f}
-                        </span>
-                      ))}
-                    </div>
-                  )}
 
                   {msg && (
                     <div className={`mb-3 rounded-lg px-3 py-2 text-xs ${

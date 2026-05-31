@@ -17,7 +17,7 @@ export default async function AutomationsPage() {
   const token = session?.access_token ?? ''
 
   const usage = await getUsageFromAPI(token)
-  if (!usage?.has_api_access) notFound()
+  if (!usage?.has_automation) notFound()
 
   const hasWhatsApp = usage?.has_central_atendimento ?? false
 

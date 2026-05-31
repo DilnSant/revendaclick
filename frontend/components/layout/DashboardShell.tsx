@@ -20,6 +20,8 @@ interface PlanFeatures {
   has_whatsapp_qr: boolean
   has_financial: boolean
   has_vendors: boolean
+  has_automation: boolean
+  has_campaigns: boolean
 }
 
 // Defaults restrictive: unlock progressively from plan
@@ -34,6 +36,8 @@ const DEFAULT_FEATURES: PlanFeatures = {
   has_whatsapp_qr:         false,
   has_financial:           false,
   has_vendors:             false,
+  has_automation:          false,
+  has_campaigns:           false,
 }
 
 const PlanFeaturesCtx = createContext<PlanFeatures>(DEFAULT_FEATURES)
@@ -123,7 +127,7 @@ const NAV_PRO: NavItem[] = [
   },
 ]
 
-// Premium items — visible when has_api_access = true (Performance, Scale)
+// Premium+ items — visible when has_automation = true (Premium, Scale)
 const NAV_PREMIUM: NavItem[] = [
   {
     href: '/automations',
@@ -177,6 +181,8 @@ export default function DashboardShell(props: Props) {
     has_whatsapp_qr:         planFeatures?.has_whatsapp_qr         ?? DEFAULT_FEATURES.has_whatsapp_qr,
     has_financial:           planFeatures?.has_financial           ?? DEFAULT_FEATURES.has_financial,
     has_vendors:             planFeatures?.has_vendors             ?? DEFAULT_FEATURES.has_vendors,
+    has_automation:          planFeatures?.has_automation          ?? DEFAULT_FEATURES.has_automation,
+    has_campaigns:           planFeatures?.has_campaigns           ?? DEFAULT_FEATURES.has_campaigns,
   }
 
   return (
@@ -250,7 +256,7 @@ export default function DashboardShell(props: Props) {
             )}
 
             {/* Premium — Automações + Campanhas */}
-            {features.has_api_access && (
+            {features.has_automation && (
               <div>
                 <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
                   Premium

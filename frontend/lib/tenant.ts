@@ -305,16 +305,20 @@ export async function getUsageFromAPI(token: string): Promise<PlanUsage | null> 
         data.users_alert ??
         computeAlert(data.users_pct, data.max_users),
       features: data.features ?? [],
-      has_crm: data.has_crm ?? false,
-      has_analytics: data.has_analytics ?? false,
-      has_whatsapp: data.has_whatsapp ?? false,
-      has_kanban: data.has_kanban ?? false,
-      has_api_access: data.has_api_access ?? false,
-      has_white_label: data.has_white_label ?? false,
+      has_crm:                 data.has_crm                 ?? false,
+      has_analytics:           data.has_analytics           ?? false,
+      has_whatsapp:            data.has_whatsapp            ?? false,
+      has_kanban:              data.has_kanban              ?? false,
+      has_api_access:          data.has_api_access          ?? false,
+      has_white_label:         data.has_white_label         ?? false,
       has_central_atendimento: data.has_central_atendimento ?? false,
       has_whatsapp_qr:         data.has_whatsapp_qr         ?? false,
-      has_lead_recovery:       data.has_lead_recovery        ?? false,
-      has_extra_user:          data.has_extra_user           ?? false,
+      has_automation:          data.has_automation          ?? false,
+      has_campaigns:           data.has_campaigns           ?? false,
+      has_ai_assistance:       data.has_ai_assistance       ?? false,
+      has_lead_recovery:       data.has_lead_recovery       ?? false,
+      has_multi_store:         data.has_multi_store         ?? false,
+      has_extra_user:          data.has_extra_user          ?? false,
     }
   } catch {
     return null

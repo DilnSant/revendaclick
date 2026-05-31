@@ -31,7 +31,7 @@ export default async function AttendanceCenterPage() {
   const hasAccess = usage?.has_central_atendimento ?? false
 
   if (!hasAccess) {
-    return <CentralAtendimentoGate planDisplay={sub?.plan_display ?? 'Start'} />
+    return <CentralAtendimentoGate planDisplay={sub?.plan_display ?? 'Starter'} />
   }
 
   const status = await fetchStatus(token)
@@ -93,7 +93,7 @@ function CentralAtendimentoGate({ planDisplay }: { planDisplay: string }) {
             </div>
             <h2 className="text-xl font-bold text-gray-900">Central de Atendimento</h2>
             <p className="mt-1.5 text-sm text-gray-500">
-              Disponível a partir do <strong className="text-gray-700">Plano Pro</strong>
+              Disponível com o <strong className="text-gray-700">Plano Premium</strong> ou Add-on WhatsApp Automação
             </p>
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700">
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -106,7 +106,7 @@ function CentralAtendimentoGate({ planDisplay }: { planDisplay: string }) {
           {/* Benefits */}
           <div className="px-8 py-6">
             <p className="mb-4 text-sm font-semibold text-gray-700">
-              O que você ganha no Plano Pro:
+              O que você ganha:
             </p>
             <ul className="space-y-3">
               {benefits.map((b) => (
