@@ -155,7 +155,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Métricas protegidas | — | Bearer token + IP restriction |
 | CONCLUÍDA | Input validation | — | MaxBodySize + slug/email regex |
 | CONCLUÍDA | Supabase advisor warnings (WARN) | — | Todos 3 advisors: migration 011 (RLS), 012 (functions), 013 (leads insert + storage) |
-| PENDENTE | Leaked password protection | Baixa | Ativar via Supabase Dashboard → Auth → Security Settings (não acessível via SQL/MCP) |
+| BLOQUEADA | Leaked password protection | — | **Bloqueada por limitação do plano Supabase Free.** Supabase exige plano Pro para integração com HaveIBeenPwned.org. Não é pendência técnica do RevendaClick — sem erro de implementação, sem correção necessária. Depende exclusivamente de upgrade para Supabase Pro. |
 | PENDENTE | Rotação de secrets | Baixa | Política semestral: ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN — atualizar no .env do VPS + no Asaas Dashboard + reiniciar containers |
 
 ---

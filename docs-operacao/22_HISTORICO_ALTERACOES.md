@@ -34,7 +34,7 @@
 | **OpenRouter AI** | ✓ Produção | classify-lead, suggest-reply |
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
-| **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection pendente (Supabase Dashboard) |
+| **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
 
 ---
 
@@ -89,6 +89,14 @@ Tenant `sandbox-revendaclick` criado via SQL:
 Frontend: Vercel — EXECUTADO (push automático)
 Backend: CI/CD — NÃO EXECUTADO (nenhuma alteração de código Go)
 Banco: tenant sandbox-revendaclick criado via MCP SQL
+
+### Hardening — Leaked Password Protection (BLOQUEADA)
+
+Tentativa de ativar "Prevent use of leaked passwords" no Supabase Dashboard retornou:
+> *"Configuring leaked password protection via HaveIBeenPwned.org is available on Pro Plans and up."*
+
+**Status:** Bloqueada por limitação do plano Supabase Free. Não é erro de implementação do RevendaClick. Sem correção necessária. Depende exclusivamente de upgrade para Supabase Pro.
+Registrado em `20_PENDENCIAS.md` (Segurança) como BLOQUEADA.
 
 ### Testes
 

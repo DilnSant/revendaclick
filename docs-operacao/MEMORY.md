@@ -128,3 +128,4 @@ Financeiro sub-nav: Resumo (`/financial`) | Vendas (`/sales`) | Comissões (`/fi
 10. **WhatsApp da Loja** (Contato Público) ≠ **Central de Atendimento** (Evolution/add-on) — são conceitos distintos
 11. **Financeiro incorpora Vendas e Comissões** via sub-nav — não são módulos separados na sidebar
 12. **Assinatura incorpora Add-ons** via sub-nav — `/billing/addons` é acessado pelo BillingSubNav
+13. **Leaked Password Protection indisponível no Supabase Free** — requer upgrade para Supabase Pro (HaveIBeenPwned.org). Não é erro de implementação; sem correção necessária no RevendaClick.
