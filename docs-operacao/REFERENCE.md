@@ -64,8 +64,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 026 |
-| Próxima migration | `027_...` |
+| Migrations aplicadas | 001 → 027 |
+| Próxima migration | `028_...` |
 | Tenants no banco | santos-car (Pro/active), sandbox-revendaclick (Pro/active), devecar (is_active=false) |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
@@ -75,8 +75,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 30 (FC001–FC030) |
-| Próxima FC | **FC031** |
+| Total documentadas | 33 (FC001–FC033) |
+| Próxima FC | **FC034** |
 
 ## Comandos frequentes
 

@@ -351,3 +351,21 @@ supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/d
 **Impacto:** `plans.name = 'premium'`. `subscriptions` usa `plan_id` (FK UUID) — sem campo denormalizado afetado. `get_tenant_usage()` retorna `premium` via JOIN automaticamente. Frontend atualizado: PLAN_HIGHLIGHTS, PLAN_BADGE, variável `isPremium`.
 
 **Regra derivada:** Nunca usar `'performance'` como plan_name em qualquer contexto novo — não existe mais no banco.
+
+---
+
+## D30 — FC033: Cancelamento em cascata — sem plano ativo = sem add-ons ativos (31/05/2026 — sessão 30)
+
+**Decisão (Opção A aprovada):** Ao cancelar a assinatura principal, todos os `subscription_addons` com status `active`, `pending_payment` ou `past_due` são cancelados automaticamente em cascata. Reativar a assinatura principal **não** restaura os add-ons.
+
+**Duas vias de cancelamento cobertas:**
+1. `DELETE /api/billing/subscription` (owner JWT) → `CancelSubscription()` chama `cancelTenantAddons()` antes de `CancelByTenantID()`
+2. Webhook Asaas `SUBSCRIPTION_CANCELED` / `SUBSCRIPTION_DELETED` → `dispatchWebhookEvent()` chama `cancelTenantAddons()` após cancelar a subscription principal
+
+**Comportamento para add-ons grandfathered** (`asaas_addon_id IS NULL`): apenas bulk-cancel no DB — nenhuma chamada ao Asaas.
+
+**Por quê:** Manter add-ons ativos sem assinatura principal cria inconsistência de estado (cobranças recorrentes no Asaas sem acesso ao produto) e viola o modelo de produto (add-ons são extensões do plano ativo, não produtos independentes).
+
+**Trade-off:** Usuário que cancela acidentalmente perde os add-ons — precisará recontratá-los. UX mitiga com aviso explícito no modal de cancelamento.
+
+**Ver:** FC033 em `docs-operacao/FalhasCorrigidas/`, commit `529efb2`.
