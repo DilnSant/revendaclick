@@ -50,6 +50,7 @@
 | [FC029](FC029_VERCEL_BUILD_FREEZE_STALE_SUPABASE_TYPES.md) | Vercel build freeze — database.types.ts desatualizado bloqueou 8 deploys | Deploy / TypeScript | CRÍTICA | 2026-05-28 |
 | [FC030](FC030_SettingsTabs_plan_name_premium_vs_performance.md) | SettingsTabs: plan.name 'premium' vs DB 'performance' — aba Plano não aparecia | Frontend / Billing | MÉDIA | 2026-05-30 |
 | [FC031](FC031_ACTIVATE_CANCELED_AT_NULL.md) | ActivateByAsaasSubID não limpava canceled_at — tenant ativo com canceled_at preenchido | Billing / Backend | ALTA | 2026-05-31 |
+| [FC032](FC032_ADDONS_SEM_BILLING_ASAAS.md) | Add-ons ativados sem cobrança Asaas — asaas_addon_id sempre NULL | Billing / Add-ons | ALTA | 2026-05-31 |
 
 ---
 
@@ -68,6 +69,7 @@
 - FC014 — Re-subscribe sem guard de idempotência
 - FC030 — SettingsTabs plan.name 'premium' vs 'performance'
 - FC031 — ActivateByAsaasSubID não limpava canceled_at
+- FC032 — Add-ons sem cobrança Asaas (gap documentado — Etapa 5)
 
 ### WhatsApp / Evolution API
 - FC002 — QR Code não gerava / sumia (5 bugs em cascata)

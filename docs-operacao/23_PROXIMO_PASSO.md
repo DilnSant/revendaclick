@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 31/05/2026 (sessão 28 — fechamento autônomo)
+> Atualizado em: 31/05/2026 (sessão 29 — correção bugs comerciais Premium)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -45,8 +45,8 @@
 | OnboardingChecklist | ✓ widget no dashboard (4 obrigatórios + 1 WhatsApp opcional) |
 | super_admin | ✓ dilneysantos.developer@gmail.com — tenant_id=NULL, role=super_admin |
 | Central de Atendimento santos-car | ✓ instância Evolution `open` (554888482877); feature central_atendimento concedida |
-| /automations | ✓ placeholder gated has_api_access; CTA WhatsApp add-on condicional |
-| /campaigns | ✓ placeholder gated has_api_access |
+| /automations | ✓ placeholder gated has_automation (BUG-02 corrigido sessão 29) |
+| /campaigns | ✓ placeholder gated has_campaigns (BUG-02 corrigido sessão 29) |
 | Testes unitários billing | ✓ +4 funções: webhookAsaasID, asaasUserErr, capitalize, event key |
 | Prompts operacionais | ✓ /prompts/ (raiz) — 5 arquivos; procedimento oficial de sessão |
 | Migration 026 | ✓ performance → premium (definitivo); DB + código + docs sincronizados |
@@ -54,6 +54,7 @@
 | **Billing santos-car (sessão 28 — Opção A)** | ✓ `sub_gqu4uiro0sisshxt` cancelado no Asaas (zero cobrança); DB em `dev_test_fd1172f6-...`; usar AdminSimulateEvent para testes |
 | D29 | ✓ plan.name = 'premium' definitivo — decisão técnica registrada |
 | **FC031 — ActivateByAsaasSubID** | ✓ `canceled_at = NULL` corrigido em `repository.go` (sessão 28) |
+| **Nomenclatura add-ons** | ✓ "Add-on" → "Recurso"; chips técnicos removidos; ia_recovery = "Recuperação por IA" (sessão 29) |
 | **E2E auth.ts + simulate-event** | ✓ proOwner/sandbox/superAdmin; body simulate-event correto; .env.e2e vars alinhadas |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
@@ -68,6 +69,8 @@
 | Memory OBSOLETO | ✓ seção OBSOLETO criada em MEMORY.md (8 itens) |
 | Governança sessão | ✓ protocolo de fim de sessão em 23_PROXIMO_PASSO.md |
 | **Saneamento documental (sessão 26)** | ✓ 4 divergências corrigidas; docs-operacao/prompts/ removido; referências prompts/ (raiz) corrigidas |
+| **BUG-01/02/03 — Feature flags Premium (sessão 29)** | ✓ Sidebar Premium `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
+| **FC032 — Add-ons sem billing Asaas** | ⚠ Documentado — gap identificado; correção Etapa 5 |
 | **sandbox-revendaclick** | ✓ criado — Pro active, tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |
 | **E2E .env.e2e** | ✓ template criado em `frontend/.env.e2e` |
 | **METRICS_TOKEN** | ✓ confirmado presente e funcional no VPS (nginx bloqueia externo — correto) |
@@ -179,8 +182,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **30 falhas documentadas (FC001–FC030)**.
-Próximo número disponível: **FC031**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **32 falhas documentadas (FC001–FC032)**.
+Próximo número disponível: **FC033**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

@@ -23,8 +23,8 @@
 | **Add-ons** | ✓ Produção | user_extra / whatsapp_automation / ia_recovery; acessível via sub-nav Billing |
 | **Configurações** | ✓ Produção + WhatsApp tab | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp |
 | **Central de Atendimento** | ✓ Produção (`has_central_atendimento`) | Acessível via Configurações → WhatsApp; devecar desconectado |
-| **Automações** | ✓ Placeholder produção (`has_api_access`) | Gated; CTA WhatsApp add-on condicional |
-| **Campanhas** | ✓ Placeholder produção (`has_api_access`) | Gated; "Em breve" com links Analytics/CRM |
+| **Automações** | ✓ Placeholder produção (`has_automation`) | Gated; CTA WhatsApp add-on condicional — BUG-02 corrigido sessão 29 |
+| **Campanhas** | ✓ Placeholder produção (`has_campaigns`) | Gated; "Em breve" com links Analytics/CRM — BUG-02 corrigido sessão 29 |
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
 | **Sandbox tenant** | ✓ `sandbox-revendaclick` (sessão 26) | Pro active, `tenant_id = e72eb104-98b7-4a71-946d-15e680496fc3`, substitui devecar |
 | **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
@@ -37,6 +37,37 @@
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
 | **Billing Asaas — santos-car** | ✓ **dev_test_* ativo** (sessão 28 — Opção A) | `sub_gqu4uiro0sisshxt` cancelado no Asaas (zero cobrança); DB restaurado para `dev_test_fd1172f6-...`; usar AdminSimulateEvent para testes |
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
+| **BUG-01/02/03 — Feature flags Premium** | ✓ **Corrigido** (sessão 29) | Sidebar Premium gateada por `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
+| **FC032 — Add-ons sem billing Asaas** | ⚠ **Documentado** (sessão 29) | Gap identificado; correção Etapa 5; impacto zero enquanto santos-car em dev_test_* |
+
+---
+
+## 2026-05-31 (sessão 29) — Correção bugs comerciais Premium + nomenclatura add-ons
+
+**Objetivo:** corrigir BUG-01/02/03 (feature flags Premium incorretas + copy de gate) e nomenclatura comercial dos add-ons
+**Commit:** `29f6605`
+
+**Arquivos alterados:**
+- `frontend/lib/tenant.ts` — `getUsageFromAPI` agora mapeia `has_automation`, `has_campaigns`, `has_ai_assistance`, `has_lead_recovery`, `has_multi_store`, `has_extra_user` (flags ausentes causavam falso `false` → BUG-02)
+- `frontend/components/layout/DashboardShell.tsx` — sidebar Premium gateada por `has_automation` (era `has_api_access` — exclusivo Scale)
+- `frontend/app/(dashboard)/automations/page.tsx` — gate `has_api_access` → `has_automation`
+- `frontend/app/(dashboard)/campaigns/page.tsx` — gate `has_api_access` → `has_campaigns`
+- `frontend/app/(dashboard)/whatsapp/page.tsx` — BUG-01: copy "Plano Pro" → "Plano Premium ou Add-on WhatsApp Automação"; fallback 'Start' → 'Starter'
+- `frontend/app/(dashboard)/billing/addons/_components/AddonsClient.tsx` — remove chips de flags técnicas; "Add-on" → "Recurso"; headers comerciais
+- `docs-operacao/FalhasCorrigidas/FC032_ADDONS_SEM_BILLING_ASAAS.md` — gap billing add-ons documentado (Etapa 5)
+- DB: `plan_addons.ia_recovery.display_name` = "Recuperação por IA"
+
+### BUG-01 (corrigido)
+`/whatsapp/page.tsx` mostrava "Disponível a partir do Plano Pro" mas Central de Atendimento é feature Premium (`has_central_atendimento`). Corrigido para "Plano Premium ou Add-on WhatsApp Automação".
+
+### BUG-02 (corrigido)
+Sidebar seção Premium gateada por `has_api_access` (só Scale tem `api_access`). Premium tem `automation` + `campaigns` mas não `api_access` → Premium nunca via Automações/Campanhas na sidebar. Corrigido para `has_automation`. Gates das pages corrigidos também.
+
+### BUG-03 (resolvido via BUG-02)
+PlanCard Premium anunciava "Automações e campanhas" mas nunca apareciam por BUG-02. Após BUG-02, Premium vê corretamente.
+
+### FC032 (documentado)
+Add-ons não têm integração Asaas — ativação é grátis. Gap identificado e documentado. Correção na Etapa 5 (billing gateway abstraction).
 
 ---
 
