@@ -51,6 +51,7 @@
 | Prompts operacionais | ✓ /prompts/ (raiz) — 5 arquivos; procedimento oficial de sessão |
 | Migration 026 | ✓ performance → premium (definitivo); DB + código + docs sincronizados |
 | FC030 | ✓ SettingsTabs name:'premium' vs DB 'performance' — corrigido via migration 026 |
+| **Billing real santos-car (sessão 27)** | ✓ `sub_gqu4uiro0sisshxt` criado no Asaas; DB migrado de `dev_test_*`; pipeline validado (3 eventos); vigência 2026-07-28 |
 | D29 | ✓ plan.name = 'premium' definitivo — decisão técnica registrada |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |

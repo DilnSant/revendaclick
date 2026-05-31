@@ -35,6 +35,56 @@
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
+| **Billing Asaas — santos-car** | ✓ **Assinatura real** (sessão 27) | `sub_gqu4uiro0sisshxt` — Pro R$197/mês BOLETO; pipeline Asaas→webhook→subscriptions 100% funcional |
+
+---
+
+## 2026-05-31 (sessão 27) — Migração billing santos-car: dev_test_* → sub_* real Asaas
+
+**Commits:** (ver abaixo)
+**Alterações:** apenas infraestrutura e DB — nenhum arquivo de código alterado
+
+### Causa raiz
+
+`subscriptions.asaas_subscription_id` de santos-car continha `dev_test_fd1172f6-...` (gerado por `DevActivate` em ambiente não-produção, executado contra o DB de produção). O Asaas nunca envia webhooks com esse ID, portanto `FindTenantByAsaasSubID` sempre retornava vazio → `tenant_id = NULL` em billing_events → pipeline não atualizava a subscription.
+
+### Correção aplicada
+
+1. **Auditoria Asaas** — confirmado zero assinaturas ativas para `cus_000178518508`
+2. **Criação da assinatura real** — via API Asaas produção:
+   - `POST /api/v3/subscriptions` com `customer=cus_000178518508`, `billingType=BOLETO`, `value=197.00`, `nextDueDate=2026-06-28`, `cycle=MONTHLY`
+   - Resultado: `sub_gqu4uiro0sisshxt` (ACTIVE)
+   - Boleto gerado: `pay_ge775bps3k78ezhd`, vencimento 2026-06-28, R$197
+3. **Atualização cirúrgica do DB** — apenas `asaas_subscription_id` e `asaas_payment_link`; status, plano, vigência intactos
+4. **`canceled_at` limpo** — artefato do teste SUBSCRIPTION_DELETED
+
+### Testes executados (webhook HTTP real com token)
+
+| Evento | payment_id | Resultado DB | tenant_id resolvido? |
+|---|---|---|---|
+| `PAYMENT_CONFIRMED` | `test_audit_confirmed_001` | status=active, period_end=2026-07-28 | ✓ fd1172f6 |
+| `PAYMENT_OVERDUE` | `test_audit_overdue_001` | status=past_due, grace_until=+3d | ✓ fd1172f6 |
+| `SUBSCRIPTION_DELETED` | sub_gqu4uiro0sisshxt | status=canceled | ✓ fd1172f6 |
+| Restauração `PAYMENT_CONFIRMED` | `test_audit_restore_001` | status=active | ✓ fd1172f6 |
+| Idempotência (reenvio `confirmed_001`) | idem | **sem alteração no DB** | ✓ bloqueado |
+
+### Estado final santos-car
+
+| Campo | Valor |
+|---|---|
+| `asaas_subscription_id` | `sub_gqu4uiro0sisshxt` |
+| `asaas_customer_id` | `cus_000178518508` |
+| `status` | `active` |
+| `plan` | `pro` (R$197/mês) |
+| `current_period_end` | `2026-07-28` |
+| `canceled_at` | `NULL` |
+| Boleto pendente | `pay_ge775bps3k78ezhd` — R$197, vencimento 2026-06-28 |
+
+### Notas
+
+- `SUBSCRIPTION_CREATED` chegou com `tenant_id=NULL` — race condition esperada (evento chega antes do UPDATE do DB). Inofensivo: é informacional, não altera subscription.
+- `dev_test_*` permanece apenas em: (1) comentário de `AdminSimulateEvent`; (2) corpo de `DevActivateSubscription` — ambos não executam em produção.
+- `devecar` ainda tem `dev_test_devecar` no DB — irrelevante (`is_active=false`; tenant não operacional).
 
 ---
 
