@@ -102,7 +102,8 @@ func (r *Repository) ActivateByAsaasSubID(ctx context.Context, asaasSubID string
 			current_period_start  = NOW(),
 			current_period_end    = $2,
 			trial_ends_at         = NULL,
-			grace_until           = NULL
+			grace_until           = NULL,
+			canceled_at           = NULL
 		WHERE asaas_subscription_id = $1`,
 		asaasSubID, periodEnd,
 	)

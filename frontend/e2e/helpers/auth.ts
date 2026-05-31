@@ -3,9 +3,16 @@ import { Page } from '@playwright/test'
 /** Credenciais fixas de teste — nunca usar em produção */
 export const TEST_USERS = {
   /** Tenant santos-car — plano Pro (owner do projeto) */
-  starter: {
-    email: process.env.E2E_STARTER_EMAIL ?? '',
-    password: process.env.E2E_STARTER_PASSWORD ?? '',
+  proOwner: {
+    email: process.env.E2E_PRO_EMAIL ?? '',
+    password: process.env.E2E_PRO_PASSWORD ?? '',
+  },
+  /** Alias retrocompatível — usar proOwner para novos testes */
+  get starter() { return this.proOwner },
+  /** Tenant sandbox-revendaclick — plano Pro (testes isolados) */
+  sandbox: {
+    email: process.env.E2E_SANDBOX_EMAIL ?? '',
+    password: process.env.E2E_SANDBOX_PASSWORD ?? '',
   },
   /** super_admin sem tenant */
   superAdmin: {

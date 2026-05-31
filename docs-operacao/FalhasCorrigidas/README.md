@@ -48,6 +48,8 @@
 | [FC027](FC027_EVOLUTION_P3005_P3009_PRISMA.md) | Evolution P3005 + P3009 — crash loop após drop das tabelas | WhatsApp / Evolution | CRÍTICA | 2026-05-27 |
 | [FC028](FC028_EVOLUTION_ENUM_TYPES_ORFAOS.md) | Evolution ENUM types órfãos após DROP TABLE CASCADE | WhatsApp / Evolution | CRÍTICA | 2026-05-27 |
 | [FC029](FC029_VERCEL_BUILD_FREEZE_STALE_SUPABASE_TYPES.md) | Vercel build freeze — database.types.ts desatualizado bloqueou 8 deploys | Deploy / TypeScript | CRÍTICA | 2026-05-28 |
+| [FC030](FC030_SettingsTabs_plan_name_premium_vs_performance.md) | SettingsTabs: plan.name 'premium' vs DB 'performance' — aba Plano não aparecia | Frontend / Billing | MÉDIA | 2026-05-30 |
+| [FC031](FC031_ACTIVATE_CANCELED_AT_NULL.md) | ActivateByAsaasSubID não limpava canceled_at — tenant ativo com canceled_at preenchido | Billing / Backend | ALTA | 2026-05-31 |
 
 ---
 
@@ -64,6 +66,8 @@
 - FC012 — SQL args duplicados no UpdateSubscriptionAsaas
 - FC013 — Customer sem CPF bloqueando subscription
 - FC014 — Re-subscribe sem guard de idempotência
+- FC030 — SettingsTabs plan.name 'premium' vs 'performance'
+- FC031 — ActivateByAsaasSubID não limpava canceled_at
 
 ### WhatsApp / Evolution API
 - FC002 — QR Code não gerava / sumia (5 bugs em cascata)

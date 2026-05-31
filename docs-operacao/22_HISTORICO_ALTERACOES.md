@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 31/05/2026 (sessão 26 — saneamento documental final)
+> Última atualização: 31/05/2026 (sessão 28 — fechamento autônomo de pendências)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -35,7 +35,49 @@
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
-| **Billing Asaas — santos-car** | ✓ **Assinatura real** (sessão 27) | `sub_gqu4uiro0sisshxt` — Pro R$197/mês BOLETO; pipeline Asaas→webhook→subscriptions 100% funcional |
+| **Billing Asaas — santos-car** | ✓ **dev_test_* ativo** (sessão 28 — Opção A) | `sub_gqu4uiro0sisshxt` cancelado no Asaas (zero cobrança); DB restaurado para `dev_test_fd1172f6-...`; usar AdminSimulateEvent para testes |
+| **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
+
+---
+
+## 2026-05-31 (sessão 28) — Fechamento autônomo de pendências técnicas
+
+**Objetivo:** elevar maturidade operacional de 91% para 95%+
+**Arquivos alterados:**
+- `backend/internal/billing/repository.go` — FC031: `canceled_at = NULL` em `ActivateByAsaasSubID`
+- `frontend/e2e/helpers/auth.ts` — rename `starter` → `proOwner` + alias retrocompat + user `sandbox`
+- `frontend/e2e/03_upgrade_downgrade.spec.ts` — body simulate-event corrigido (`event_type`/`subscription_id`)
+- `frontend/.env.e2e` — vars `E2E_PRO_EMAIL`/`E2E_PRO_PASSWORD` adicionadas
+- `docs-operacao/ENVIRONMENTS.md` — body simulate-event correto; seção "sandbox (a criar)" removida; Asaas env correto
+- `docs-operacao/FalhasCorrigidas/FC031_ACTIVATE_CANCELED_AT_NULL.md` — criado
+- `docs-operacao/FalhasCorrigidas/README.md` — FC030 + FC031 adicionados
+- `docs-operacao/20_PENDENCIAS.md` — FalhasCorrigidas count atualizado (28 → 31)
+
+### Billing — Opção A executada (sessão 27/28)
+
+Decisão: cancelar `sub_gqu4uiro0sisshxt` no Asaas antes de 2026-06-28 (zero cobrança).
+DB restaurado para `dev_test_fd1172f6-11e7-4555-8fe3-082fd1849587` com status `active`.
+Usar `AdminSimulateEvent` para todos os testes futuros de billing em produção.
+
+### FC031 corrigido
+
+`ActivateByAsaasSubID` não limpava `canceled_at` após reativação.
+Bug identificado ao vivo durante testes webhook da sessão 27.
+Correção: `canceled_at = NULL` adicionado ao UPDATE SQL em `repository.go`.
+
+### E2E — melhorias aplicadas
+
+- `auth.ts`: `starter` renomeado para `proOwner` (retrocompat alias mantido); `sandbox` user adicionado
+- `03_upgrade_downgrade.spec.ts`: body correto para `AdminSimulateEvent`
+- `.env.e2e`: variáveis `E2E_PRO_*` alinhadas com nomenclatura `auth.ts`
+
+### Pendências remanescentes (ação manual)
+
+- Preencher `.env.e2e` com senhas reais e criar user auth para sandbox-revendaclick
+- Uptime monitoring (UptimeRobot/BetterStack)
+- Backup S3 credentials
+- Rotação semestral de secrets
+- Verificar sidebar no browser (santos-car Pro + sandbox Pro)
 
 ---
 

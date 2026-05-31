@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 31/05/2026 (sessão 26 — saneamento final)
+> Atualizado em: 31/05/2026 (sessão 28 — fechamento autônomo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -51,13 +51,15 @@
 | Prompts operacionais | ✓ /prompts/ (raiz) — 5 arquivos; procedimento oficial de sessão |
 | Migration 026 | ✓ performance → premium (definitivo); DB + código + docs sincronizados |
 | FC030 | ✓ SettingsTabs name:'premium' vs DB 'performance' — corrigido via migration 026 |
-| **Billing real santos-car (sessão 27)** | ✓ `sub_gqu4uiro0sisshxt` criado no Asaas; DB migrado de `dev_test_*`; pipeline validado (3 eventos); vigência 2026-07-28 |
+| **Billing santos-car (sessão 28 — Opção A)** | ✓ `sub_gqu4uiro0sisshxt` cancelado no Asaas (zero cobrança); DB em `dev_test_fd1172f6-...`; usar AdminSimulateEvent para testes |
 | D29 | ✓ plan.name = 'premium' definitivo — decisão técnica registrada |
+| **FC031 — ActivateByAsaasSubID** | ✓ `canceled_at = NULL` corrigido em `repository.go` (sessão 28) |
+| **E2E auth.ts + simulate-event** | ✓ proOwner/sandbox/superAdmin; body simulate-event correto; .env.e2e vars alinhadas |
 | CI/CD GitHub Actions | ✓ automático |
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Supabase security advisors | ✓ limpos |
-| FalhasCorrigidas | ✓ 30 FCs documentadas (FC001–FC030) |
+| FalhasCorrigidas | ✓ 31 FCs documentadas (FC001–FC031) |
 | PRODUCT_ARCHITECTURE.md | ✓ criado — fonte única da arquitetura de negócio |
 | DEPENDENCIES.md | ✓ criado — mapa de dependências por módulo |
 | ENVIRONMENTS.md | ✓ criado — produção / homologação / desenvolvimento |
@@ -129,9 +131,9 @@ Verificar:
 ### 2. Preencher senhas no .env.e2e e executar E2E (Média)
 
 Template criado em `frontend/.env.e2e`. Preencher `PREENCHER` com senhas reais:
-- `E2E_STARTER_PASSWORD` — senha do dilneysantos@gmail.com
+- `E2E_PRO_PASSWORD` — senha do dilneysantos@gmail.com (santos-car)
 - `E2E_SUPER_ADMIN_PASSWORD` — senha do dilneysantos.developer@gmail.com
-- Criar usuário para sandbox-revendaclick e preencher `E2E_SANDBOX_PASSWORD`
+- `E2E_SANDBOX_PASSWORD` — criar usuário para sandbox-revendaclick via /register
 
 Ver `frontend/e2e/README.md`.
 

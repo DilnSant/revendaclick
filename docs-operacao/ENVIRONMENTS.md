@@ -66,8 +66,8 @@ O tenant `santos-car` no banco de produção funciona como tenant de homologaç�
 | **Frontend** | `https://app.revendaclick.com.br` | Mesmo frontend de produção |
 | **Backend** | `https://api.revendaclick.com.br` | Mesmo backend de produção |
 | **Database** | Supabase `ibgaywezfcbbiiziaoac` | Schema público — dados reais |
-| **Asaas** | Conta sandbox | `ASAAS_ENV=sandbox` ativo |
-| **Tenant de ref.** | `santos-car` (Starter) | Tenant real do owner para testes |
+| **Asaas** | Conta produção | `ASAAS_ENV=production` no VPS; usar `AdminSimulateEvent` para testes sem cobrança |
+| **Tenant de ref.** | `santos-car` (Pro) | Tenant real do owner; billing via `dev_test_*` (sem assinatura real) |
 
 **Tenants de referência para testes:**
 
@@ -80,20 +80,14 @@ O tenant `santos-car` no banco de produção funciona como tenant de homologaç�
 ```
 POST /api/admin/billing/simulate-event
 Authorization: Bearer <super_admin_token>
-Body: { "tenant_id": "...", "event": "PAYMENT_CONFIRMED", ... }
+Body: {
+  "event_type":      "PAYMENT_CONFIRMED",
+  "subscription_id": "dev_test_<tenant_id>"
+}
 ```
 
 Requer: super_admin (`dilneysantos.developer@gmail.com`).
-
-### Tenant sandbox-revendaclick (a criar)
-
-Para testes mais agressivos (migrations destrutivas, billing edge cases), criar tenant isolado:
-
-```sql
--- Criar via onboarding normal no app, depois ajustar plano via admin
--- slug sugerido: sandbox-revendaclick
--- Nunca usar para dados reais de clientes
-```
+Campos aceitos: `event_type` (obrigatório), `subscription_id`, `value`, `due_date`.
 
 ---
 

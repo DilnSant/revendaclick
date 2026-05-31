@@ -31,13 +31,13 @@ test.describe('Fluxo 3 e 4 — Upgrade e Downgrade', () => {
       return document.cookie.match(/sb-.*-auth-token=([^;]+)/)?.[1] ?? ''
     })
 
+    // simulate-event aceita: event_type, subscription_id, value, due_date
+    // subscription_id = dev_test_<tenant_id> para tenants sem assinatura real
     await ctx.post(`${API_URL}/api/admin/billing/simulate-event`, {
       headers: { Authorization: `Bearer ${token}` },
       data: {
-        tenant_id: TEST_TENANT_ID,
-        event: 'SUBSCRIPTION_UPDATED',
-        plan_name: 'pro',
-        status: 'active',
+        event_type:      'SUBSCRIPTION_UPDATED',
+        subscription_id: `dev_test_${TEST_TENANT_ID}`,
       },
     })
 
