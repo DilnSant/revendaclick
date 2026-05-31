@@ -70,6 +70,21 @@ type ActiveAddon struct {
 	Status       string   `json:"status"`
 	StartedAt    string   `json:"started_at"`
 	Features     []string `json:"features"`
+	PaymentLink  string   `json:"payment_link,omitempty"`  // populated for pending_payment
+	IsRedundant  bool     `json:"is_redundant,omitempty"`  // plan already covers these features
+}
+
+// AddonActivateResponse is returned by POST /api/billing/addons/:type
+type AddonActivateResponse struct {
+	AddonType   string `json:"addon_type"`
+	Status      string `json:"status"`                // "pending_payment"
+	PaymentLink string `json:"payment_link,omitempty"` // Boleto/PIX link; empty if not yet generated
+}
+
+// AddonRecord is an internal type for cancel and lookup operations
+type AddonRecord struct {
+	ID           string
+	AsaasAddonID string
 }
 
 type AddonsResponse struct {

@@ -331,10 +331,12 @@ func (r *Repository) ListAvailableAddons(ctx context.Context) ([]*PlanAddon, err
 func (r *Repository) ListActiveAddons(ctx context.Context, tenantID string) ([]*ActiveAddon, error) {
 	rows, err := r.pool.Query(ctx, `
 		SELECT sa.id, sa.addon_type, pa.display_name, COALESCE(pa.description,''),
-		       pa.price_monthly, sa.quantity, sa.status, sa.started_at::text, pa.features
+		       pa.price_monthly, sa.quantity, sa.status, sa.started_at::text, pa.features,
+		       COALESCE(sa.asaas_payment_link, '')
 		FROM subscription_addons sa
 		JOIN plan_addons pa ON pa.addon_type = sa.addon_type
-		WHERE sa.tenant_id = $1 AND sa.status = 'active'
+		WHERE sa.tenant_id = $1
+		  AND sa.status IN ('active', 'pending_payment', 'past_due')
 		ORDER BY sa.started_at ASC`, tenantID)
 	if err != nil {
 		return nil, err
@@ -348,6 +350,7 @@ func (r *Repository) ListActiveAddons(ctx context.Context, tenantID string) ([]*
 		if err := rows.Scan(
 			&a.ID, &a.AddonType, &a.DisplayName, &a.Description,
 			&a.PriceMonthly, &a.Quantity, &a.Status, &a.StartedAt, &featJSON,
+			&a.PaymentLink,
 		); err != nil {
 			return nil, err
 		}
@@ -357,17 +360,24 @@ func (r *Repository) ListActiveAddons(ctx context.Context, tenantID string) ([]*
 	return list, rows.Err()
 }
 
-func (r *Repository) ActivateAddon(ctx context.Context, tenantID, subscriptionID, addonType string) error {
+func (r *Repository) ActivateAddon(ctx context.Context, tenantID, subscriptionID, addonType, asaasAddonID, paymentLink string) error {
 	_, err := r.pool.Exec(ctx, `
-		INSERT INTO subscription_addons (tenant_id, subscription_id, addon_type, quantity, price_monthly, status)
-		SELECT $1, $2::uuid, pa.addon_type, 1, pa.price_monthly, 'active'
+		INSERT INTO subscription_addons
+			(tenant_id, subscription_id, addon_type, quantity, price_monthly,
+			 status, asaas_addon_id, asaas_payment_link)
+		SELECT $1, $2::uuid, pa.addon_type, 1, pa.price_monthly,
+		       'pending_payment', $4, $5
 		FROM plan_addons pa
 		WHERE pa.addon_type = $3 AND pa.is_active = TRUE
 		ON CONFLICT (tenant_id, addon_type) DO UPDATE SET
-			status      = 'active',
-			canceled_at = NULL,
-			updated_at  = NOW()`,
+			status             = 'pending_payment',
+			asaas_addon_id     = $4,
+			asaas_payment_link = $5,
+			canceled_at        = NULL,
+			grace_until        = NULL,
+			updated_at         = NOW()`,
 		tenantID, nullStr(subscriptionID), addonType,
+		nullStr(asaasAddonID), nullStr(paymentLink),
 	)
 	return err
 }
@@ -376,7 +386,8 @@ func (r *Repository) CancelAddon(ctx context.Context, tenantID, addonType string
 	result, err := r.pool.Exec(ctx, `
 		UPDATE subscription_addons
 		SET status = 'canceled', canceled_at = NOW(), updated_at = NOW()
-		WHERE tenant_id = $1 AND addon_type = $2 AND status = 'active'`,
+		WHERE tenant_id = $1 AND addon_type = $2
+		  AND status IN ('active', 'pending_payment', 'past_due')`,
 		tenantID, addonType,
 	)
 	if err != nil {
@@ -386,6 +397,112 @@ func (r *Repository) CancelAddon(ctx context.Context, tenantID, addonType string
 		return errors.New("add-on não encontrado ou já cancelado")
 	}
 	return nil
+}
+
+// ── Add-on billing methods (Etapa 5) ─────────────────────────────────────────
+
+// FindTenantByAsaasAddonID looks up the tenant + addon type via asaas_addon_id.
+// Used for webhook routing to distinguish addon subscriptions from main subscriptions.
+func (r *Repository) FindTenantByAsaasAddonID(ctx context.Context, asaasAddonID string) (tenantID, addonType string, err error) {
+	err = r.pool.QueryRow(ctx,
+		`SELECT tenant_id::text, addon_type FROM subscription_addons WHERE asaas_addon_id = $1`,
+		asaasAddonID,
+	).Scan(&tenantID, &addonType)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", "", nil
+	}
+	return
+}
+
+// ActivateAddonByAsaasID sets status='active' after PAYMENT_CONFIRMED.
+func (r *Repository) ActivateAddonByAsaasID(ctx context.Context, asaasAddonID string) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE subscription_addons SET
+			status      = 'active',
+			grace_until = NULL,
+			updated_at  = NOW()
+		WHERE asaas_addon_id = $1`,
+		asaasAddonID,
+	)
+	return err
+}
+
+// MarkAddonPastDueByAsaasID sets status='past_due' + 3-day grace after PAYMENT_OVERDUE or PAYMENT_REFUNDED.
+func (r *Repository) MarkAddonPastDueByAsaasID(ctx context.Context, asaasAddonID string) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE subscription_addons SET
+			status      = 'past_due',
+			grace_until = NOW() + INTERVAL '3 days',
+			updated_at  = NOW()
+		WHERE asaas_addon_id = $1 AND status = 'active'`,
+		asaasAddonID,
+	)
+	return err
+}
+
+// CancelAddonByAsaasID sets status='canceled' after SUBSCRIPTION_CANCELED or SUBSCRIPTION_DELETED.
+func (r *Repository) CancelAddonByAsaasID(ctx context.Context, asaasAddonID string) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE subscription_addons SET
+			status      = 'canceled',
+			canceled_at = NOW(),
+			updated_at  = NOW()
+		WHERE asaas_addon_id = $1`,
+		asaasAddonID,
+	)
+	return err
+}
+
+// GetAddonByTenantAndType returns the active/pending/past_due record for a tenant+addon combo.
+// Used by CancelAddon service to fetch the asaas_addon_id before calling Asaas.
+func (r *Repository) GetAddonByTenantAndType(ctx context.Context, tenantID, addonType string) (*AddonRecord, error) {
+	rec := &AddonRecord{}
+	err := r.pool.QueryRow(ctx,
+		`SELECT id::text, COALESCE(asaas_addon_id, '')
+		 FROM subscription_addons
+		 WHERE tenant_id = $1 AND addon_type = $2
+		   AND status IN ('active', 'pending_payment', 'past_due')`,
+		tenantID, addonType,
+	).Scan(&rec.ID, &rec.AsaasAddonID)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	return rec, err
+}
+
+// GetAddonPrice returns the monthly price for an addon type.
+func (r *Repository) GetAddonPrice(ctx context.Context, addonType string) (float64, error) {
+	var price float64
+	err := r.pool.QueryRow(ctx,
+		`SELECT price_monthly FROM plan_addons WHERE addon_type = $1 AND is_active = TRUE`,
+		addonType,
+	).Scan(&price)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return 0, nil
+	}
+	return price, err
+}
+
+// GetPlanFeaturesByTenant returns the plan's own features (without addon overlay).
+// Used to compute is_redundant for active add-ons.
+func (r *Repository) GetPlanFeaturesByTenant(ctx context.Context, tenantID string) ([]string, error) {
+	var featJSON []byte
+	err := r.pool.QueryRow(ctx,
+		`SELECT pl.features FROM plans pl
+		 JOIN subscriptions s ON s.plan_id = pl.id
+		 WHERE s.tenant_id = $1
+		   AND s.status IN ('active', 'trialing', 'past_due')`,
+		tenantID,
+	).Scan(&featJSON)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var features []string
+	_ = json.Unmarshal(featJSON, &features)
+	return features, nil
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────

@@ -21,6 +21,8 @@ interface ActiveAddon {
   status: string
   started_at: string
   features: string[]
+  payment_link?: string
+  is_redundant?: boolean
 }
 
 interface Props {
@@ -58,6 +60,9 @@ export default function AddonsClient({ available, active }: Props) {
 
   const activeTypes = new Set(active.map((a) => a.addon_type))
 
+  const pendingAddons = active.filter((a) => a.status === 'pending_payment')
+  const runningAddons = active.filter((a) => a.status === 'active' || a.status === 'past_due')
+
   async function handleActivate(addonType: string) {
     setLoading(addonType)
     setMessages((m) => ({ ...m, [addonType]: undefined as never }))
@@ -67,7 +72,16 @@ export default function AddonsClient({ available, active }: Props) {
       if (!res.ok) {
         setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: data.error ?? 'Erro ao ativar.' } }))
       } else {
-        setMessages((m) => ({ ...m, [addonType]: { type: 'success', text: 'Recurso ativado! Recarregue a página para ver as mudanças.' } }))
+        const payLink = data.data?.payment_link ?? ''
+        setMessages((m) => ({
+          ...m,
+          [addonType]: {
+            type: 'success',
+            text: payLink
+              ? 'Recurso solicitado! Clique em "Pagar agora" para liberar o acesso.'
+              : 'Recurso solicitado! Link de pagamento enviado para o e-mail cadastrado.',
+          },
+        }))
       }
     } catch {
       setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: 'Erro de conexão.' } }))
@@ -97,14 +111,66 @@ export default function AddonsClient({ available, active }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Active add-ons */}
-      {active.length > 0 && (
+
+      {/* ── Aguardando pagamento ────────────────────────────────────────────── */}
+      {pendingAddons.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-sm font-semibold text-amber-600 uppercase tracking-wider">
+            Aguardando pagamento
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {pendingAddons.map((addon) => (
+              <div
+                key={addon.addon_type}
+                className="flex flex-col rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                    {ADDON_ICONS[addon.addon_type] ?? (
+                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{addon.display_name}</p>
+                    <p className="text-xs text-gray-500">{formatCurrency(addon.price_monthly)}/mês</p>
+                  </div>
+                  <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                    Pendente
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mb-4">
+                  Acesso liberado automaticamente após confirmação do pagamento.
+                </p>
+                {addon.payment_link ? (
+                  <a
+                    href={addon.payment_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full rounded-lg bg-amber-500 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
+                  >
+                    Pagar agora →
+                  </a>
+                ) : (
+                  <p className="text-xs text-amber-700 text-center">
+                    Link de pagamento enviado para o e-mail cadastrado.
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Recursos adicionais ativos ──────────────────────────────────────── */}
+      {runningAddons.length > 0 && (
         <section>
           <h2 className="mb-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
             Recursos adicionais ativos
           </h2>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {active.map((addon) => (
+            {runningAddons.map((addon) => (
               <div
                 key={addon.addon_type}
                 className="flex flex-col rounded-xl border border-green-200 bg-green-50 p-5 shadow-sm"
@@ -121,11 +187,31 @@ export default function AddonsClient({ available, active }: Props) {
                     <p className="text-sm font-semibold text-gray-900 truncate">{addon.display_name}</p>
                     <p className="text-xs text-gray-500">{formatCurrency(addon.price_monthly)}/mês</p>
                   </div>
-                  <span className="rounded-full bg-green-200 px-2 py-0.5 text-xs font-semibold text-green-800">
-                    Ativo
-                  </span>
+                  {addon.status === 'past_due' ? (
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                      Em atraso
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-green-200 px-2 py-0.5 text-xs font-semibold text-green-800">
+                      Ativo
+                    </span>
+                  )}
                 </div>
-                <p className="text-xs text-gray-600 flex-1 mb-4">{addon.description}</p>
+
+                <p className="text-xs text-gray-600 flex-1 mb-3">{addon.description}</p>
+
+                {/* D4: redundancy warning */}
+                {addon.is_redundant && (
+                  <div className="mb-3 rounded-lg border border-yellow-200 bg-yellow-50 px-3 py-2 text-xs text-yellow-800">
+                    Este recurso já está incluído no seu plano atual.{' '}
+                    <button
+                      onClick={() => handleCancel(addon.addon_type)}
+                      className="font-semibold underline hover:text-yellow-900"
+                    >
+                      Cancelar cobrança adicional
+                    </button>
+                  </div>
+                )}
 
                 {messages[addon.addon_type] && (
                   <div className={`mb-3 rounded-lg px-3 py-2 text-xs ${
@@ -150,10 +236,10 @@ export default function AddonsClient({ available, active }: Props) {
         </section>
       )}
 
-      {/* Available add-ons */}
+      {/* ── Recursos disponíveis ────────────────────────────────────────────── */}
       <section>
         <h2 className="mb-4 text-sm font-semibold text-gray-700 uppercase tracking-wider">
-          {active.length > 0 ? 'Adicionar mais' : 'Recursos disponíveis'}
+          {runningAddons.length > 0 ? 'Adicionar mais' : 'Recursos disponíveis'}
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {available
@@ -195,7 +281,7 @@ export default function AddonsClient({ available, active }: Props) {
                     disabled={loading === addon.addon_type}
                     className="w-full rounded-xl bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-gray-700 transition-colors disabled:opacity-50"
                   >
-                    {loading === addon.addon_type ? 'Ativando…' : 'Adicionar'}
+                    {loading === addon.addon_type ? 'Processando…' : 'Adicionar'}
                   </button>
                 </div>
               )
@@ -203,7 +289,7 @@ export default function AddonsClient({ available, active }: Props) {
 
           {available.filter((a) => !activeTypes.has(a.addon_type)).length === 0 && (
             <div className="col-span-full rounded-xl border border-dashed border-gray-200 p-8 text-center">
-              <p className="text-sm text-gray-500">Você já ativou todos os add-ons disponíveis.</p>
+              <p className="text-sm text-gray-500">Você já ativou todos os recursos disponíveis.</p>
             </div>
           )}
         </div>

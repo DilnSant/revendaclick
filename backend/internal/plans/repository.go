@@ -93,7 +93,11 @@ func (r *Repository) GetUsage(ctx context.Context, tenantID string) (*Usage, err
 					FROM subscription_addons sa
 					JOIN plan_addons pa ON pa.addon_type = sa.addon_type
 					WHERE sa.tenant_id = $1
-					  AND sa.status = 'active'
+					  AND (
+					    sa.status = 'active'
+					    OR (sa.status = 'past_due'
+					        AND (sa.grace_until IS NULL OR sa.grace_until > NOW()))
+					  )
 					  AND jsonb_array_length(pa.features) > 0
 				) merged
 			)

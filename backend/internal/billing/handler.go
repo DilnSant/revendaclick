@@ -147,6 +147,25 @@ func (h *Handler) GetAddons(c *gin.Context) {
 		return
 	}
 
+	// D4: compute is_redundant — check if plan already covers all addon features
+	planFeatures, _ := h.svc.repo.GetPlanFeaturesByTenant(c.Request.Context(), tenantID)
+	planFeatSet := make(map[string]bool, len(planFeatures))
+	for _, f := range planFeatures {
+		planFeatSet[f] = true
+	}
+	for _, a := range active {
+		if a.Status == "active" && len(a.Features) > 0 {
+			allCovered := true
+			for _, f := range a.Features {
+				if !planFeatSet[f] {
+					allCovered = false
+					break
+				}
+			}
+			a.IsRedundant = allCovered
+		}
+	}
+
 	if available == nil {
 		available = []*PlanAddon{}
 	}
@@ -169,21 +188,12 @@ func (h *Handler) ActivateAddon(c *gin.Context) {
 		return
 	}
 
-	sub, err := h.svc.GetSubscription(c.Request.Context(), tenantID)
-	if err != nil || sub == nil {
-		response.BadRequest(c, "assinatura ativa não encontrada")
-		return
-	}
-	if !sub.IsActive && !sub.IsTrialing {
-		response.BadRequest(c, "assinatura deve estar ativa para adicionar add-ons")
-		return
-	}
-
-	if err := h.svc.repo.ActivateAddon(c.Request.Context(), tenantID, sub.ID, addonType); err != nil {
+	result, err := h.svc.ActivateAddon(c.Request.Context(), tenantID, addonType)
+	if err != nil {
 		response.BadRequest(c, err.Error())
 		return
 	}
-	response.JSON(c, http.StatusOK, gin.H{"activated": true, "addon_type": addonType})
+	response.JSON(c, http.StatusOK, result)
 }
 
 // DELETE /api/billing/addons/:type — cancel an add-on
@@ -195,7 +205,7 @@ func (h *Handler) CancelAddon(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.repo.CancelAddon(c.Request.Context(), tenantID, addonType); err != nil {
+	if err := h.svc.CancelAddon(c.Request.Context(), tenantID, addonType); err != nil {
 		response.BadRequest(c, err.Error())
 		return
 	}

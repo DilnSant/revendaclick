@@ -197,6 +197,79 @@ func (s *Service) ListInvoices(ctx context.Context, tenantID string) ([]*Invoice
 	return s.repo.ListInvoices(ctx, tenantID, 30)
 }
 
+// ActivateAddon creates an Asaas subscription for an add-on and saves it as 'pending_payment'.
+// Features are NOT granted until PAYMENT_CONFIRMED fires (D1).
+func (s *Service) ActivateAddon(ctx context.Context, tenantID, addonType string) (*AddonActivateResponse, error) {
+	// Guard: require active or trialing main subscription
+	sub, err := s.repo.GetSubscription(ctx, tenantID)
+	if err != nil || sub == nil {
+		return nil, fmt.Errorf("assinatura ativa não encontrada")
+	}
+	sub.ComputeFlags()
+	if !sub.IsActive && !sub.IsTrialing {
+		return nil, fmt.Errorf("assinatura deve estar ativa para contratar add-ons")
+	}
+
+	// Guard: idempotency — don't create duplicate
+	existing, _ := s.repo.GetAddonByTenantAndType(ctx, tenantID, addonType)
+	if existing != nil {
+		return nil, fmt.Errorf("add-on já ativo ou aguardando pagamento")
+	}
+
+	// Fetch addon price
+	addonPrice, err := s.repo.GetAddonPrice(ctx, addonType)
+	if err != nil || addonPrice == 0 {
+		return nil, fmt.Errorf("add-on não encontrado: %s", addonType)
+	}
+
+	// Fetch Asaas customer ID (created during Subscribe)
+	_, _, asaasCustomerID, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
+	if err != nil || asaasCustomerID == "" {
+		return nil, fmt.Errorf("cliente Asaas não encontrado — finalize a assinatura do plano primeiro")
+	}
+
+	// Create Asaas subscription (D2: reuse existing createSubscription)
+	desc := fmt.Sprintf("RevendaClick — Add-on %s", addonType)
+	externalRef := fmt.Sprintf("%s:%s", tenantID, addonType)
+	asaasSub, err := s.asaas.createSubscription(asaasCustomerID, addonPrice, "MONTHLY", "BOLETO", desc, externalRef)
+	if err != nil {
+		return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
+	}
+
+	// Fetch payment link (D2: non-fatal if absent — Asaas sends invoice by email)
+	paymentLink := asaasSub.PaymentLink
+	if paymentLink == "" {
+		paymentLink, _ = s.asaas.getSubscriptionPayments(asaasSub.ID)
+	}
+
+	// Save addon with status='pending_payment' (D1: activate only after PAYMENT_CONFIRMED)
+	if err := s.repo.ActivateAddon(ctx, tenantID, sub.ID, addonType, asaasSub.ID, paymentLink); err != nil {
+		_ = s.asaas.cancelSubscription(asaasSub.ID) // best-effort cleanup
+		return nil, fmt.Errorf("erro ao salvar add-on: %w", err)
+	}
+
+	return &AddonActivateResponse{
+		AddonType:   addonType,
+		Status:      "pending_payment",
+		PaymentLink: paymentLink,
+	}, nil
+}
+
+// CancelAddon cancels an add-on in Asaas (best-effort) and marks it canceled in DB.
+func (s *Service) CancelAddon(ctx context.Context, tenantID, addonType string) error {
+	rec, err := s.repo.GetAddonByTenantAndType(ctx, tenantID, addonType)
+	if err != nil {
+		return fmt.Errorf("get addon: %w", err)
+	}
+	if rec == nil {
+		return fmt.Errorf("add-on não encontrado ou já cancelado")
+	}
+	if rec.AsaasAddonID != "" {
+		_ = s.asaas.cancelSubscription(rec.AsaasAddonID) // best-effort
+	}
+	return s.repo.CancelAddon(ctx, tenantID, addonType)
+}
+
 // HandleWebhook processes an Asaas webhook event with idempotency.
 func (s *Service) HandleWebhook(ctx context.Context, wh *AsaasWebhook, rawPayload []byte) error {
 	asaasID := webhookAsaasID(wh)
@@ -207,10 +280,33 @@ func (s *Service) HandleWebhook(ctx context.Context, wh *AsaasWebhook, rawPayloa
 	eventKey := fmt.Sprintf("%s:%s", wh.Event, asaasID)
 
 	tenantID := ""
+	isAddon := false
+	addonSubID := ""
+
 	if wh.Payment != nil && wh.Payment.Subscription != "" {
-		tenantID, _ = s.repo.FindTenantByAsaasSubID(ctx, wh.Payment.Subscription)
-	} else if tenantID == "" && wh.Subscription != nil && wh.Subscription.ID != "" {
-		tenantID, _ = s.repo.FindTenantByAsaasSubID(ctx, wh.Subscription.ID)
+		subID := wh.Payment.Subscription
+		// Main subscription lookup first (existing behavior unchanged)
+		tenantID, _ = s.repo.FindTenantByAsaasSubID(ctx, subID)
+		if tenantID == "" {
+			// Addon subscription lookup
+			var addonType string
+			tenantID, addonType, _ = s.repo.FindTenantByAsaasAddonID(ctx, subID)
+			if addonType != "" {
+				isAddon = true
+				addonSubID = subID
+			}
+		}
+	} else if wh.Subscription != nil && wh.Subscription.ID != "" {
+		subID := wh.Subscription.ID
+		tenantID, _ = s.repo.FindTenantByAsaasSubID(ctx, subID)
+		if tenantID == "" {
+			var addonType string
+			tenantID, addonType, _ = s.repo.FindTenantByAsaasAddonID(ctx, subID)
+			if addonType != "" {
+				isAddon = true
+				addonSubID = subID
+			}
+		}
 	}
 
 	// Idempotency check — insert event_key; skip if already processed
@@ -227,7 +323,37 @@ func (s *Service) HandleWebhook(ctx context.Context, wh *AsaasWebhook, rawPayloa
 		_ = s.repo.UpsertInvoice(ctx, tenantID, wh.Payment)
 	}
 
+	if isAddon {
+		return s.dispatchAddonWebhookEvent(ctx, wh, addonSubID)
+	}
 	return s.dispatchWebhookEvent(ctx, wh)
+}
+
+// dispatchAddonWebhookEvent routes webhook events that belong to an add-on subscription.
+func (s *Service) dispatchAddonWebhookEvent(ctx context.Context, wh *AsaasWebhook, addonSubID string) error {
+	switch wh.Event {
+	case EventPaymentReceived, EventPaymentConfirmed:
+		// D1: only grant features after payment confirmed
+		return s.repo.ActivateAddonByAsaasID(ctx, addonSubID)
+
+	case EventPaymentOverdue:
+		return s.repo.MarkAddonPastDueByAsaasID(ctx, addonSubID)
+
+	case EventPaymentRefunded:
+		// Same as overdue: Asaas subscription remains active; give grace period for resolution
+		return s.repo.MarkAddonPastDueByAsaasID(ctx, addonSubID)
+
+	case EventSubCanceled, EventSubDeleted:
+		subID := addonSubID
+		if subID == "" && wh.Subscription != nil {
+			subID = wh.Subscription.ID
+		}
+		return s.repo.CancelAddonByAsaasID(ctx, subID)
+
+	case EventPaymentDeleted, EventSubCreated, EventSubUpdated:
+		return nil // informational — already logged in billing_events
+	}
+	return nil
 }
 
 func (s *Service) dispatchWebhookEvent(ctx context.Context, wh *AsaasWebhook) error {
