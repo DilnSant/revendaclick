@@ -38,7 +38,41 @@
 | **Billing Asaas — santos-car** | ✓ **dev_test_* ativo** (sessão 28 — Opção A) | `sub_gqu4uiro0sisshxt` cancelado no Asaas (zero cobrança); DB restaurado para `dev_test_fd1172f6-...`; usar AdminSimulateEvent para testes |
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
 | **BUG-01/02/03 — Feature flags Premium** | ✓ **Corrigido** (sessão 29) | Sidebar Premium gateada por `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
-| **FC032 — Add-ons sem billing Asaas** | ⚠ **Documentado** (sessão 29) | Gap identificado; correção Etapa 5; impacto zero enquanto santos-car em dev_test_* |
+| **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
+| **FC033 — Cancel sub não cancela add-ons** | ⚠ **Documentado** (sessão 30) | Aguarda decisão de negócio (Opção A/B/C) — não bloqueante |
+| **Etapa 5 — Billing real add-ons** | ✓ **Implementado** (sessão 30) | Asaas subscription por add-on; status lifecycle; webhook routing; is_redundant |
+
+---
+
+## 2026-05-31 (sessão 30) — Etapa 5: Billing real Asaas para add-ons (migration 027)
+
+**Objetivo:** Implementar cobrança real via Asaas para add-ons — fecha FC032. Add-ons anteriores eram gratuitos (gap sem billing).
+**Commits:** `80e0878`
+
+**Arquivos alterados:**
+- `database/migrations/027_addon_billing_integration.sql` — `grace_until` + `asaas_payment_link` em `subscription_addons`; índices webhook routing e grandfathered
+- `backend/internal/billing/model.go` — `PaymentLink` + `IsRedundant` em `ActiveAddon`; `AddonActivateResponse` + `AddonRecord`
+- `backend/internal/billing/repository.go` — 7 novos métodos: `FindTenantByAsaasAddonID`, `ActivateAddonByAsaasID`, `MarkAddonPastDueByAsaasID`, `CancelAddonByAsaasID`, `GetAddonByTenantAndType`, `GetAddonPrice`, `GetPlanFeaturesByTenant`; `ListActiveAddons` inclui `pending_payment`/`past_due`
+- `backend/internal/billing/service.go` — `ActivateAddon` cria assinatura Asaas + `pending_payment`; `CancelAddon` cancela no Asaas; `HandleWebhook` com dual routing; `dispatchAddonWebhookEvent` com grace period 3d
+- `backend/internal/billing/handler.go` — `ActivateAddon`/`CancelAddon` delegam ao service; `GetAddons` computa `is_redundant`
+- `backend/internal/plans/repository.go` — `GetUsage` SQL: `pending_payment` exclui features (D1); `past_due` com `grace_until` mantém features
+- `frontend/app/(dashboard)/billing/addons/_components/AddonsClient.tsx` — seção `pending_payment` (amber) com "Pagar agora"; badge `past_due` vermelho; aviso `is_redundant` com cancel inline (D4)
+- `docs-operacao/FalhasCorrigidas/FC033_...md` — novo documento
+
+**Decisões técnicas aplicadas (aprovadas na sessão):**
+- **D1**: Features só concedidas após `PAYMENT_CONFIRMED` (não em `pending_payment`)
+- **D2**: `createSubscription()` reutilizado — sem novo método Asaas
+- **D3**: Sem grandfathering permanente — índice `idx_grandfathered` para relatório admin
+- **D4**: Sem auto-cancel em upgrade — `is_redundant=true` na UI para decisão explícita do usuário
+
+**Smoke tests executados (7/7 passaram):**
+- T1: `PAYMENT_CONFIRMED` → `active` ✓
+- T2: `PAYMENT_OVERDUE` → `past_due` + `grace_until+3d` ✓
+- T3: `PAYMENT_CONFIRMED` (recovery) → `active`, `grace_until=NULL` ✓
+- T4: `PAYMENT_REFUNDED` → `past_due` (mesmo comportamento que overdue) ✓
+- T5: Main sub não afetada por evento de addon (regressão) ✓
+- T6: `SUBSCRIPTION_CANCELED` → `canceled` + `canceled_at` ✓
+- T7: Idempotência — evento duplicado bloqueado ✓
 
 ---
 

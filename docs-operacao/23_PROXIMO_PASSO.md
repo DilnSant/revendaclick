@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 31/05/2026 (sessão 29 — correção bugs comerciais Premium)
+> Atualizado em: 31/05/2026 (sessão 30 — Etapa 5: billing real add-ons, migration 027)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -60,7 +60,7 @@
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Supabase security advisors | ✓ limpos |
-| FalhasCorrigidas | ✓ 31 FCs documentadas (FC001–FC031) |
+| FalhasCorrigidas | ✓ 33 FCs documentadas (FC001–FC033) |
 | PRODUCT_ARCHITECTURE.md | ✓ criado — fonte única da arquitetura de negócio |
 | DEPENDENCIES.md | ✓ criado — mapa de dependências por módulo |
 | ENVIRONMENTS.md | ✓ criado — produção / homologação / desenvolvimento |
@@ -70,7 +70,10 @@
 | Governança sessão | ✓ protocolo de fim de sessão em 23_PROXIMO_PASSO.md |
 | **Saneamento documental (sessão 26)** | ✓ 4 divergências corrigidas; docs-operacao/prompts/ removido; referências prompts/ (raiz) corrigidas |
 | **BUG-01/02/03 — Feature flags Premium (sessão 29)** | ✓ Sidebar Premium `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
-| **FC032 — Add-ons sem billing Asaas** | ⚠ Documentado — gap identificado; correção Etapa 5 |
+| **FC032 — Add-ons sem billing Asaas** | ✓ Corrigido (sessão 30 — Etapa 5) |
+| **FC033 — Cancel sub não cancela add-ons** | ⚠ Pendente — aguarda decisão de negócio |
+| **Migration 027** | ✓ aplicada — `grace_until` + `asaas_payment_link` + índices |
+| **Billing Asaas add-ons** | ✓ `pending_payment` → `active` via webhook; grace period 3d; `is_redundant` |
 | **sandbox-revendaclick** | ✓ criado — Pro active, tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |
 | **E2E .env.e2e** | ✓ template criado em `frontend/.env.e2e` |
 | **METRICS_TOKEN** | ✓ confirmado presente e funcional no VPS (nginx bloqueia externo — correto) |
@@ -171,7 +174,8 @@ Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar container
 
 ### 4. Etapas comerciais (próximas sessões)
 
-- **Etapa 5** — Billing gateway abstraction (desvincular do Asaas → interface BillingGateway)
+- **FC033** — Decidir: ao cancelar assinatura principal, cancelar add-ons automaticamente (Opção A), pausar (B) ou exibir aviso (C)
+- **Etapa 5 follow-up** — `AdminSimulateEvent` suportar `addon_type` param para simular webhooks de add-on direto pelo painel admin
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
 ### 5. Evolution schema isolado (Baixa — D19)
@@ -182,8 +186,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **32 falhas documentadas (FC001–FC032)**.
-Próximo número disponível: **FC033**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **33 falhas documentadas (FC001–FC033)**.
+Próximo número disponível: **FC034**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
