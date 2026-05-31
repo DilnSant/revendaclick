@@ -26,7 +26,7 @@
 ```
 /login → supabase.auth.signInWithPassword({ email, password })
        → sessão salva em cookies
-       → middleware.ts: detecta usuário → injeta x-user-id
+       → proxy.ts: detecta usuário → injeta x-user-id
        → redirect /dashboard
 ```
 
@@ -127,7 +127,9 @@ Se role não permitida → **403 Forbidden**
 
 ## Middleware de Auth — Frontend Next.js
 
-### middleware.ts
+### proxy.ts
+
+> **`middleware.ts` foi substituído por `proxy.ts` (ver D14 em `21_DECISOES_TECNICAS.md`)**
 
 Executa em toda request (exceto assets):
 
@@ -159,7 +161,7 @@ response.headers.set('x-pathname', pathname)
 ```
 Browser tem cookie sb-<ref>-auth-token
     ↓
-middleware.ts:
+proxy.ts:
     → createServerClient com cookie adapter
     → supabase.auth.getUser() → valida no Supabase
     → se token expirado → refresca automaticamente

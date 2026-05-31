@@ -109,7 +109,7 @@ Header `X-Subscription-Warning` é injetado quando dentro do grace period.
 }
 ```
 
-- `plan_name`: `starter` | `pro` | `performance` | `scale`
+- `plan_name`: `starter` | `pro` | `premium` | `scale`
 - `billing_cycle`: `monthly` (padrão) | `yearly`
 - `billing_type`: `BOLETO` (padrão) | `PIX` | `CREDIT_CARD`
 - `cpf_or_cnpj`: opcional, necessário para criar customer no Asaas

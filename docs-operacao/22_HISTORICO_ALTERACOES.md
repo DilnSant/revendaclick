@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 30/05/2026 (sessão 25 — migration 026 performance → premium)
+> Última atualização: 31/05/2026 (sessão 26 — saneamento documental final)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -26,14 +26,75 @@
 | **Automações** | ✓ Placeholder produção (`has_api_access`) | Gated; CTA WhatsApp add-on condicional |
 | **Campanhas** | ✓ Placeholder produção (`has_api_access`) | Gated; "Em breve" com links Analytics/CRM |
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
+| **Sandbox tenant** | ✓ `sandbox-revendaclick` (sessão 26) | Pro active, `tenant_id = e72eb104-98b7-4a71-946d-15e680496fc3`, substitui devecar |
 | **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
 | **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
 | **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open; devecar desconectado |
 | **OpenRouter AI** | ✓ Produção | classify-lead, suggest-reply |
-| **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN pendente no .env VPS |
+| **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection pendente (Supabase Dashboard) |
+
+---
+
+## 2026-05-31 (sessão 26) — Saneamento documental final + sandbox + E2E
+
+**Commits:** (a confirmar após push)
+**Arquivos alterados:**
+- `docs-operacao/MEMORY.md` — CRÍTICO: corrigido plan.name 'performance' → 'premium' na nota
+- `docs-operacao/PRODUCT_ARCHITECTURE.md` — tabela planos: performance → premium
+- `docs-operacao/15_BILLING_ASAAS.md` — plan_name list: performance → premium
+- `docs-operacao/README.md` — referências docs-operacao/prompts/ → prompts/
+- `docs-operacao/00_LEIA_PRIMEIRO.md` — referências prompts corretas + seção PROMPTS OFICIAIS
+- `prompts/00_PROMPT_INICIO_SESSAO.md` — referências docs-operacao/prompts/ → prompts/
+- `docs-operacao/20_PENDENCIAS.md` — fix duplicidade Reconectar Central; +4 itens CONCLUÍDOS
+- `docs-operacao/23_PROXIMO_PASSO.md` — sessão 26; sandbox + E2E + METRICS_TOKEN na tabela
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` — esta entrada + snapshot atualizado
+- `docs-operacao/10_INFRA_VPS.md` — Coolify → Vercel no mapa de domínios
+- `docs-operacao/03_FRONTEND.md` — Coolify → Vercel; middleware.ts → proxy.ts
+- `docs-operacao/06_AUTENTICACAO.md` — middleware.ts → proxy.ts (3 ocorrências)
+- `docs-operacao/02_MAPA_DE_PASTAS.md` — middleware.ts → proxy.ts
+- `docs-operacao/REFERENCE.md` — tenants atualizados: santos-car Pro + sandbox-revendaclick
+- `docs-operacao/ENVIRONMENTS.md` — tenants atualizados
+- `docs-operacao/prompts/` (pasta) — removida via git rm (prompts vivem em prompts/ na raiz)
+- `frontend/.env.e2e` — template criado com variáveis para santos-car, sandbox e super_admin
+- `frontend/e2e/helpers/auth.ts` — comentário corrigido: santos-car é Pro
+- `.gitignore` — .env.e2e adicionado
+
+### Correções realizadas
+
+**4 divergências documentais:**
+1. `MEMORY.md` linha 42: plan.name 'performance' → 'premium'
+2. `PRODUCT_ARCHITECTURE.md` tabela: performance → premium
+3. `docs-operacao/prompts/` removida; referências atualizadas para `prompts/` (raiz)
+4. `20_PENDENCIAS.md` item duplicado "Reconectar Central" corrigido para CONCLUÍDA
+
+**Coolify → Vercel (3 arquivos):** 03_FRONTEND, 10_INFRA_VPS, ENVIRONMENTS
+**middleware.ts → proxy.ts (3 arquivos):** 06_AUTENTICACAO, 02_MAPA_DE_PASTAS, 03_FRONTEND
+
+**Nova divergência encontrada e corrigida:**
+- santos-car estava documentado como Starter — DB confirma Pro. REFERENCE e ENVIRONMENTS atualizados.
+
+### Banco de dados
+
+Tenant `sandbox-revendaclick` criado via SQL:
+- `tenant_id`: `e72eb104-98b7-4a71-946d-15e680496fc3`
+- slug: `sandbox-revendaclick`
+- plano: Pro (active)
+- `current_period_end`: 2026-06-30
+
+### Deploy
+
+Frontend: Vercel — EXECUTADO (push automático)
+Backend: CI/CD — NÃO EXECUTADO (nenhuma alteração de código Go)
+Banco: tenant sandbox-revendaclick criado via MCP SQL
+
+### Testes
+
+TypeScript: NÃO EXECUTADO (nenhuma alteração de código)
+Go build: NÃO EXECUTADO (nenhuma alteração de código Go)
+METRICS_TOKEN: ✓ confirmado via SSH — `/metrics` retorna 200 do VPS com Bearer token correto
 
 ---
 

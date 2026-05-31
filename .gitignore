@@ -20,6 +20,7 @@ tsconfig.tsbuildinfo
 .env.production
 .env.staging
 .env.development
+.env.e2e
 
 # ── Go ────────────────────────────────────────────────────────────────────────
 bin/

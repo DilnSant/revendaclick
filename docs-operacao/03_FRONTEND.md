@@ -10,7 +10,7 @@
 - **Runtime:** Node.js (standalone mode — não usa Edge Runtime)
 - **CSS:** TailwindCSS
 - **Auth:** @supabase/ssr (cookies SSR-safe)
-- **Hospedagem:** Coolify (no VPS Hostinger)
+- **Hospedagem:** Vercel (auto-deploy via GitHub push para `main`)
 
 ---
 
@@ -65,7 +65,9 @@ Sem autenticação. Indexadas por Google.
 
 ---
 
-## Middleware (`middleware.ts`)
+## Proxy (`proxy.ts`)
+
+> **`middleware.ts` foi substituído por `proxy.ts` (ver D14 em `21_DECISOES_TECNICAS.md`)**
 
 Executa em **toda request** (exceto assets estáticos):
 
@@ -101,7 +103,7 @@ await publicFetch('/api/public/minha-loja/vehicles')
 
 URL base:
 - **Em Docker:** `INTERNAL_API_URL=http://backend:8080` (rede interna — mais rápido)
-- **Em produção Coolify:** `INTERNAL_API_URL=https://api.revendaclick.com.br`
+- **Em produção (Vercel):** `INTERNAL_API_URL=https://api.revendaclick.com.br`
 - **Fallback:** `NEXT_PUBLIC_API_URL=https://api.revendaclick.com.br`
 
 O token de acesso é obtido automaticamente via `supabase.auth.getSession()`.

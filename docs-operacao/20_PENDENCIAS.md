@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 29/05/2026 (sessão 23 — continuação 2)
+> Atualizado em: 31/05/2026 (sessão 26 — saneamento final)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -70,7 +70,7 @@
 | CONCLUÍDA | Deploy guard re-subscribe | — | commit 4cd5dee deployado via CI/CD |
 | CONCLUÍDA | Fix WhatsApp QR Code não aparecia | — | 3 bugs corrigidos: condição frontend + handleRefreshQR + normalização "close"→"disconnected" backend (commit 3248b30) |
 | CONCLUÍDA | Fix Evolution API não gerava QR (Baileys silent failure) | — | 8 bugs: imagem 14m defasada → upgrade v2.3.7, DATABASE_ENABLED, CACHE_REDIS desabilitado, parser fetchInstances, webhook internal IP (commits d4eb26d→ce103a0) |
-| PENDENTE | Reconectar Central de Atendimento santos-car | CRÍTICA | Instâncias Evolution foram resetadas na sessão 14. Acessar /whatsapp (Central de Atendimento) → "Conectar canal" → escanear QR |
+| CONCLUÍDA | Reconectar Central de Atendimento santos-car | — | Instância `santos-car` open (554888482877); feature `has_central_atendimento` concedida via tenant_features — sessão 22 |
 | CONCLUÍDA | devecar subscribe antes de 2026-05-31 | — | Assinatura ativada via Supabase MCP (sessão 19): status=active, plano Pro, period_end=2026-06-27 |
 | CONCLUÍDA | Fix vehicle detail 500 (digest 4250320451) | — | features null + photo_urls→images — commit 2ee68ab |
 | CONCLUÍDA | Fix billing trial — botão bloqueado durante trialing | — | isActiveAndCurrent = isCurrent && !isTrialing — commit 81eceb5 |
@@ -169,3 +169,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Runbook de incidentes | — | `24_RUNBOOK_INCIDENTES.md` — 10 cenários com diagnóstico e solução |
 | CONCLUÍDA | Sync docs ↔ código (sessão 5) | — | 11_DOCKER.md, 16_EVOLUTION.md, 19_RISCOS.md, 24_RUNBOOK atualizados para refletir commit d17025e (Redis + 768m + NODE_OPTIONS) |
 | CONCLUÍDA | FalhasCorrigidas/ — histórico permanente de bugs | — | 28 falhas documentadas em `docs-operacao/FalhasCorrigidas/` (FC001–FC028) com causa raiz, correção, commits e prevenção |
+| CONCLUÍDA | Saneamento documental (sessão 26) | — | 4 divergências corrigidas; Coolify→Vercel em 03_FRONTEND + 06_AUTH + 10_INFRA + 02_MAPA; middleware.ts→proxy.ts; docs-operacao/prompts/ removido; MEMORY/PRODUCT_ARCH plan.name corrigidos |
+| CONCLUÍDA | Tenant sandbox-revendaclick | — | Criado via SQL: slug `sandbox-revendaclick`, plano Pro active, period_end 2026-06-30. tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |
+| CONCLUÍDA | E2E .env.e2e template | — | `frontend/.env.e2e` criado com variáveis para santos-car, sandbox e super_admin; `.env.e2e` adicionado ao .gitignore |
+| CONCLUÍDA | METRICS_TOKEN confirmado | — | Token presente no VPS .env e no container; /metrics retorna 200 via localhost com Bearer token; nginx bloqueia acesso externo (correto) |

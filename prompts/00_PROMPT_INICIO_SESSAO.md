@@ -38,31 +38,33 @@ Ler nesta ordem:
 
 1. CLAUDE.md
 
-2. docs-operacao/REFERENCE.md
+2. docs-operacao/00_LEIA_PRIMEIRO.md
 
-3. docs-operacao/MEMORY.md
+3. docs-operacao/REFERENCE.md
 
-4. docs-operacao/PRODUCT_ARCHITECTURE.md
+4. docs-operacao/MEMORY.md
 
-5. docs-operacao/DEPENDENCIES.md
+5. docs-operacao/PRODUCT_ARCHITECTURE.md
 
-6. docs-operacao/ENVIRONMENTS.md
+6. docs-operacao/DEPENDENCIES.md
 
-7. docs-operacao/20_PENDENCIAS.md
+7. docs-operacao/ENVIRONMENTS.md
 
-8. docs-operacao/21_DECISOES_TECNICAS.md
+8. docs-operacao/20_PENDENCIAS.md
 
-9. docs-operacao/22_HISTORICO_ALTERACOES.md
+9. docs-operacao/21_DECISOES_TECNICAS.md
 
-Ler apenas:
+10. docs-operacao/22_HISTORICO_ALTERACOES.md
 
-Estado Atual por Feature
+11. docs-operacao/23_PROXIMO_PASSO.md
 
-10. docs-operacao/23_PROXIMO_PASSO.md
-
-11. Todos os snapshots relevantes em:
+12. Todos os snapshots relevantes:
 
 docs-operacao/features/
+
+13. Todos os prompts:
+
+prompts/
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PASSO 2 — DIAGNÓSTICO OBRIGATÓRIO
@@ -72,133 +74,194 @@ Após a leitura apresentar:
 
 ### Estado Atual
 
-* o que está funcionando
-* o que está em desenvolvimento
-* o que está bloqueado
+- o que está funcionando
+- o que está em desenvolvimento
+- o que está bloqueado
 
 ### Arquitetura Ativa
 
-* Frontend — Next.js 16 (Vercel)
-* Backend — Go (VPS Docker)
-* Database — Supabase PostgreSQL
-* Billing — Asaas
-* WhatsApp — Evolution API v2.3.7
-* WhatsApp da Loja — contato público na vitrine (não Evolution)
-* Central de Atendimento — add-on whatsapp_automation (Evolution)
-* IA — OpenRouter
+- Frontend
+- Backend
+- Banco
+- Billing
+- WhatsApp
+- IA
+- Deploy
 
 ### Ambiente Ativo
 
-* produção
-* homologação
-* desenvolvimento
+- produção
+- homologação
+- desenvolvimento
 
 ### Últimas Alterações
 
 Baseado em:
 
-22_HISTORICO_ALTERACOES.md
+docs-operacao/22_HISTORICO_ALTERACOES.md
 
 ### Pendências Abertas
 
 Baseado em:
 
-20_PENDENCIAS.md
+docs-operacao/20_PENDENCIAS.md
 
 ### Próximo Passo Recomendado
 
 Baseado em:
 
-23_PROXIMO_PASSO.md
+docs-operacao/23_PROXIMO_PASSO.md
 
 ### Riscos Conhecidos
 
 Identificar:
 
-* bugs críticos
-* riscos operacionais
-* riscos multi-tenant
-* riscos de deploy
+- bugs críticos
+- riscos operacionais
+- riscos multi-tenant
+- riscos de deploy
 
 ### Divergências Encontradas
 
 Listar qualquer conflito encontrado entre documentos.
 
+### Conceitos Obsoletos Encontrados
+
+Listar qualquer conceito ainda não migrado.
+
+Aguardar aprovação antes de iniciar alterações.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 3 — VALIDAR ARQUITETURA OFICIAL
+PASSO 3 — VALIDAR CONCEITOS OFICIAIS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Confirmar entendimento dos conceitos:
+Confirmar entendimento:
+
+### Planos Oficiais
+
+Starter
+
+Pro
+
+Premium
+
+Scale
+
+Esses nomes devem ser utilizados:
+
+- banco
+- frontend
+- backend
+- billing
+- documentação
+- snapshots
+- prompts
+
+Não utilizar:
+
+- Start
+- Performance
+
+━━━━━━━━━━━━━━━━━━
 
 ### WhatsApp da Loja
 
-Origem:
-
-Número público do tenant (configurado em Configurações → Contato Público)
-
 Função:
 
-* botão "Falar no WhatsApp" na vitrine pública
-* contato público da revenda
-* não usa Evolution API
+- contato público da loja
+- botão falar no WhatsApp
+- negociação direta
+- não utiliza Evolution
+
+━━━━━━━━━━━━━━━━━━
 
 ### Central de Atendimento
 
-Origem:
-
-Evolution API v2.3.7
-
 Função:
 
-* atendimento via WhatsApp integrado ao CRM
-* automações e campanhas (futuro)
-* IA Recovery
+- Evolution API
+- QR Code
+- atendimento integrado
+- automações
+- campanhas
+- IA Recovery
 
-Disponível apenas via add-on whatsapp_automation.
+Dependência:
 
-### Planos (nomes exatos no banco)
+add-on whatsapp_automation
 
-starter
+━━━━━━━━━━━━━━━━━━
 
-pro
+### Super Admin
 
-performance  ← plano 3 (label sidebar: "Premium")
+- não representa loja
+- não opera tenant comercial
+- não utiliza tenant operacional
+- acessa /admin
 
-scale  ← oculto do grid público
+━━━━━━━━━━━━━━━━━━
 
-### Add-ons
+### Tenant Operacional
 
-* user_extra — R$20/mês — +1 usuário
-* whatsapp_automation — R$39/mês — has_central_atendimento
-* ia_recovery — R$39/mês — has_lead_recovery
+Tenant principal:
 
-### Billing
+santos-car
 
-Asaas (BR) — sandbox em dev, production em prod
+Devecar:
 
-### Sidebar Gates
+- não é tenant operacional
+- não deve ser usado como referência operacional
+- utilizar apenas como histórico quando necessário
 
-Base (Starter+): Dashboard, Veículos, Interessados, Clientes, Financeiro
+━━━━━━━━━━━━━━━━━━
 
-Pro (has_crm): Atendimento, Analytics
+### Add-ons Oficiais
 
-Premium (has_api_access): Automações, Campanhas
+user_extra
 
-### Multi-Tenant
+- +1 usuário
+- R$20/mês
 
-Todas as operações devem respeitar:
+whatsapp_automation
 
-tenant_id
+- Central de Atendimento
+- QR Code
+- Evolution
+- automações
 
-RLS obrigatório em todas as tabelas de negócio.
+ia_recovery
+
+- recuperação automática
+- follow-up IA
+- lembretes IA
+
+━━━━━━━━━━━━━━━━━━
+
+### Feature Flags
+
+Permissões devem utilizar:
+
+feature flags
+
+Nunca utilizar:
+
+plan_name
+
+para controle de acesso.
+
+Exemplo incorreto:
+
+if (plan === 'Pro')
+
+Exemplo correto:
+
+if (hasFeature('crm'))
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PASSO 4 — ANÁLISE ANTES DE CODIFICAR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Antes de alterar qualquer arquivo:
-
-identificar:
+Antes de qualquer alteração apresentar:
 
 1. causa raiz
 
@@ -218,6 +281,12 @@ identificar:
 
 9. documentação impactada
 
+10. feature flags afetadas
+
+11. billing afetado
+
+12. multi-tenant afetado
+
 Não iniciar implementação sem esta análise.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -234,9 +303,9 @@ Confirmar:
 
 ✓ UPSERT respeita tenant_id
 
-✓ RLS policies continuam corretas
+✓ RLS continua correta
 
-✓ JWT claim tenant_id propagado corretamente
+✓ JWT continua correto
 
 Se houver risco:
 
@@ -245,46 +314,10 @@ PARAR.
 Apresentar impacto.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 6 — VALIDAÇÃO DE DOCUMENTAÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Confirmar impacto em:
-
-* docs-operacao/PRODUCT_ARCHITECTURE.md
-* docs-operacao/DEPENDENCIES.md
-* docs-operacao/17_FLUXOS_NEGOCIO.md
-* docs-operacao/features/FEATURE_FLAGS_SNAPSHOT.md
-* docs-operacao/features/SIDEBAR_SNAPSHOT.md
-
-Se houver impacto:
-
-planejar atualização.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 7 — PLANO DE EXECUÇÃO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Antes de alterar código apresentar:
-
-### O que será feito
-
-### Por que será feito
-
-### Arquivos envolvidos
-
-### Impacto esperado
-
-### Testes planejados
-
-### Documentação que será atualizada
-
-Somente depois iniciar alterações.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 AÇÃO MANUAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Se existir qualquer ação manual (Supabase Dashboard, VPS SSH, Asaas painel):
+Se existir qualquer ação manual:
 
 PARAR.
 
@@ -292,32 +325,26 @@ Entregar:
 
 1. caminho exato
 
-2. tela / seção
+2. tela
 
-3. botão ou campo
+3. botão
 
-4. ordem dos passos
+4. campo
 
-5. resultado esperado
+5. valor
 
-Não assumir que a ação foi executada.
+6. ordem correta
+
+7. resultado esperado
+
+Não assumir execução.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ENCERRAMENTO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Ao finalizar a sessão:
+Ao finalizar:
 
-executar obrigatoriamente:
+executar integralmente:
 
 prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
-
-Não encerrar sem:
-
-✓ testes
-
-✓ documentação
-
-✓ deploy validado (quando aplicável)
-
-✓ sincronização entre código e documentação

@@ -69,11 +69,12 @@ O tenant `santos-car` no banco de produção funciona como tenant de homologaç�
 | **Asaas** | Conta sandbox | `ASAAS_ENV=sandbox` ativo |
 | **Tenant de ref.** | `santos-car` (Starter) | Tenant real do owner para testes |
 
-**Tenant de referência para testes:**
-- Slug: `santos-car`
-- Plano: Starter
-- Finalidade: testar upgrades, features, sidebar por plano
-- Instância Evolution: `open` (554888482877)
+**Tenants de referência para testes:**
+
+| Tenant | Plano | Finalidade |
+|---|---|---|
+| `santos-car` | **Pro** (active) | Tenant principal do owner; testes Pro; Evolution `open` (554888482877) |
+| `sandbox-revendaclick` | **Pro** (active) | Testes isolados; substitui devecar; sem dados reais |
 
 **Para simular eventos Asaas sem pagamento real:**
 ```

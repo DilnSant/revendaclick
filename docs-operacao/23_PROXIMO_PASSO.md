@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 30/05/2026 (sessão 25 — migration 026 + encerramento)
+> Atualizado em: 31/05/2026 (sessão 26 — saneamento final)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 24 — 30/05/2026)
+## Estado Atual do Projeto (sessão 26 — 31/05/2026)
 
 | Componente | Status |
 |---|---|
@@ -56,7 +56,7 @@
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Supabase security advisors | ✓ limpos |
-| FalhasCorrigidas | ✓ 29 FCs documentadas (FC001–FC029) |
+| FalhasCorrigidas | ✓ 30 FCs documentadas (FC001–FC030) |
 | PRODUCT_ARCHITECTURE.md | ✓ criado — fonte única da arquitetura de negócio |
 | DEPENDENCIES.md | ✓ criado — mapa de dependências por módulo |
 | ENVIRONMENTS.md | ✓ criado — produção / homologação / desenvolvimento |
@@ -64,6 +64,11 @@
 | Auditoria devecar | ✓ removido como tenant operacional; Coolify → Vercel corrigido em docs |
 | Memory OBSOLETO | ✓ seção OBSOLETO criada em MEMORY.md (8 itens) |
 | Governança sessão | ✓ protocolo de fim de sessão em 23_PROXIMO_PASSO.md |
+| **Saneamento documental (sessão 26)** | ✓ 4 divergências corrigidas; docs-operacao/prompts/ removido; referências prompts/ (raiz) corrigidas |
+| **sandbox-revendaclick** | ✓ criado — Pro active, tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |
+| **E2E .env.e2e** | ✓ template criado em `frontend/.env.e2e` |
+| **METRICS_TOKEN** | ✓ confirmado presente e funcional no VPS (nginx bloqueia externo — correto) |
+| **santos-car plano** | ✓ Atualizado: santos-car está em Pro (corrigido em REFERENCE.md + ENVIRONMENTS.md) |
 
 ---
 
@@ -108,72 +113,62 @@ Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / 
 
 ### 1. Verificar sidebar no browser em produção (ALTA)
 
-Testar os 2 perfis disponíveis:
+santos-car está em plano Pro. Testar:
 
 | Perfil | Esperado |
 |---|---|
-| **santos-car (Starter)** | Dashboard/Veículos/Interessados/Clientes/Financeiro + upgrade prompt "Desbloqueie com Pro" + Assinatura/Configurações |
-| **qualquer (Pro/has_crm)** | + seção Pro: Atendimento, Analytics |
+| **santos-car (Pro)** | Dashboard/Veículos/Interessados/Clientes/Financeiro + seção Pro (Atendimento/Analytics) + Assinatura/Configurações |
+| **sandbox-revendaclick (Pro)** | Mesmo comportamento — tenant isolado para testes agressivos |
 
 Verificar:
 - Financeiro → sub-nav mostrando Resumo/Vendas/Comissões
 - Assinatura → sub-nav mostrando Assinatura/Add-ons/Cobranças/Planos
 - Configurações → aba WhatsApp visível (5ª aba)
 
-### 2. Criar tenant sandbox-revendaclick (ALTA)
+### 2. Preencher senhas no .env.e2e e executar E2E (Média)
 
-Tenant de referência Pro para testes (substituto do devecar). Criar via onboarding normal:
-1. Registrar conta com email de teste
-2. Onboarding → slug `sandbox-revendaclick`
-3. Via admin panel: ativar plano Pro via simulate-event
-4. Atualizar REFERENCE.md e ENVIRONMENTS.md com o novo tenant_id
+Template criado em `frontend/.env.e2e`. Preencher `PREENCHER` com senhas reais:
+- `E2E_STARTER_PASSWORD` — senha do dilneysantos@gmail.com
+- `E2E_SUPER_ADMIN_PASSWORD` — senha do dilneysantos.developer@gmail.com
+- Criar usuário para sandbox-revendaclick e preencher `E2E_SANDBOX_PASSWORD`
 
-### 3. Configurar E2E credentials (Média)
-
-Criar `frontend/.env.e2e` com credenciais do tenant `santos-car` para rodar os specs de Playwright.
 Ver `frontend/e2e/README.md`.
 
-### 4. Vendedores — acessibilidade (Média)
+### 3. Itens que exigem ação manual (Baixa)
 
-`/vendors` foi removido do sidebar mas não tem acesso visível em Configurações.
-Opção A: Adicionar link "Vendedores →" dentro da aba Usuários (já existe em SettingsTabs — `<Link href="/vendors">`)
-Opção B: Adicionar sub-item em Configurações → Usuários → Vendedores
-
-**Status atual:** SettingsTabs UsersTab já tem `<Link href="/vendors" className="text-xs font-medium text-red-600 hover:text-red-700">Vendedores →</Link>` — OK, apenas confirmar no browser.
-
-### 4. Etapas comerciais pendentes (próximas sessões)
-
-- **Etapa 5** — Billing gateway abstraction (desvincular do Asaas → interface BillingGateway)
-- **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
-
-### 5. Leaked Password Protection (Baixa — Supabase Dashboard)
-
+**3a. Leaked Password Protection:**
 ```
 Supabase Dashboard → Authentication → Settings → Security → "Leaked Password Protection" → ON
 ```
 
-### 6. Uptime Monitoring (Baixa)
+**3b. Uptime Monitoring:**
+```
+UptimeRobot ou BetterStack Uptime
+URL: https://api.revendaclick.com.br/health
+Alerta por email
+```
 
-UptimeRobot ou BetterStack Uptime → `https://api.revendaclick.com.br/health` → alerta por email
-
-### 7. Backup S3 (Baixa)
-
+**3c. Backup S3 (opcional — rc_backup container já existe):**
 ```bash
+# No VPS /opt/revendaclick/.env:
 BACKUP_S3_BUCKET=meu-bucket-s3
 AWS_ACCESS_KEY_ID=...
 AWS_SECRET_ACCESS_KEY=...
 AWS_DEFAULT_REGION=sa-east-1
 ```
 
-### 8. METRICS_TOKEN ausente no .env VPS (Baixa)
+**3d. Rotação de Secrets (política semestral):**
+```
+ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN
+Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar containers
+```
 
-Endpoint `/metrics` retorna 403. Adicionar no VPS `/opt/revendaclick/.env` e reiniciar container.
+### 4. Etapas comerciais (próximas sessões)
 
-### 9. Rotação de Secrets (Baixa — política semestral)
+- **Etapa 5** — Billing gateway abstraction (desvincular do Asaas → interface BillingGateway)
+- **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
-`ASAAS_API_KEY`, `EVOLUTION_API_KEY`, `METRICS_TOKEN` — atualizar no .env VPS + reiniciar containers.
-
-### 10. Evolution schema isolado (Baixa — D19)
+### 5. Evolution schema isolado (Baixa — D19)
 
 Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 em `21_DECISOES_TECNICAS.md`.
 

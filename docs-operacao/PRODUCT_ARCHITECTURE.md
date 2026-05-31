@@ -72,7 +72,7 @@ SaaS (RevendaClick)
 |---|---|---|---|
 | `starter` | **Starter** | Funcionalidades básicas | Sim |
 | `pro` | **Pro** | `has_crm` libera seção Pro na sidebar | Sim |
-| `performance` | **Premium** | `has_api_access` libera seção Premium na sidebar | Sim |
+| `premium` | **Premium** | `has_api_access` libera seção Premium na sidebar | Sim |
 | `scale` | Scale | Igual Premium + limites maiores | **Não** — CTA "Enterprise" no grid é label de grade para contato comercial |
 
 > **`plan.name` no banco é `premium` (migration 026 — definitivo).** DB e nome comercial agora coincidem.

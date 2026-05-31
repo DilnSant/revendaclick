@@ -18,8 +18,8 @@
 
 | Domínio | Destino | Como chega |
 |---|---|---|
-| `revendaclick.com.br` | Frontend Next.js (Coolify) | Coolify gerencia |
-| `app.revendaclick.com.br` | Frontend Next.js (Coolify) | Coolify gerencia |
+| `revendaclick.com.br` | Frontend Next.js (Vercel) | Vercel — auto-deploy via GitHub push `main` |
+| `app.revendaclick.com.br` | Frontend Next.js (Vercel) | Vercel — auto-deploy via GitHub push `main` |
 | `api.revendaclick.com.br` | Backend Go | Nginx → 127.0.0.1:8080 |
 | `evolution.revendaclick.com.br` | Evolution API | Nginx → 127.0.0.1:8081 |
 

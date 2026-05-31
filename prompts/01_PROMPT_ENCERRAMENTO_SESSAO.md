@@ -6,153 +6,73 @@ Copiar e colar integralmente ao final de toda sessão.
 OBJETIVO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Encerrar a sessão somente após validar:
+Encerrar somente quando:
 
-✓ código
+✓ código atualizado
 
-✓ banco
+✓ documentação atualizada
 
-✓ testes
+✓ testes executados
 
-✓ deploy
+✓ deploy validado
 
-✓ documentação
+✓ histórico atualizado
 
-✓ arquitetura
+✓ próximos passos registrados
 
-✓ fluxos de negócio
+✓ snapshots atualizados
 
-✓ sincronização completa entre implementação e documentação
+✓ decisões registradas
 
-Nenhuma tarefa é considerada concluída enquanto existir divergência entre:
-
-CÓDIGO
-
-e
-
-DOCUMENTAÇÃO.
+✓ sem divergência entre código e documentação
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 1 — ATUALIZAR DOCUMENTAÇÃO OBRIGATÓRIA
+PASSO 1 — DOCUMENTAÇÃO OBRIGATÓRIA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Atualizar obrigatoriamente:
+Atualizar:
 
-### Pendências
+docs-operacao/MEMORY.md
 
 docs-operacao/20_PENDENCIAS.md
 
-* marcar concluídas
-* adicionar novas pendências
-* remover obsoletas
-
----
-
-### Decisões Técnicas
-
 docs-operacao/21_DECISOES_TECNICAS.md
-
-Adicionar nova decisão apenas se realmente existir.
-
-Formato:
-
-DXX — Título
-
-* contexto
-* decisão
-* impacto
-
----
-
-### Histórico
 
 docs-operacao/22_HISTORICO_ALTERACOES.md
 
-Adicionar:
-
-## YYYY-MM-DD — Sessão XX
-
-* alterações realizadas
-* arquivos alterados
-* motivo
-* impacto
-* deploy
-* testes
-
-Atualizar:
-
-Estado Atual por Feature (tabela no topo do arquivo)
-
----
-
-### Próximo Passo
-
 docs-operacao/23_PROXIMO_PASSO.md
-
-Atualizar:
-
-* data e sessão
-* estado atual do projeto
-* próximos passos em ordem de prioridade
-
----
-
-### Falhas Corrigidas
 
 docs-operacao/FalhasCorrigidas/
 
-Criar FC sempre que houver:
-
-* bug
-* regressão
-* corrupção de dados
-* incidente
-* vulnerabilidade
-* correção relevante
-
-Formato:
-
-FCXXX_NOME_DA_FALHA.md
-
-Registrar:
-
-* sintoma
-* causa raiz
-* impacto
-* correção
-* prevenção
-
----
-
-### Snapshots
+Atualizar snapshots impactados:
 
 docs-operacao/features/
 
-Atualizar snapshot quando houver mudança de:
+Especialmente:
 
-* feature flag
-* comportamento de módulo
-* estrutura da sidebar
-* plano ou add-on
+- FEATURE_FLAGS_SNAPSHOT.md
+- SIDEBAR_SNAPSHOT.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 2 — AUDITORIA DOS DOCUMENTOS ESTRUTURAIS
+PASSO 2 — AUDITORIA DOCUMENTAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Validar impacto em:
 
-* docs-operacao/PRODUCT_ARCHITECTURE.md
-* docs-operacao/DEPENDENCIES.md
-* docs-operacao/ENVIRONMENTS.md
-* docs-operacao/17_FLUXOS_NEGOCIO.md
-* docs-operacao/REFERENCE.md
+docs-operacao/REFERENCE.md
 
-Se houver impacto:
+docs-operacao/PRODUCT_ARCHITECTURE.md
 
-ATUALIZAR antes de encerrar.
+docs-operacao/DEPENDENCIES.md
+
+docs-operacao/ENVIRONMENTS.md
+
+docs-operacao/17_FLUXOS_NEGOCIO.md
+
+Atualizar quando necessário.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 3 — REGISTRAR INTEGRALMENTE
+PASSO 3 — REGISTRAR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Registrar:
@@ -161,66 +81,70 @@ Registrar:
 
 ### Arquivos alterados
 
-Lista completa com paths.
+### Commits realizados
 
-### Commits
+### Push realizado
 
-Hashes e mensagens.
+### Deploy realizado
 
-### Push
+### Migrations executadas
 
-Confirmado ou não.
-
-### Deploy
-
-Frontend — Vercel (automático via push)
-
-Backend — CI/CD GitHub Actions → VPS
-
-Banco — migrations aplicadas
-
-### Migrations
-
-* número e nome
-* objetivo
-* database.types.ts regenerado?
-* rollback necessário?
-
-### Testes
-
-* executados
-* resultado
+### Testes executados
 
 ### Bugs corrigidos
 
-Relacionar FC quando existir.
-
-### Pendências novas
+### Pendências abertas
 
 ### Próximos passos
 
-Em ordem de prioridade.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 4 — AUDITORIA DE NOMENCLATURA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Verificar referências obsoletas:
+
+Start
+
+Performance
+
+Compradores
+
+Devecar operacional
+
+Coolify
+
+middleware.ts
+
+Se encontrados:
+
+corrigir
+
+ou
+
+registrar em:
+
+MEMORY.md → OBSOLETO
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 4 — AUDITORIA DE CAUSA RAIZ
+PASSO 4.1 — CAUSA RAIZ
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Para cada correção realizada informar:
 
 ### Causa Raiz
 
-* origem exata
-* arquivo responsável
-* função responsável
-* tabela responsável
+- origem exata
+- arquivo responsável
+- função responsável
+- tabela responsável
 
 ### Correção
 
-* o que foi alterado
+- o que foi alterado
 
 ### Prevenção
 
-* como evitar recorrência
+- como evitar recorrência
 
 Não aceitar explicações sem evidência.
 
@@ -228,19 +152,17 @@ Não aceitar explicações sem evidência.
 PASSO 5 — AUDITORIA MULTI-TENANT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Validar alterações realizadas.
-
 Confirmar:
 
-✓ SELECT respeita tenant_id
+✓ tenant_id
 
-✓ UPDATE respeita tenant_id
+✓ RLS
 
-✓ DELETE respeita tenant_id
+✓ JWT
 
-✓ UPSERT respeita tenant_id
+✓ feature flags
 
-✓ RLS policies continuam corretas
+✓ isolamento entre tenants
 
 Se houver risco:
 
@@ -249,174 +171,100 @@ PARAR.
 Documentar.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 6 — VALIDAÇÃO BANCO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Confirmar:
-
-✓ migrations aplicadas (numeradas sequencialmente em database/migrations/)
-
-✓ database.types.ts regenerado após migration
-
-✓ get_tenant_usage() ainda retorna todas as flags (3-way UNION)
-
-✓ índices e triggers atualizados
-
-Informar:
-
-rollback necessário?
-
-SIM ou NÃO
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 7 — TESTES
+PASSO 6 — TESTES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Executar:
 
-cd frontend && npx tsc --noEmit
-
-cd backend && go build ./... && go vet ./...
-
-cd backend && go test ./internal/billing/... ./internal/leads/...
-
-Informar:
-
-* total testes
-* aprovados
-* falhas
-* novos testes adicionados
-
----
-
-Informar também:
-
-### Testes Reais (browser / API)
-
-Dashboard — KPIs carregam?
-
-Vitrine pública /:slug — visível sem login?
-
-Billing — /billing/plans mostra 3 planos?
-
-Sidebar — perfil Starter sem seção Pro?
-
-WhatsApp/Configurações — aba WhatsApp visível?
-
-Admin — /admin acessível pelo super_admin?
-
-Status:
-
-EXECUTADO
-
-ou
-
-NÃO EXECUTADO
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 8 — DEPLOY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 Frontend
 
-* commit realizado
-* push para main
-* Vercel deploy automático (verificar em vercel.com)
+npx tsc --noEmit
 
 Backend
 
-* CI/CD GitHub Actions disparado
-* self-hosted runner VPS executou
-* docker compose up -d backend
-* healthcheck: GET https://api.revendaclick.com.br/health
+go build ./...
 
-Banco
+go vet ./...
 
-* migrations aplicadas via MCP ou supabase CLI
-* resultado confirmado
+go test ./...
 
-Registrar:
+Registrar resultado.
 
-todos os commits e hashes.
+Informar:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 9 — RELATÓRIO FINAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Apresentar:
-
-### Resumo Executivo
-
-máximo 10 linhas
-
-### Causa Raiz
-
-de cada correção
-
-### Arquivos Alterados
-
-código + documentação
-
-### Banco
-
-migrations, índices, triggers
-
-### Testes
-
-lista completa
-
-### Deploys
-
-frontend — backend — banco
-
-### Documentos Atualizados
-
-lista completa
-
-### Pendências Abertas
-
-estado atual de 20_PENDENCIAS.md
-
-### Próxima Ação Recomendada
-
-apenas UMA — a de maior impacto
-
-### Riscos ou Lacunas
-
-o que merece atenção futura
+- total executado
+- aprovados
+- falhas
+- novos testes
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CHECKLIST FINAL
+PASSO 6.1 — DEPLOY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Confirmar:
 
-✓ código atualizado
+Frontend
 
-✓ documentação atualizada
+- EXECUTADO
+ou
+- NÃO EXECUTADO
 
-✓ features/FEATURE_FLAGS_SNAPSHOT.md atualizado
+Backend
 
-✓ features/SIDEBAR_SNAPSHOT.md atualizado
+- EXECUTADO
+ou
+- NÃO EXECUTADO
 
-✓ REFERENCE.md atualizado (migrations, FCs)
+Banco
 
-✓ FalhasCorrigidas atualizado
+- EXECUTADO
+ou
+- NÃO EXECUTADO
 
-✓ Estado Atual por Feature atualizado (22_HISTORICO topo)
+Informar:
 
-✓ 23_PROXIMO_PASSO.md atualizado (data + estado)
+- commit
+- hash
+- ambiente
 
-✓ pendências atualizadas
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASSO 7 — RELATÓRIO FINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✓ testes executados
+Apresentar:
 
-✓ deploy validado
+RESOLVIDO ✓
 
-✓ multi-tenant validado
+PARCIAL ⚠
 
-✓ causa raiz documentada
+PENDENTE ✗
 
-✓ itens obsoletos movidos para MEMORY.md → OBSOLETO
+Informar:
 
-Não encerrar enquanto qualquer item acima estiver pendente.
+1. O que foi feito
+
+2. O que ficou pendente
+
+3. Riscos existentes
+
+4. Próxima ação recomendada
+
+5. Documentos atualizados
+
+6. Commits realizados
+
+7. Deploy realizado
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRA FINAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Não encerrar a sessão enquanto existir divergência entre:
+
+CÓDIGO
+
+e
+
+DOCUMENTAÇÃO.
+
+A documentação operacional deve permanecer sincronizada com o estado real do sistema.

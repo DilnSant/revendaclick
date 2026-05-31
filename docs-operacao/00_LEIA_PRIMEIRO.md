@@ -36,21 +36,21 @@ docs-operacao/features/
 
 12. Todos os prompts:
 
-docs-operacao/prompts/
+prompts/
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PROMPTS OFICIAIS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-00_PROMPT_INICIO_SESSAO.md
+prompts/00_PROMPT_INICIO_SESSAO.md
 
-01_PROMPT_ENCERRAMENTO_SESSAO.md
+prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
 
-02_PROMPT_AUDITORIA.md
+prompts/02_PROMPT_AUDITORIA.md
 
-03_PROMPT_BUG_CRITICO.md
+prompts/03_PROMPT_BUG_CRITICO.md
 
-04_PROMPT_DEPLOY.md
+prompts/04_PROMPT_DEPLOY.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VALIDAÇÃO DE CONCEITOS OFICIAIS
@@ -324,7 +324,7 @@ ENCERRAMENTO OBRIGATÓRIO
 
 Ao finalizar qualquer tarefa executar integralmente:
 
-docs-operacao/prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
+prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
 
 Nenhuma sessão deve ser encerrada sem:
 

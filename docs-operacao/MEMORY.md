@@ -39,7 +39,7 @@
 | `premium` | **Premium** | `has_api_access` | `plan.name = 'premium'` (migration 026 — definitivo) |
 | `scale` | Scale | `has_api_access` | Oculto do grid; CTA "Enterprise" é label de grade, não plan.name |
 
-> **CRÍTICO:** `plan.name` no banco é sempre `performance`. Nome comercial ao cliente é "Premium".
+> **CRÍTICO:** `plan.name` no banco é `premium` (migration 026 — definitivo). Nome comercial e nome interno coincidem.
 > "Enterprise" nunca foi e nunca deve ser usado como `plan.name` — é apenas texto de CTA no grid público para o plano `scale`.
 
 ### Feature Flags (nomes exatos)

@@ -2,7 +2,7 @@ import { Page } from '@playwright/test'
 
 /** Credenciais fixas de teste — nunca usar em produção */
 export const TEST_USERS = {
-  /** Tenant santos-car — plano Starter */
+  /** Tenant santos-car — plano Pro (owner do projeto) */
   starter: {
     email: process.env.E2E_STARTER_EMAIL ?? '',
     password: process.env.E2E_STARTER_PASSWORD ?? '',

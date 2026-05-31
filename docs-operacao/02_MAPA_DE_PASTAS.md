@@ -77,7 +77,7 @@
 
 | Arquivo | Função | Impacto |
 |---|---|---|
-| `middleware.ts` | Auth guard + cookie refresh + header injection | Toda proteção de rotas |
+| `proxy.ts` | Auth guard + cookie refresh + header injection (substituiu `middleware.ts` — ver D14) | Toda proteção de rotas |
 | `lib/proxy.ts` | apiCall() e publicFetch() → backend Go | Toda comunicação com API |
 | `lib/supabaseServer.ts` | createClient() e createServiceClient() | Auth SSR e bypass RLS |
 | `lib/supabaseClient.ts` | createClient() singleton browser | Auth client-side |
