@@ -9,7 +9,7 @@ export default function CancelButton() {
   const [error, setError] = useState<string | null>(null)
 
   function handleCancel() {
-    if (!confirm('Tem certeza que deseja cancelar sua assinatura? Você perderá acesso ao final do período pago.')) return
+    if (!confirm('Tem certeza que deseja cancelar sua assinatura?\n\nAo cancelar, todos os recursos adicionais contratados também serão cancelados.\n\nVocê perderá acesso ao encerrar o período atual.')) return
 
     setError(null)
     startTransition(async () => {
@@ -25,6 +25,9 @@ export default function CancelButton() {
 
   return (
     <div>
+      <p className="mb-3 text-xs text-gray-500 leading-relaxed">
+        Ao cancelar sua assinatura, todos os recursos adicionais contratados também serão cancelados.
+      </p>
       <button
         onClick={handleCancel}
         disabled={isPending}

@@ -483,6 +483,47 @@ func (r *Repository) GetAddonPrice(ctx context.Context, addonType string) (float
 	return price, err
 }
 
+// ListActiveAddonIDs returns id + asaas_addon_id for all non-canceled add-ons of a tenant.
+// Used by cancelTenantAddons to cancel each add-on in Asaas before bulk-canceling in DB.
+func (r *Repository) ListActiveAddonIDs(ctx context.Context, tenantID string) ([]*AddonRecord, error) {
+	rows, err := r.pool.Query(ctx,
+		`SELECT id::text, COALESCE(asaas_addon_id, '')
+		 FROM subscription_addons
+		 WHERE tenant_id = $1
+		   AND status IN ('active', 'pending_payment', 'past_due')`,
+		tenantID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var list []*AddonRecord
+	for rows.Next() {
+		rec := &AddonRecord{}
+		if err := rows.Scan(&rec.ID, &rec.AsaasAddonID); err != nil {
+			return nil, err
+		}
+		list = append(list, rec)
+	}
+	return list, rows.Err()
+}
+
+// CancelAllAddonsByTenantID bulk-cancels all non-canceled add-ons for a tenant.
+// Called after Asaas cancellations are attempted (best-effort) via cancelTenantAddons.
+func (r *Repository) CancelAllAddonsByTenantID(ctx context.Context, tenantID string) error {
+	_, err := r.pool.Exec(ctx, `
+		UPDATE subscription_addons
+		SET status      = 'canceled',
+		    canceled_at = NOW(),
+		    updated_at  = NOW()
+		WHERE tenant_id = $1
+		  AND status IN ('active', 'pending_payment', 'past_due')`,
+		tenantID,
+	)
+	return err
+}
+
 // GetPlanFeaturesByTenant returns the plan's own features (without addon overlay).
 // Used to compute is_redundant for active add-ons.
 func (r *Repository) GetPlanFeaturesByTenant(ctx context.Context, tenantID string) ([]string, error) {

@@ -163,7 +163,23 @@ func (s *Service) UpgradeSubscription(ctx context.Context, tenantID string, req 
 	return s.GetSubscription(ctx, tenantID)
 }
 
+// cancelTenantAddons cancels all active add-ons in Asaas (best-effort) then bulk-cancels in DB.
+// FC033 — Option A: no active subscription = no active add-ons.
+func (s *Service) cancelTenantAddons(ctx context.Context, tenantID string) {
+	addons, err := s.repo.ListActiveAddonIDs(ctx, tenantID)
+	if err != nil || len(addons) == 0 {
+		return
+	}
+	for _, addon := range addons {
+		if addon.AsaasAddonID != "" {
+			_ = s.asaas.cancelSubscription(addon.AsaasAddonID) // best-effort
+		}
+	}
+	_ = s.repo.CancelAllAddonsByTenantID(ctx, tenantID)
+}
+
 // CancelSubscription cancels a tenant's active subscription in Asaas and DB.
+// FC033: also cancels all active add-ons (Option A — no plan = no add-ons).
 func (s *Service) CancelSubscription(ctx context.Context, tenantID string) error {
 	sub, err := s.repo.GetSubscription(ctx, tenantID)
 	if err != nil {
@@ -175,6 +191,7 @@ func (s *Service) CancelSubscription(ctx context.Context, tenantID string) error
 	if sub.AsaasSubscriptionID != "" {
 		_ = s.asaas.cancelSubscription(sub.AsaasSubscriptionID) // best-effort
 	}
+	s.cancelTenantAddons(ctx, tenantID)
 	return s.repo.CancelByTenantID(ctx, tenantID)
 }
 
@@ -326,7 +343,7 @@ func (s *Service) HandleWebhook(ctx context.Context, wh *AsaasWebhook, rawPayloa
 	if isAddon {
 		return s.dispatchAddonWebhookEvent(ctx, wh, addonSubID)
 	}
-	return s.dispatchWebhookEvent(ctx, wh)
+	return s.dispatchWebhookEvent(ctx, wh, tenantID)
 }
 
 // dispatchAddonWebhookEvent routes webhook events that belong to an add-on subscription.
@@ -356,7 +373,7 @@ func (s *Service) dispatchAddonWebhookEvent(ctx context.Context, wh *AsaasWebhoo
 	return nil
 }
 
-func (s *Service) dispatchWebhookEvent(ctx context.Context, wh *AsaasWebhook) error {
+func (s *Service) dispatchWebhookEvent(ctx context.Context, wh *AsaasWebhook, tenantID string) error {
 	switch wh.Event {
 	case EventPaymentReceived, EventPaymentConfirmed:
 		if wh.Payment == nil || wh.Payment.Subscription == "" {
@@ -381,7 +398,14 @@ func (s *Service) dispatchWebhookEvent(ctx context.Context, wh *AsaasWebhook) er
 		if subID == "" {
 			return nil
 		}
-		return s.repo.CancelByAsaasSubID(ctx, subID)
+		if err := s.repo.CancelByAsaasSubID(ctx, subID); err != nil {
+			return err
+		}
+		// FC033 Option A: cancel all add-ons when main subscription is canceled.
+		if tenantID != "" {
+			s.cancelTenantAddons(ctx, tenantID)
+		}
+		return nil
 
 	case EventSubCreated, EventSubUpdated, EventPaymentDeleted:
 		// Informational — already logged in billing_events
