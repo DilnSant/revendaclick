@@ -71,7 +71,7 @@
 | **Saneamento documental (sessão 26)** | ✓ 4 divergências corrigidas; docs-operacao/prompts/ removido; referências prompts/ (raiz) corrigidas |
 | **BUG-01/02/03 — Feature flags Premium (sessão 29)** | ✓ Sidebar Premium `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
 | **FC032 — Add-ons sem billing Asaas** | ✓ Corrigido (sessão 30 — Etapa 5) |
-| **FC033 — Cancel sub não cancela add-ons** | ⚠ Pendente — aguarda decisão de negócio |
+| **FC033 — Cancel sub cancela add-ons em cascata** | ✓ Corrigido (sessão 30 — Opção A) |
 | **Migration 027** | ✓ aplicada — `grace_until` + `asaas_payment_link` + índices |
 | **Billing Asaas add-ons** | ✓ `pending_payment` → `active` via webhook; grace period 3d; `is_redundant` |
 | **sandbox-revendaclick** | ✓ criado — Pro active, tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |
@@ -174,7 +174,7 @@ Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar container
 
 ### 4. Etapas comerciais (próximas sessões)
 
-- **FC033** — Decidir: ao cancelar assinatura principal, cancelar add-ons automaticamente (Opção A), pausar (B) ou exibir aviso (C)
+- **FC034** — Próxima falha a registrar (se identificada)
 - **Etapa 5 follow-up** — `AdminSimulateEvent` suportar `addon_type` param para simular webhooks de add-on direto pelo painel admin
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 

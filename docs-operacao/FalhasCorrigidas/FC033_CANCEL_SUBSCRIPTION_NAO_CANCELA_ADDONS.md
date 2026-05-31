@@ -6,7 +6,8 @@ severidade: MÉDIA
 prioridade: MÉDIA
 bloqueante: NÃO
 data: 2026-05-31
-status: DOCUMENTADO (aguarda decisão de negócio)
+status: CORRIGIDO (sessão 30 — Opção A aprovada)
+commit: 529efb2
 ---
 
 # FC033 — CancelSubscription não cancela add-ons automaticamente
@@ -19,65 +20,75 @@ gerando cobranças recorrentes no Asaas.
 
 ## Causa Raiz
 
-`CancelSubscription` chama `repo.CancelByTenantID` que executa:
+`CancelSubscription` chamava apenas `repo.CancelByTenantID` que executa:
 
 ```sql
 UPDATE subscriptions SET status='canceled', canceled_at=NOW() WHERE tenant_id=$1
 ```
 
-`subscription_addons` não é tocada. É uma decisão de arquitetura deliberada — add-ons e
-assinatura principal são entidades independentes — mas falta a lógica de cascata.
+`subscription_addons` não era tocada.
 
-## Impacto
+## Decisão de Negócio
 
-- Tenant com assinatura cancelada pode continuar sendo cobrado pelos add-ons ativos.
-- As features dos add-ons continuam disponíveis enquanto `subscription_addons.status='active'`.
-- O `GetUsage` filtra por `subscriptions.status IN ('active','trialing','past_due')` — se a
-  subscription principal estiver cancelada, o tenant não tem acesso ao dashboard de qualquer
-  forma. O risco financeiro (cobrança Asaas) é real; o risco de acesso indevido é baixo.
+**Opção A aprovada:** sem plano ativo = sem add-ons ativos.
 
-## Decisão de Negócio Necessária
+Ao cancelar a assinatura principal, todos os add-ons são cancelados automaticamente:
+- Asaas subscription de cada add-on cancelada (best-effort)
+- `subscription_addons.status = 'canceled'` + `canceled_at = NOW()`
+- Reativação da assinatura principal **não** restaura add-ons
 
-Três opções disponíveis:
+## Correção Implementada
 
-**Opção A — Cancelar add-ons automaticamente com a assinatura**
+### `billing/repository.go` — 2 novos métodos
+
+```go
+// ListActiveAddonIDs retorna todos os add-ons não-cancelados do tenant.
+func (r *Repository) ListActiveAddonIDs(ctx, tenantID) ([]*AddonRecord, error)
+  SELECT id, COALESCE(asaas_addon_id,'')
+  FROM subscription_addons
+  WHERE tenant_id=$1 AND status IN ('active','pending_payment','past_due')
+
+// CancelAllAddonsByTenantID bulk-cancela no DB.
+func (r *Repository) CancelAllAddonsByTenantID(ctx, tenantID) error
+  UPDATE subscription_addons SET status='canceled', canceled_at=NOW()
+  WHERE tenant_id=$1 AND status IN ('active','pending_payment','past_due')
 ```
-CancelSubscription → CancelAddon para cada addon ativo do tenant
-```
-Risco: usuário perde add-ons sem aviso explícito.
 
-**Opção B — Suspender add-ons (não cancelar no Asaas)**
-```
-CancelSubscription → subscription_addons.status='paused'
-Se reativar assinatura → subscription_addons.status='active'
-```
-Add-ons pausados não cobram (Asaas subscription cancelada) mas podem ser restaurados.
+### `billing/service.go` — helper + 2 call sites
 
-**Opção C — Não fazer nada automaticamente**
+```go
+// cancelTenantAddons: cancela no Asaas (best-effort) + bulk-cancel no DB.
+func (s *Service) cancelTenantAddons(ctx, tenantID)
+
+// CancelSubscription: chama cancelTenantAddons antes de CancelByTenantID.
+// dispatchWebhookEvent: agora recebe tenantID e chama cancelTenantAddons
+//   nos eventos SUBSCRIPTION_CANCELED e SUBSCRIPTION_DELETED.
 ```
-Exibir aviso ao cancelar: "Você tem X add-ons ativos. Cancele-os manualmente para
-evitar cobranças adicionais."
-```
-Usuário é responsável por cancelar cada add-on.
 
-## Estado Atual
+### `CancelButton.tsx` — aviso visual
 
-Nenhuma opção implementada. Decisão de negócio pendente.
-Gap não bloqueia Etapa 5 — afeta apenas o fluxo de cancelamento total da conta,
-que é raro e pode ser tratado manualmente pelo admin.
+Aviso estático antes do botão + mensagem no `confirm()`:
+> "Ao cancelar sua assinatura, todos os recursos adicionais contratados também serão cancelados."
 
-## Como Validar (Regressão)
+## Smoke Tests Executados — 7/7 ✓
+
+| # | Cenário | Resultado |
+|---|---|---|
+| T1 | 3 add-ons (active + pending_payment + past_due) → SUBSCRIPTION_CANCELED | Todos `canceled` ✓ |
+| T2 | Reativação após cancelamento | Add-ons permanecem `canceled` ✓ |
+| T3 | Cancelamento sem add-ons ativos | Sem erro ✓ |
+| T4 | Evento duplicado (idempotência) | Bloqueado por TryLockEvent ✓ |
+| T5 | Add-on grandfathered (`asaas_addon_id IS NULL`) | Só DB, sem chamada Asaas ✓ |
+| T6 | Evento SUBSCRIPTION_DELETED (alternativo) | Cascata funciona ✓ |
+| T7 | `DELETE /api/billing/subscription` direto (owner JWT) | `{"canceled":true}`, add-ons `canceled` ✓ |
+
+## Query de Regressão
 
 ```sql
--- Verificar se add-ons persistem após cancelamento do plano
+-- Deve retornar zero linhas se FC033 estiver correto
 SELECT sa.status, sa.asaas_addon_id
 FROM subscription_addons sa
 JOIN subscriptions s ON s.tenant_id = sa.tenant_id
-WHERE s.status = 'canceled' AND sa.status = 'active';
--- Se retornar linhas: gap ainda existe
+WHERE s.status = 'canceled'
+  AND sa.status IN ('active', 'pending_payment', 'past_due');
 ```
-
-## Correção Futura
-
-Implementar na Etapa de "Offboarding / Account Cancellation" (a definir).
-Requer decisão entre Opção A, B ou C acima.

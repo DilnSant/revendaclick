@@ -39,8 +39,23 @@
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
 | **BUG-01/02/03 — Feature flags Premium** | ✓ **Corrigido** (sessão 29) | Sidebar Premium gateada por `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
-| **FC033 — Cancel sub não cancela add-ons** | ⚠ **Documentado** (sessão 30) | Aguarda decisão de negócio (Opção A/B/C) — não bloqueante |
+| **FC033 — Cancel sub não cancela add-ons** | ✓ **Corrigido** (sessão 30) | Opção A: cancelTenantAddons em cascata; 7/7 smoke tests — commit `529efb2` |
 | **Etapa 5 — Billing real add-ons** | ✓ **Implementado** (sessão 30) | Asaas subscription por add-on; status lifecycle; webhook routing; is_redundant |
+
+---
+
+## 2026-05-31 (sessão 30b) — FC033: Cancelamento em cascata de add-ons
+
+**Objetivo:** Implementar Opção A — sem plano ativo = sem add-ons ativos.
+**Commit:** `529efb2`
+
+**Arquivos alterados:**
+- `backend/internal/billing/repository.go` — `ListActiveAddonIDs` + `CancelAllAddonsByTenantID`
+- `backend/internal/billing/service.go` — `cancelTenantAddons()` helper; `CancelSubscription` chama cascata; `dispatchWebhookEvent` recebe `tenantID` e cancela add-ons em `EventSubCanceled`/`EventSubDeleted`
+- `frontend/app/(dashboard)/billing/_components/CancelButton.tsx` — aviso estático + mensagem no `confirm()`
+
+**Smoke tests — 7/7 ✓:**
+T1: 3 add-ons (active/pending/past_due) cancelados em cascata ✓ | T2: reativação não restaura add-ons ✓ | T3: sem add-ons → sem erro ✓ | T4: idempotência ✓ | T5: grandfathered (asaas_addon_id=NULL) → só DB ✓ | T6: SUBSCRIPTION_DELETED também dispara cascata ✓ | T7: DELETE direto via API (owner JWT) ✓
 
 ---
 
