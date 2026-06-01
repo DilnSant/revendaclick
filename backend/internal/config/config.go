@@ -34,6 +34,9 @@ type Config struct {
 	AsaasWebhookToken    string
 	MetricsToken         string
 	BetterStackToken     string
+	LeadWebhookSecret    string
+	LeadNotifyInstance   string
+	LeadNotifyNumber     string
 }
 
 func Load() (*Config, error) {
@@ -53,8 +56,11 @@ func Load() (*Config, error) {
 		AsaasAPIKey:       getEnv("ASAAS_API_KEY", ""),
 		AsaasEnv:          getEnv("ASAAS_ENV", "sandbox"),
 		AsaasWebhookToken: getEnv("ASAAS_WEBHOOK_TOKEN", ""),
-		MetricsToken:      getEnv("METRICS_TOKEN", ""),
-		BetterStackToken:  getEnv("BETTER_STACK_SOURCE_TOKEN", ""),
+		MetricsToken:        getEnv("METRICS_TOKEN", ""),
+		BetterStackToken:    getEnv("BETTER_STACK_SOURCE_TOKEN", ""),
+		LeadWebhookSecret:   getEnv("WEBHOOK_SECRET", ""),
+		LeadNotifyInstance:  getEnv("LEAD_NOTIFY_INSTANCE", ""),
+		LeadNotifyNumber:    getEnv("LEAD_NOTIFY_NUMBER", ""),
 	}
 
 	// Support both EVOLUTION_API_URL and legacy EVOLUTION_BASE_URL

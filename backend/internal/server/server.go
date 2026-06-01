@@ -19,6 +19,7 @@ import (
 	"revendaclick/backend/internal/customers"
 	"revendaclick/backend/internal/evolution"
 	"revendaclick/backend/internal/financial"
+	"revendaclick/backend/internal/landinglead"
 	"revendaclick/backend/internal/leads"
 	appMiddleware "revendaclick/backend/internal/middleware"
 	"revendaclick/backend/internal/observability"
@@ -82,6 +83,13 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		billing.NewService(billing.NewRepository(pool), cfg.AsaasAPIKey, cfg.AsaasEnv),
 		cfg.AsaasWebhookToken,
 	)
+	landingLeadH := landinglead.NewHandler(
+		cfg.LeadWebhookSecret,
+		cfg.LeadNotifyInstance,
+		cfg.LeadNotifyNumber,
+		evolution.NewService(pool, logger, cfg.EvolutionAPIURL, cfg.EvolutionAPIKey),
+		logger,
+	)
 
 	jwtAuth       := appMiddleware.JWTAuth(cfg.SupabaseJWTSecret, cfg.SupabaseECKey)
 	resolveTenant := appMiddleware.TenantResolver(pool)
@@ -126,6 +134,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	// ── Webhooks (public — validated by token headers) ───────────────────────
 	r.POST("/api/webhooks/evolution", evolutionH.Webhook)
 	r.POST("/api/webhooks/asaas", billingH.Webhook)
+	r.POST("/api/webhooks/landing-lead", landingLeadH.Webhook)
 
 	// ── Onboarding setup — JWT auth only, no tenant required ─────────────────
 	setup := r.Group("/api")
