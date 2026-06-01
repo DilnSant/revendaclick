@@ -34,6 +34,7 @@ export default function LeadCaptureForm() {
   const [vehiclesCount, setVehiclesCount] = useState('')
   const [city, setCity]                   = useState('')
   const [state, setState]                 = useState('')
+  const [consent, setConsent]             = useState(false)
   const [honeypot, setHoneypot]           = useState('')
   const [loading, setLoading]             = useState(false)
   const [error, setError]                 = useState('')
@@ -91,7 +92,7 @@ export default function LeadCaptureForm() {
     }
   }
 
-  const isValid = name.trim().length >= 2 && phone.replace(/\D/g, '').length >= 10
+  const isValid = name.trim().length >= 2 && phone.replace(/\D/g, '').length >= 10 && consent
 
   const inputCls =
     'w-full rounded-xl bg-white/15 px-4 py-3.5 text-sm font-medium text-white ' +
@@ -199,6 +200,30 @@ export default function LeadCaptureForm() {
             <ChevronDown />
           </div>
 
+          {/* LGPD consent */}
+          <div className="col-span-6 flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="lgpd-consent"
+              checked={consent}
+              onChange={(e) => setConsent(e.target.checked)}
+              className="h-4 w-4 rounded border border-white/30 bg-transparent accent-primary cursor-pointer mt-0.5 shrink-0"
+              aria-required="true"
+            />
+            <label htmlFor="lgpd-consent" className="text-xs leading-relaxed text-gray-400 cursor-pointer">
+              Li e concordo com a{' '}
+              <a
+                href="/privacidade"
+                className="underline hover:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary rounded"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Política de Privacidade
+              </a>{' '}
+              e autorizo contato comercial.
+            </label>
+          </div>
+
           {/* Submit */}
           <div className="col-span-6">
             <button
@@ -228,14 +253,6 @@ export default function LeadCaptureForm() {
         </p>
       )}
 
-      {/* LGPD */}
-      <p className="mt-3 text-center text-[11px] leading-relaxed text-gray-500">
-        Ao continuar, você concorda com nossa{' '}
-        <a href="/privacidade" className="underline hover:text-gray-400 focus:outline-none focus:ring-1 focus:ring-primary rounded">
-          Política de Privacidade
-        </a>{' '}
-        e autoriza o uso dos seus dados para contato comercial.
-      </p>
     </form>
   )
 }

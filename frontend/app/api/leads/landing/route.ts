@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabaseServer'
+import { sendMetaConversionEvent, hashData } from '@/lib/marketing/meta-conversions'
 
 const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX = 3
@@ -37,9 +38,17 @@ function sanitizeState(value: unknown): string | null {
 function fireWebhook(payload: Record<string, unknown>) {
   const url = process.env.WEBHOOK_LEADS_URL
   if (!url) return
+  if (!url.startsWith('https://')) {
+    console.warn('[landing-lead] WEBHOOK_LEADS_URL must start with https:// — skipping webhook')
+    return
+  }
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (process.env.WEBHOOK_SECRET) {
+    headers['x-webhook-secret'] = process.env.WEBHOOK_SECRET
+  }
   void fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload),
   }).catch((err: Error) => {
     console.error('[landing-lead] webhook error:', err.message)
@@ -117,6 +126,22 @@ export async function POST(req: NextRequest) {
     source, utm_source, utm_medium, utm_campaign, utm_content,
     created_at: new Date().toISOString(),
   })
+
+  // Fire-and-forget Meta Conversions API event
+  void (async () => {
+    await sendMetaConversionEvent({
+      event_name: 'Lead',
+      event_time: Math.floor(Date.now() / 1000),
+      user_data: {
+        ph: phone ? [await hashData(phone)] : [],
+        client_ip_address: ip !== 'unknown' ? ip : undefined,
+        client_user_agent: req.headers.get('user-agent') ?? undefined,
+      },
+      custom_data: { vehicles_count, city, state },
+      event_source_url: req.headers.get('referer') ?? 'https://revendaclick.com.br',
+      action_source: 'website',
+    })
+  })()
 
   return NextResponse.json({ success: true }, { status: 201 })
 }

@@ -110,6 +110,59 @@ const SCHEMA = {
         ],
       },
     },
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'O RevendaClick funciona para qualquer loja?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Sim! O RevendaClick foi desenvolvido para revendas de veículos de qualquer porte — desde lojas com 10 veículos até grandes revendedoras com centenas de itens no estoque. O sistema se adapta ao tamanho e às necessidades da sua operação.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Preciso instalar algo?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Não! O RevendaClick funciona 100% na web. Basta acessar pelo computador, celular ou tablet — qualquer navegador moderno funciona. Nenhuma instalação, nenhum servidor próprio, nenhuma configuração técnica necessária.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Posso divulgar em redes sociais?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Sim! Você pode compartilhar seus veículos diretamente no Instagram, Facebook, TikTok e qualquer outra rede social com um clique. Cada veículo tem sua própria página pública com URL para divulgação em qualquer canal.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Consigo compartilhar pelo WhatsApp?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Com certeza! Cada veículo cadastrado tem um link individual que você pode copiar e enviar para qualquer contato pelo WhatsApp, Telegram ou qualquer aplicativo de mensagens. O link abre uma página elegante com todas as informações e fotos do veículo.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Como funciona o suporte?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Oferecemos suporte por e-mail e WhatsApp para todos os planos. Os planos Pro e Enterprise têm atendimento prioritário com tempo de resposta reduzido. O plano Enterprise inclui um gerente de sucesso dedicado para acompanhar sua operação.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Posso testar antes de assinar?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Sim! Todos os planos incluem 30 dias grátis, sem necessidade de cartão de crédito. Você configura sua loja, cadastra seus veículos e testa todas as funcionalidades sem nenhum compromisso. Só começa a pagar se decidir continuar.',
+          },
+        },
+      ],
+    },
   ],
 }
 

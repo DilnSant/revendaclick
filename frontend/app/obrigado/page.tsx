@@ -48,7 +48,7 @@ export default function ObrigadoPage() {
           </div>
 
           <h1 className="font-heading text-2xl font-bold text-white sm:text-3xl">
-            Recebemos sua solicitação!
+            Confirmamos sua solicitação.
           </h1>
 
           <p className="mt-4 text-base leading-relaxed text-gray-400">
@@ -91,6 +91,13 @@ export default function ObrigadoPage() {
             </a>
 
             <Link
+              href="/register?demo=1"
+              className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-primary-dark active:scale-[0.98]"
+            >
+              Agendar demonstração →
+            </Link>
+
+            <Link
               href="/register"
               className="inline-flex w-full items-center justify-center rounded-xl border border-white/20 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
             >
@@ -98,8 +105,15 @@ export default function ObrigadoPage() {
             </Link>
 
             <Link
-              href="/"
+              href="/#planos"
               className="mt-1 text-xs text-gray-500 hover:text-gray-400 transition-colors"
+            >
+              Conhecer os planos →
+            </Link>
+
+            <Link
+              href="/"
+              className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
             >
               Voltar para o início
             </Link>
@@ -126,15 +140,15 @@ function WhatsAppIcon() {
 
 const STEPS = [
   {
-    title: 'Análise do seu perfil',
-    desc: 'Nossa equipe vai revisar as informações que você enviou para personalizar a demonstração.',
+    title: 'Em minutos',
+    desc: 'Analisamos seu perfil e preparamos uma demonstração personalizada para o seu porte de loja.',
   },
   {
-    title: 'Contato em até 24h',
-    desc: 'Um especialista vai entrar em contato pelo WhatsApp ou telefone que você informou.',
+    title: 'Em até 2h (dias úteis)',
+    desc: 'Um especialista da equipe RevendaClick entra em contato pelo WhatsApp ou telefone informado.',
   },
   {
     title: 'Demonstração ao vivo',
-    desc: 'Você vai ver o RevendaClick funcionando com dados da sua loja, em uma sessão personalizada.',
+    desc: 'Você vê a plataforma rodando com veículos e dados similares ao da sua revenda.',
   },
 ]
