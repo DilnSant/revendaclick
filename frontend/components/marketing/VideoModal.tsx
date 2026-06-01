@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { trackVideoPlay } from '@/lib/marketing/events'
 
 interface Props {
@@ -10,20 +10,16 @@ interface Props {
 const VIDEO_ID = process.env.NEXT_PUBLIC_DEMO_VIDEO_ID
 
 export default function VideoModal({ onClose }: Props) {
-  const handleClose = useCallback(() => {
-    onClose()
-  }, [onClose])
-
   useEffect(() => {
     trackVideoPlay()
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose() }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
-  }, [handleClose])
+  }, [onClose])
 
   return (
     <div
@@ -35,7 +31,7 @@ export default function VideoModal({ onClose }: Props) {
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={handleClose}
+        onClick={onClose}
         aria-hidden
       />
 
@@ -43,7 +39,7 @@ export default function VideoModal({ onClose }: Props) {
       <div className="relative z-10 w-full max-w-4xl">
         <button
           type="button"
-          onClick={handleClose}
+          onClick={onClose}
           aria-label="Fechar vídeo"
           className="absolute -top-10 right-0 flex items-center gap-1.5 text-sm text-gray-300 transition-colors hover:text-white"
         >

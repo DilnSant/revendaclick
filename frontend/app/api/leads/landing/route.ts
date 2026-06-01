@@ -50,6 +50,7 @@ function fireWebhook(payload: Record<string, unknown>) {
     method: 'POST',
     headers,
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(5_000),
   }).catch((err: Error) => {
     console.error('[landing-lead] webhook error:', err.message)
   })
