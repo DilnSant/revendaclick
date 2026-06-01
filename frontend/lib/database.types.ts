@@ -1502,7 +1502,9 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          last_contact_at: string | null
           name: string
+          next_action: string | null
           notes: string | null
           phone: string
           source: string
@@ -1521,7 +1523,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          last_contact_at?: string | null
           name: string
+          next_action?: string | null
           notes?: string | null
           phone: string
           source?: string
@@ -1540,7 +1544,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          last_contact_at?: string | null
           name?: string
+          next_action?: string | null
           notes?: string | null
           phone?: string
           source?: string

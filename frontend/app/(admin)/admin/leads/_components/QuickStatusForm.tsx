@@ -4,11 +4,11 @@ import { useTransition } from 'react'
 import { updateLeadStatus, type LeadStatus } from '../actions'
 
 const NEXT_STATUS: Record<LeadStatus, { next: LeadStatus; label: string } | null> = {
-  novo:       { next: 'contatado',  label: 'Marcar contatado'  },
-  contatado:  { next: 'atendido',   label: 'Marcar atendido'   },
-  atendido:   { next: 'convertido', label: 'Marcar convertido' },
-  convertido: null,
-  descartado: null,
+  novo:          { next: 'contatado',     label: 'Marcar contatado'     },
+  contatado:     { next: 'em_negociacao', label: 'Em negociação'        },
+  em_negociacao: { next: 'convertido',    label: 'Marcar convertido'    },
+  convertido:    null,
+  perdido:       null,
 }
 
 interface Props {

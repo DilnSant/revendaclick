@@ -17,7 +17,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
 
   const { data: lead, error } = await supabase
     .from('landing_leads')
-    .select('id, name, phone, email, city, state, vehicles_count, store_name, source, utm_source, utm_medium, utm_campaign, utm_content, status, notes, created_at, updated_at')
+    .select(
+      'id, name, phone, email, city, state, vehicles_count, store_name, source, utm_source, utm_medium, utm_campaign, utm_content, status, notes, next_action, last_contact_at, created_at, updated_at',
+    )
     .eq('id', id)
     .single()
 
@@ -33,6 +35,7 @@ export default async function LeadDetailPage({ params }: PageProps) {
         <span className="text-xs text-gray-400">{lead.name}</span>
       </div>
 
+      {/* Dados do lead */}
       <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -43,25 +46,34 @@ export default async function LeadDetailPage({ params }: PageProps) {
         </div>
 
         <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-          {lead.email && <Row label="E-mail" value={lead.email} />}
-          {lead.store_name && <Row label="Revenda" value={lead.store_name} />}
-          {lead.city && <Row label="Cidade" value={`${lead.city}${lead.state ? ` / ${lead.state}` : ''}`} />}
-          {lead.vehicles_count && <Row label="Estoque" value={lead.vehicles_count} />}
+          {lead.email     && <Row label="E-mail"    value={lead.email}     />}
+          {lead.store_name && <Row label="Revenda"  value={lead.store_name}/>}
+          {lead.city      && (
+            <Row label="Cidade" value={`${lead.city}${lead.state ? ` / ${lead.state}` : ''}`} />
+          )}
+          {lead.vehicles_count && <Row label="Estoque"   value={lead.vehicles_count} />}
           <Row label="Origem" value={lead.utm_source ?? lead.source} />
-          {lead.utm_campaign && <Row label="Campanha" value={lead.utm_campaign} />}
-          {lead.utm_medium && <Row label="Mídia" value={lead.utm_medium} />}
-          {lead.utm_content && <Row label="Conteúdo" value={lead.utm_content} />}
-          <Row label="Capturado em" value={formatDate(lead.created_at)} />
-          {lead.updated_at && <Row label="Atualizado em" value={formatDate(lead.updated_at)} />}
+          {lead.utm_campaign && <Row label="Campanha"  value={lead.utm_campaign} />}
+          {lead.utm_medium   && <Row label="Mídia"     value={lead.utm_medium}  />}
+          {lead.utm_content  && <Row label="Conteúdo"  value={lead.utm_content} />}
+          <Row label="Capturado em"  value={formatDate(lead.created_at)} />
+          {lead.last_contact_at && (
+            <Row label="Último contato" value={formatDate(lead.last_contact_at)} />
+          )}
+          {lead.updated_at && (
+            <Row label="Atualizado em" value={formatDate(lead.updated_at)} />
+          )}
         </dl>
       </div>
 
+      {/* Atendimento */}
       <div className="rounded-xl border border-gray-800 bg-gray-900/40 p-6">
         <h2 className="mb-4 text-sm font-semibold text-gray-300">Atendimento</h2>
         <LeadDetailForm
           id={lead.id}
           initialStatus={lead.status as LeadStatus}
           initialNotes={lead.notes}
+          initialNextAction={lead.next_action}
         />
       </div>
     </div>

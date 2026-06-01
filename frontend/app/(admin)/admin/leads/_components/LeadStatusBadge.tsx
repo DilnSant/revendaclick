@@ -1,17 +1,17 @@
 const COLOR: Record<string, string> = {
-  novo:       'bg-blue-900/40 text-blue-300',
-  contatado:  'bg-yellow-900/40 text-yellow-300',
-  atendido:   'bg-purple-900/40 text-purple-300',
-  convertido: 'bg-green-900/40 text-green-300',
-  descartado: 'bg-gray-800 text-gray-500',
+  novo:          'bg-blue-900/40 text-blue-300',
+  contatado:     'bg-yellow-900/40 text-yellow-300',
+  em_negociacao: 'bg-purple-900/40 text-purple-300',
+  convertido:    'bg-green-900/40 text-green-300',
+  perdido:       'bg-gray-800 text-gray-500',
 }
 
 const LABEL: Record<string, string> = {
-  novo:       'Novo',
-  contatado:  'Contatado',
-  atendido:   'Atendido',
-  convertido: 'Convertido',
-  descartado: 'Descartado',
+  novo:          'Novo',
+  contatado:     'Contatado',
+  em_negociacao: 'Em negociação',
+  convertido:    'Convertido',
+  perdido:       'Perdido',
 }
 
 export function LeadStatusBadge({ status }: { status: string }) {

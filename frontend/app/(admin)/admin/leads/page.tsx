@@ -9,12 +9,12 @@ export const revalidate = 0
 const PAGE_SIZE = 25
 
 const STATUS_TABS = [
-  { key: 'todos',      label: 'Todos'       },
-  { key: 'novo',       label: 'Novos'       },
-  { key: 'contatado',  label: 'Contatados'  },
-  { key: 'atendido',   label: 'Atendidos'   },
-  { key: 'convertido', label: 'Convertidos' },
-  { key: 'descartado', label: 'Descartados' },
+  { key: 'todos',          label: 'Todos'          },
+  { key: 'novo',           label: 'Novos'          },
+  { key: 'contatado',      label: 'Contatados'     },
+  { key: 'em_negociacao',  label: 'Em negociação'  },
+  { key: 'convertido',     label: 'Convertidos'    },
+  { key: 'perdido',        label: 'Perdidos'       },
 ] as const
 
 interface Lead {
@@ -24,13 +24,12 @@ interface Lead {
   city: string | null
   state: string | null
   vehicles_count: string | null
-  source: string
   utm_source: string | null
   utm_campaign: string | null
   status: string
-  notes: string | null
+  next_action: string | null
+  last_contact_at: string | null
   created_at: string
-  updated_at: string | null
 }
 
 interface PageProps {
@@ -46,9 +45,20 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
 
   const supabase = createServiceClient()
 
+  // Leads sem contato há mais de 4h para alerta
+  const alertCutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
+  const { count: alertCount } = await supabase
+    .from('landing_leads')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'novo')
+    .lt('created_at', alertCutoff)
+
   let query = supabase
     .from('landing_leads')
-    .select('id, name, phone, city, state, vehicles_count, source, utm_source, utm_campaign, status, notes, created_at, updated_at', { count: 'exact' })
+    .select(
+      'id, name, phone, city, state, vehicles_count, utm_source, utm_campaign, status, next_action, last_contact_at, created_at',
+      { count: 'exact' },
+    )
     .order('created_at', { ascending: false })
     .range(from, to)
 
@@ -92,13 +102,29 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
           <h1 className="text-xl font-bold text-white">Leads Landing</h1>
           <p className="mt-0.5 text-sm text-gray-500">
             {total} lead{total !== 1 ? 's' : ''}
-            {activeStatus !== 'todos' ? ` com status "${activeStatus}"` : ' no total'}
+            {activeStatus !== 'todos' ? ` · ${STATUS_TABS.find(t => t.key === activeStatus)?.label ?? activeStatus}` : ' no total'}
           </p>
         </div>
       </div>
 
+      {/* Alerta: leads novos sem contato */}
+      {(alertCount ?? 0) > 0 && (
+        <div className="flex items-start gap-3 rounded-xl border border-yellow-700/50 bg-yellow-900/20 px-4 py-3">
+          <span className="mt-0.5 text-yellow-400">⚠</span>
+          <div className="text-sm">
+            <span className="font-semibold text-yellow-300">
+              {alertCount} lead{(alertCount ?? 0) !== 1 ? 's' : ''} sem contato há mais de 4h
+            </span>
+            <span className="text-yellow-500"> · </span>
+            <Link href={statusUrl('novo')} className="text-yellow-400 underline hover:text-yellow-200">
+              Ver novos
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Status tabs */}
-      <div className="flex gap-1 flex-wrap">
+      <div className="flex flex-wrap gap-1">
         {STATUS_TABS.map((tab) => {
           const active = activeStatus === tab.key
           return (
@@ -128,7 +154,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-800 bg-gray-900/80 text-left">
-                    {['Nome', 'Telefone', 'Cidade', 'UF', 'Estoque', 'Campanha', 'Status', 'Data', ''].map((h) => (
+                    {['Nome', 'Telefone', 'Cidade', 'UF', 'Estoque', 'Campanha', 'Status', 'Próxima ação', 'Recebido', ''].map((h) => (
                       <th
                         key={h}
                         className="whitespace-nowrap px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-gray-600"
@@ -140,7 +166,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
                 </thead>
                 <tbody className="divide-y divide-gray-800/60">
                   {rows.map((lead) => (
-                    <tr key={lead.id} className="hover:bg-gray-900/40 transition-colors">
+                    <tr key={lead.id} className="transition-colors hover:bg-gray-900/40">
                       <td className="whitespace-nowrap px-4 py-3 font-medium text-gray-200">
                         <Link href={`/admin/leads/${lead.id}`} className="hover:text-white hover:underline">
                           {lead.name}
@@ -152,15 +178,23 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
                       <td className="px-4 py-3 text-gray-400">{lead.city ?? '—'}</td>
                       <td className="px-4 py-3 text-gray-400">{lead.state ?? '—'}</td>
                       <td className="px-4 py-3 text-gray-400">{lead.vehicles_count ?? '—'}</td>
-                      <td className="px-4 py-3 text-xs text-gray-600">{lead.utm_campaign ?? lead.utm_source ?? '—'}</td>
+                      <td className="px-4 py-3 text-xs text-gray-600">
+                        {lead.utm_campaign ?? lead.utm_source ?? '—'}
+                      </td>
                       <td className="px-4 py-3">
                         <LeadStatusBadge status={lead.status} />
+                      </td>
+                      <td className="max-w-[180px] truncate px-4 py-3 text-xs text-gray-500" title={lead.next_action ?? ''}>
+                        {lead.next_action ?? '—'}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-xs text-gray-600">
                         {formatDate(lead.created_at)}
                       </td>
                       <td className="px-4 py-3">
-                        <QuickStatusForm id={lead.id} currentStatus={lead.status as import('./actions').LeadStatus} />
+                        <QuickStatusForm
+                          id={lead.id}
+                          currentStatus={lead.status as import('./actions').LeadStatus}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -172,9 +206,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between text-xs text-gray-500">
-              <span>
-                Página {page} de {totalPages}
-              </span>
+              <span>Página {page} de {totalPages}</span>
               <div className="flex gap-2">
                 {page > 1 && (
                   <Link
