@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 31/05/2026 (sessão 28 — fechamento autônomo de pendências)
+> Última atualização: 01/06/2026 (sessão 31 — pipeline comercial de leads)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -41,6 +41,46 @@
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
 | **FC033 — Cancel sub não cancela add-ons** | ✓ **Corrigido** (sessão 30) | Opção A: cancelTenantAddons em cascata; 7/7 smoke tests — commit `529efb2` |
 | **Etapa 5 — Billing real add-ons** | ✓ **Implementado** (sessão 30) | Asaas subscription por add-on; status lifecycle; webhook routing; is_redundant |
+| **Landing Page** | ✓ **CONGELADA** (sessões 31+) | Fluxo completo: formulário + API + Supabase + /admin/leads; não adicionar features |
+| **Admin Leads** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação 25/pág, alerta leads sem contato 4h |
+| **Admin Lead Detalhe** | ✓ Produção (sessão 31) | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
+| **Pipeline Comercial Leads** | ✓ Produção (migrations 030-031) | 5 status: novo → contatado → em_negociacao → convertido / perdido |
+| **Webhook landing lead** | ✓ Produção (opcional) | `POST /api/webhooks/landing-lead` no backend Go — ativo sem Evolution; notificação WA opcional |
+
+---
+
+## 2026-06-01 (sessão 31) — Pipeline comercial de leads + reclassificação webhook
+
+**Objetivo:** Garantir operação comercial real — nenhum lead perdido, equipe acompanha ciclo completo.
+
+**Commits:** `e766fd8`, `d8ee343`, `40cbe0d`, `69883bb`
+
+**Migrations aplicadas:**
+- `030_landing_leads_status.sql` — status (novo/contatado/atendido/convertido/descartado), notes, updated_at, índice status
+- `031_landing_leads_pipeline.sql` — renomear atendido→em_negociacao, descartado→perdido; add last_contact_at, next_action
+
+**Arquivos criados/alterados:**
+- `frontend/app/(admin)/admin/leads/actions.ts` — Server Actions: `updateLeadStatus` + `updateLeadDetail`; last_contact_at automático ao avançar status de contato
+- `frontend/app/(admin)/admin/leads/page.tsx` — filtros por status (tabs), paginação 25/pág, alerta amarelo para leads novos sem contato há mais de 4h, coluna "próxima ação"
+- `frontend/app/(admin)/admin/leads/[id]/page.tsx` — detalhe com todos os dados UTM + form de atendimento
+- `frontend/app/(admin)/admin/leads/_components/LeadStatusBadge.tsx` — badge colorido por status
+- `frontend/app/(admin)/admin/leads/_components/QuickStatusForm.tsx` — botão de avanço rápido inline na listagem
+- `frontend/app/(admin)/admin/leads/_components/LeadDetailForm.tsx` — form completo: status + próxima ação + notas + checkbox "registrar último contato agora"
+- `backend/internal/landinglead/handler.go` — novo package; receptor do webhook opcional; notificação WA via Evolution se configurado
+- `backend/internal/config/config.go` — LeadWebhookSecret, LeadNotifyInstance, LeadNotifyNumber
+- `backend/internal/server/server.go` — rota `POST /api/webhooks/landing-lead` registrada
+- `frontend/app/api/leads/landing/route.ts` — comentário webhook corrigido (opcional)
+- `backend/.env.example` — seção webhook documentada como opcional
+- `database/migrations/030_landing_leads_status.sql` / `031_landing_leads_pipeline.sql` — arquivos locais
+
+**Decisões desta sessão:**
+- **D31**: Fluxo principal de leads é `Landing → Supabase → /admin/leads`. Webhook, Evolution e WhatsApp são opcionais/add-on.
+- **D32**: Status de lead: `novo → contatado → em_negociacao → convertido | perdido` (migrated de atendido/descartado — migration 031)
+- **D33**: Alerta operacional implementado sem cron/worker — query simples na renderização do Server Component (leads novos há mais de 4h).
+
+**Fluxo principal validado:** Lead salvo no Supabase + visível em `/admin/leads` = funcionamento completo. Sem necessidade de webhook ou Evolution.
+
+**Testes:** `tsc --noEmit` ✓ | `npm run build` ✓ | Backend deployado via CI/CD — endpoint `/api/webhooks/landing-lead` respondendo 200 em produção.
 
 ---
 

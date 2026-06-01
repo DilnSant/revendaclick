@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 31/05/2026 (sessão 30 — Etapa 5: billing real add-ons, migration 027)
+> Atualizado em: 01/06/2026 (sessão 31 — pipeline comercial de leads, migrations 030-031)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 26 — 31/05/2026)
+## Estado Atual do Projeto (sessão 31 — 01/06/2026)
 
 | Componente | Status |
 |---|---|
@@ -78,6 +78,10 @@
 | **E2E .env.e2e** | ✓ template criado em `frontend/.env.e2e` |
 | **METRICS_TOKEN** | ✓ confirmado presente e funcional no VPS (nginx bloqueia externo — correto) |
 | **santos-car plano** | ✓ Atualizado: santos-car está em Pro (corrigido em REFERENCE.md + ENVIRONMENTS.md) |
+| **Landing page** | ✓ **CONGELADA** (sessão 31) | Fluxo principal completo; não adicionar features |
+| **Migrations 030–031** | ✓ aplicadas (sessão 31) | Pipeline comercial leads: status, notes, last_contact_at, next_action |
+| **Admin leads pipeline** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação, alerta 4h; `/admin/leads/[id]` — detalhe |
+| **Webhook landing lead** | ✓ Deployado (sessão 31) | `POST /api/webhooks/landing-lead` — opcional; Evolution/WA opcionais (D31) |
 
 ---
 
@@ -120,7 +124,7 @@ Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / 
 
 ## Próximos Passos (por prioridade)
 
-### 1. Verificar sidebar no browser em produção (ALTA)
+### 1. Verificar sidebar no browser em produção (ALTA — pendente de sessões anteriores)
 
 santos-car está em plano Pro. Testar:
 

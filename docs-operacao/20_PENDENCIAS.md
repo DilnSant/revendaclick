@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 31/05/2026 (sessão 26 — saneamento final)
+> Atualizado em: 01/06/2026 (sessão 31 — pipeline comercial de leads)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -43,6 +43,7 @@
 | CONCLUÍDA | Onboarding setup | — | Transação + idempotência |
 | CONCLUÍDA | Fix analytics revenue zero | — | Colunas erradas no SQL: `final_value`→`sale_price`, `completed_at`→`sold_at` (commit 0b32a6d) |
 | CONCLUÍDA | Fix lead source validation | — | `source` inválido causava `internal_error` opaco; validação adicionada (commit 43c65ee) |
+| CONCLUÍDA | Endpoint receptor webhook landing lead | — | `POST /api/webhooks/landing-lead` — deployado e operacional; Evolution/WA opcionais (sessão 31) |
 | CONCLUÍDA | Fix nil slice → null em respostas | — | `response.normalizeSlice()` + remove omitempty de Data; listas vazias retornam `[]` (commit 43c65ee) |
 | CONCLUÍDA | Endpoint upgrade de plano | — | `PUT /api/billing/subscription` — troca plano de assinatura ativa via Asaas PUT; frontend detecta `is_active && !isCurrent` e usa modo upgrade (sessão 16) |
 
@@ -85,6 +86,8 @@
 | CONCLUÍDA | Fix BUG 5: Settings/Users invite modal | — | + Convidar Membro com roles Administrador/Gerente |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
+| CONCLUÍDA | Landing page — fluxo completo (sessões 31) | — | Formulário + API + Supabase + /admin/leads + /admin/leads/[id]; migrations 028-031; **CONGELADA** |
+| CONCLUÍDA | Admin leads — pipeline comercial (sessão 31) | — | Filtros, paginação, status 5-estados, alerta 4h, notas, próxima ação, último contato |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |
 | CONCLUÍDA | Módulo Clientes | — | CRUD |
 | CONCLUÍDA | Módulo Financeiro | — | Entradas, saídas, fluxo de caixa |

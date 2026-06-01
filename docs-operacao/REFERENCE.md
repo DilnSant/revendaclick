@@ -64,8 +64,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 029 |
-| Próxima migration | `030_...` |
+| Migrations aplicadas | 001 → 031 |
+| Próxima migration | `032_...` |
 | Tenants no banco | santos-car (Pro/active), sandbox-revendaclick (Pro/active), devecar (is_active=false) |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
@@ -78,43 +78,46 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Total documentadas | 33 (FC001–FC033) |
 | Próxima FC | **FC034** |
 
-## Landing Page — campos de qualificação (migration 029)
+## Landing Page — CONGELADA (sessão 31)
 
-| Campo | Tipo | Valores |
+**Fluxo principal completo:** `Landing → POST /api/leads/landing → Supabase landing_leads → /admin/leads`
+
+| Rota | Tipo | Notas |
 |---|---|---|
-| `vehicles_count` | text (nullable) | `1-10`, `11-30`, `31-60`, `60+` |
-| `city` | text (nullable) | Cidade livre |
-| `state` | text (nullable) | UF 2 letras maiúsculas |
+| `/` | Static | Landing page completa — **não adicionar features** |
+| `/obrigado` | Static | Thank-you page, robots: noindex |
+| `/privacidade` | Static | Política de privacidade LGPD, robots: index |
 
-Webhook de leads: `WEBHOOK_LEADS_URL` (env var server-side) — POST fire-and-forget, requer https://, aceita `WEBHOOK_SECRET` como header.
+## Landing Page — tabela de leads (migrations 028–031)
+
+| Item | Valor |
+|---|---|
+| Tabela | `public.landing_leads` |
+| Migrations | `028` (criação), `029` (qualificação), `030` (status/notes), `031` (pipeline) |
+| API Route | `POST /api/leads/landing` (Next.js, não backend Go) |
+| Admin list | `/admin/leads` — filtros, paginação 25/pág, alerta 4h |
+| Admin detalhe | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
+| RLS | INSERT: anon + authenticated \| SELECT: service_role only |
+| Campos qualificação | `vehicles_count`, `city`, `state` (migration 029) |
+| Campos pipeline | `status`, `notes`, `updated_at` (migration 030); `last_contact_at`, `next_action` (migration 031) |
+| Status válidos | `novo` → `contatado` → `em_negociacao` → `convertido` \| `perdido` |
+
+## Landing Page — integrações opcionais (add-ons futuros)
+
+| Integração | Env vars | Comportamento sem config |
+|---|---|---|
+| Webhook externo | `WEBHOOK_LEADS_URL`, `WEBHOOK_SECRET` | No-op — lead já salvo no Supabase |
+| Notificação WA | `LEAD_NOTIFY_INSTANCE`, `LEAD_NOTIFY_NUMBER` (VPS .env) | No-op — endpoint responde 200 sem enviar WA |
+| Meta CAPI | `META_PIXEL_ID`, `META_CAPI_TOKEN` | No-op — evento não enviado |
+| Google Ads | `GOOGLE_ADS_CUSTOMER_ID`, `GOOGLE_ADS_DEVELOPER_TOKEN` | No-op — stub inativo |
 
 ## Landing Page — arquitetura de tracking (server-side)
 
 | Arquivo | Função |
 |---|---|
 | `lib/marketing/events.ts` | Client-side: GA4 + Meta Pixel + TikTok Pixel |
-| `lib/marketing/meta-conversions.ts` | Server-side: Meta CAPI com hashData SHA-256 (condicional em `META_PIXEL_ID` + `META_CAPI_TOKEN`) |
-| `lib/marketing/google-conversions.ts` | Server-side: stub Google Ads API (condicional em `GOOGLE_ADS_CUSTOMER_ID` + `GOOGLE_ADS_DEVELOPER_TOKEN`) |
-
-## Landing Page — páginas
-
-| Rota | Tipo | Notas |
-|---|---|---|
-| `/` | Static | Landing page completa |
-| `/obrigado` | Static | Thank-you page, robots: noindex |
-| `/privacidade` | Static | Política de privacidade LGPD, robots: index |
-
-## Landing Page — tabela de leads
-
-| Item | Valor |
-|---|---|
-| Tabela | `public.landing_leads` |
-| Migration | `028_landing_leads.sql` |
-| API Route | `POST /api/leads/landing` (Next.js, não backend Go) |
-| RLS | INSERT: anon + authenticated \| SELECT: service_role only |
-| Env vars | `NEXT_PUBLIC_META_PIXEL_ID`, `NEXT_PUBLIC_TIKTOK_PIXEL_ID`, `NEXT_PUBLIC_WA_NUMBER`, `NEXT_PUBLIC_DEMO_VIDEO_ID`, `WEBHOOK_LEADS_URL` |
-| Página obrigado | `/obrigado` — redirect após lead salvo; `robots: noindex` |
-| Campos qualificação | `vehicles_count`, `city`, `state` (migration 029) |
+| `lib/marketing/meta-conversions.ts` | Server-side: Meta CAPI com hashData SHA-256 (opcional) |
+| `lib/marketing/google-conversions.ts` | Server-side: stub Google Ads API (opcional) |
 
 ## Comandos frequentes
 

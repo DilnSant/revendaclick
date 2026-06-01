@@ -369,3 +369,35 @@ supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/d
 **Trade-off:** Usuário que cancela acidentalmente perde os add-ons — precisará recontratá-los. UX mitiga com aviso explícito no modal de cancelamento.
 
 **Ver:** FC033 em `docs-operacao/FalhasCorrigidas/`, commit `529efb2`.
+
+---
+
+## D31 — Fluxo principal de leads não depende de webhook, Evolution ou WhatsApp (01/06/2026 — sessão 31)
+
+**Decisão:** O fluxo obrigatório de captação de leads é `Landing → POST /api/leads/landing → Supabase landing_leads → /admin/leads`. Webhook, Evolution API e notificações WhatsApp são integrações externas opcionais, vinculadas a add-ons futuros. A ausência de `WEBHOOK_LEADS_URL`, `LEAD_NOTIFY_INSTANCE` ou `LEAD_NOTIFY_NUMBER` **não representa falha operacional**.
+
+**Por quê:** Confundir integrações opcionais com requisitos do fluxo principal criava alertas de risco incorretos e priorização errada de tarefas operacionais.
+
+**Implementação:** Código existente já é condicional — `fireWebhook()` é no-op sem `WEBHOOK_LEADS_URL`; `landinglead.Handler` não envia WA sem `LEAD_NOTIFY_INSTANCE` e `LEAD_NOTIFY_NUMBER`. Apenas comentários e documentação foram ajustados.
+
+**Ver:** Commits `69883bb`, comentários em `route.ts` e `landinglead/handler.go`.
+
+---
+
+## D32 — Status do pipeline comercial de leads (01/06/2026 — sessão 31)
+
+**Decisão:** Os status de lead em `landing_leads` são: `novo → contatado → em_negociacao → convertido | perdido`. `last_contact_at` é atualizado automaticamente ao avançar para qualquer status de contato (`contatado`, `em_negociacao`, `convertido`, `perdido`). O campo `next_action` (max 200 chars) registra a próxima ação planejada.
+
+**Por quê:** Nomes anteriores (`atendido`, `descartado`) eram mais vagos para uso comercial real; `em_negociacao` e `perdido` comunicam melhor o estado da oportunidade.
+
+**Migration:** 031 renomeou os valores existentes e adicionou `last_contact_at` e `next_action`.
+
+---
+
+## D33 — Alerta de leads sem contato via query no Server Component (01/06/2026 — sessão 31)
+
+**Decisão:** O alerta de "leads novos sem contato há mais de 4h" é implementado como uma query Supabase simples na renderização do Server Component `/admin/leads/page.tsx` — sem cron job, worker, Redis ou fila. O alerta some automaticamente ao atender todos os leads novos.
+
+**Por quê:** Simplicidade operacional. O painel é acessado pela equipe comercial — o alerta aparece no momento certo, sem infra adicional.
+
+**Trade-off:** Não notifica a equipe proativamente (push). Exige que alguém abra o painel. Aceitável para o estágio atual de operação.
