@@ -86,7 +86,23 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | `city` | text (nullable) | Cidade livre |
 | `state` | text (nullable) | UF 2 letras maiúsculas |
 
-Webhook de leads: `WEBHOOK_LEADS_URL` (env var server-side) — POST fire-and-forget com dados do lead.
+Webhook de leads: `WEBHOOK_LEADS_URL` (env var server-side) — POST fire-and-forget, requer https://, aceita `WEBHOOK_SECRET` como header.
+
+## Landing Page — arquitetura de tracking (server-side)
+
+| Arquivo | Função |
+|---|---|
+| `lib/marketing/events.ts` | Client-side: GA4 + Meta Pixel + TikTok Pixel |
+| `lib/marketing/meta-conversions.ts` | Server-side: Meta CAPI com hashData SHA-256 (condicional em `META_PIXEL_ID` + `META_CAPI_TOKEN`) |
+| `lib/marketing/google-conversions.ts` | Server-side: stub Google Ads API (condicional em `GOOGLE_ADS_CUSTOMER_ID` + `GOOGLE_ADS_DEVELOPER_TOKEN`) |
+
+## Landing Page — páginas
+
+| Rota | Tipo | Notas |
+|---|---|---|
+| `/` | Static | Landing page completa |
+| `/obrigado` | Static | Thank-you page, robots: noindex |
+| `/privacidade` | Static | Política de privacidade LGPD, robots: index |
 
 ## Landing Page — tabela de leads
 
