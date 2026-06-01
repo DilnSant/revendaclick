@@ -1496,6 +1496,57 @@ export type Database = {
           },
         ]
       }
+      landing_leads: {
+        Row: {
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string
+          source: string
+          state: string | null
+          store_name: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          vehicles_count: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone: string
+          source?: string
+          state?: string | null
+          store_name?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          vehicles_count?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string
+          source?: string
+          state?: string | null
+          store_name?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          vehicles_count?: string | null
+        }
+        Relationships: []
+      }
       lead_activities: {
         Row: {
           created_at: string
@@ -2884,8 +2935,10 @@ export type Database = {
         Row: {
           addon_type: string
           asaas_addon_id: string | null
+          asaas_payment_link: string | null
           canceled_at: string | null
           created_at: string
+          grace_until: string | null
           id: string
           price_monthly: number
           quantity: number
@@ -2898,8 +2951,10 @@ export type Database = {
         Insert: {
           addon_type: string
           asaas_addon_id?: string | null
+          asaas_payment_link?: string | null
           canceled_at?: string | null
           created_at?: string
+          grace_until?: string | null
           id?: string
           price_monthly: number
           quantity?: number
@@ -2912,8 +2967,10 @@ export type Database = {
         Update: {
           addon_type?: string
           asaas_addon_id?: string | null
+          asaas_payment_link?: string | null
           canceled_at?: string | null
           created_at?: string
+          grace_until?: string | null
           id?: string
           price_monthly?: number
           quantity?: number

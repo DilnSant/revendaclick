@@ -64,8 +64,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 027 |
-| Próxima migration | `028_...` |
+| Migrations aplicadas | 001 → 029 |
+| Próxima migration | `030_...` |
 | Tenants no banco | santos-car (Pro/active), sandbox-revendaclick (Pro/active), devecar (is_active=false) |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
@@ -77,6 +77,28 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
 | Total documentadas | 33 (FC001–FC033) |
 | Próxima FC | **FC034** |
+
+## Landing Page — campos de qualificação (migration 029)
+
+| Campo | Tipo | Valores |
+|---|---|---|
+| `vehicles_count` | text (nullable) | `1-10`, `11-30`, `31-60`, `60+` |
+| `city` | text (nullable) | Cidade livre |
+| `state` | text (nullable) | UF 2 letras maiúsculas |
+
+Webhook de leads: `WEBHOOK_LEADS_URL` (env var server-side) — POST fire-and-forget com dados do lead.
+
+## Landing Page — tabela de leads
+
+| Item | Valor |
+|---|---|
+| Tabela | `public.landing_leads` |
+| Migration | `028_landing_leads.sql` |
+| API Route | `POST /api/leads/landing` (Next.js, não backend Go) |
+| RLS | INSERT: anon + authenticated \| SELECT: service_role only |
+| Env vars | `NEXT_PUBLIC_META_PIXEL_ID`, `NEXT_PUBLIC_TIKTOK_PIXEL_ID`, `NEXT_PUBLIC_WA_NUMBER`, `NEXT_PUBLIC_DEMO_VIDEO_ID`, `WEBHOOK_LEADS_URL` |
+| Página obrigado | `/obrigado` — redirect após lead salvo; `robots: noindex` |
+| Campos qualificação | `vehicles_count`, `city`, `state` (migration 029) |
 
 ## Comandos frequentes
 
