@@ -120,6 +120,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Erro ao salvar contato. Tente novamente.' }, { status: 500 })
   }
 
+  console.info('[landing-lead] saved:', { name, phone: phone.slice(0, 4) + '****', city, state, source })
+
   // Fire-and-forget webhook (N8N, WhatsApp, etc.) — does not block response
   fireWebhook({
     name, phone,
