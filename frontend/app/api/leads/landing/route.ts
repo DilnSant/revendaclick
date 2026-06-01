@@ -122,7 +122,8 @@ export async function POST(req: NextRequest) {
 
   console.info('[landing-lead] saved:', { name, phone: phone.slice(0, 4) + '****', city, state, source })
 
-  // Fire-and-forget webhook (N8N, WhatsApp, etc.) — does not block response
+  // Webhook opcional — não faz parte do fluxo principal. Lead já está salvo no Supabase.
+  // Configurar WEBHOOK_LEADS_URL apenas se houver integração de notificação externa.
   fireWebhook({
     name, phone,
     vehicles_count, city, state,

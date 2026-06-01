@@ -13,7 +13,9 @@ import (
 	"go.uber.org/zap"
 )
 
-// Payload mirrors what the Next.js API route sends in fireWebhook().
+// Payload espelha o que a API Next.js envia em fireWebhook().
+// O fluxo principal (Landing → Supabase → /admin/leads) é independente deste webhook.
+// Este handler é ativado apenas se WEBHOOK_LEADS_URL for configurado no frontend.
 type Payload struct {
 	Name          string  `json:"name"`
 	Phone         string  `json:"phone"`
@@ -77,7 +79,8 @@ func (h *Handler) Webhook(c *gin.Context) {
 		zap.String("phone", phonePreview+"****"),
 	)
 
-	// Send WhatsApp notification if configured
+	// Notificação WhatsApp via Evolution — opcional, vinculado a add-on futuro.
+	// Sem LEAD_NOTIFY_INSTANCE e LEAD_NOTIFY_NUMBER: nenhuma mensagem é enviada.
 	if h.instance != "" && h.number != "" {
 		msg := buildMessage(p)
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
