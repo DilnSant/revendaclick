@@ -1503,10 +1503,13 @@ export type Database = {
           email: string | null
           id: string
           name: string
+          notes: string | null
           phone: string
           source: string
           state: string | null
+          status: string
           store_name: string | null
+          updated_at: string | null
           utm_campaign: string | null
           utm_content: string | null
           utm_medium: string | null
@@ -1519,10 +1522,13 @@ export type Database = {
           email?: string | null
           id?: string
           name: string
+          notes?: string | null
           phone: string
           source?: string
           state?: string | null
+          status?: string
           store_name?: string | null
+          updated_at?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
@@ -1535,10 +1541,13 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string
+          notes?: string | null
           phone?: string
           source?: string
           state?: string | null
+          status?: string
           store_name?: string | null
+          updated_at?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
