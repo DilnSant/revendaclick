@@ -170,6 +170,27 @@ func (s *Service) UpgradeSubscription(ctx context.Context, tenantID string, req 
 
 	desc := fmt.Sprintf("RevendaClick — Plano %s (%s)", capitalize(req.PlanName), capitalize(req.BillingCycle))
 	if err := s.asaas.updateSubscription(current.AsaasSubscriptionID, value, cycle, desc); err != nil {
+		// Asaas rejects PUT on deleted subscriptions with invalid_action.
+		// Fallback: create a new subscription and replace the stale ID in DB.
+		if strings.Contains(err.Error(), "invalid_action") {
+			_, _, asaasCustomerID, cerr := s.repo.GetAsaasCustomerID(ctx, tenantID)
+			if cerr != nil || asaasCustomerID == "" {
+				return nil, fmt.Errorf("cliente Asaas não encontrado — contate o suporte")
+			}
+			newSub, cerr := s.asaas.createSubscription(asaasCustomerID, value, cycle, "BOLETO", desc, tenantID)
+			if cerr != nil {
+				return nil, fmt.Errorf("%s", asaasUserErr(cerr.Error()))
+			}
+			paymentLink := newSub.PaymentLink
+			if paymentLink == "" {
+				paymentLink, _ = s.asaas.getSubscriptionPayments(newSub.ID)
+			}
+			if serr := s.repo.UpdateSubscriptionAsaas(ctx, tenantID, newSub.ID, paymentLink, req.BillingCycle, planID); serr != nil {
+				_ = s.asaas.cancelSubscription(newSub.ID) // best-effort cleanup
+				return nil, fmt.Errorf("update subscription: %w", serr)
+			}
+			return s.GetSubscription(ctx, tenantID)
+		}
 		return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
 	}
 
