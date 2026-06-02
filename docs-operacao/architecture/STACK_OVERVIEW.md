@@ -11,7 +11,7 @@
 | Frontend | Next.js 16 (App Router, SSR) | Vercel | Auto via push `main` |
 | Backend | Go (Gin) — Clean Architecture | VPS Docker | CI/CD GitHub Actions |
 | Database | PostgreSQL + Supabase Auth + Storage | Supabase Cloud | Migrations via MCP |
-| WhatsApp | Evolution API v2.3.7 | VPS Docker | Manual |
+| Central de Atendimento (add-on) | Evolution API v2.3.7 | VPS Docker | Manual |
 | Cache | Redis 7-alpine | VPS Docker | Auto com compose |
 | Billing | Asaas (BR) | Externo | — |
 | IA | OpenRouter (`gpt-4o-mini`) | Externo | — |

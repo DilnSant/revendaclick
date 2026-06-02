@@ -9,8 +9,8 @@
 
 ### R1 — Remoção de `evolution_instances` volume
 
-**O que é:** Volume Docker com estado das instâncias WhatsApp.
-**Impacto:** Todos os tenants perdem a conexão WhatsApp. Precisam reconectar via QR code.
+**O que é:** Volume Docker com estado das instâncias WhatsApp (add-on `whatsapp_automation`).
+**Impacto:** Todos os tenants com Central de Atendimento ativa perdem a conexão. Precisam reconectar via QR code. WhatsApp da Loja (contato público, link `wa.me`) não é afetado.
 **Como acontece:** `docker compose down -v` ou remoção manual do volume.
 **Mitigação:** Nunca usar `docker compose down -v` em produção. Listar volumes antes de qualquer operação destrutiva.
 
@@ -28,7 +28,7 @@
 ### R3 — Porta errada em `EVOLUTION_DATABASE_URL`
 
 **O que é:** Evolution usa Prisma que requer advisory locks — incompatível com PgBouncer (porta 6543).
-**Impacto:** Evolution não inicia. Todos os tenants sem WhatsApp.
+**Impacto:** Evolution não inicia. Central de Atendimento (add-on `whatsapp_automation`) indisponível para todos os tenants. WhatsApp da Loja (contato público) não é afetado — produto base continua operando normalmente.
 **Como acontece:** Trocar por acidente para porta 6543 (transaction mode).
 **Mitigação:** `EVOLUTION_DATABASE_URL` sempre porta 5432 (session mode). `DATABASE_URL` sempre porta 6543 (transaction mode). Nunca trocar.
 
@@ -123,7 +123,7 @@
 
 **O que é:** Evolution tem limite de 768m em produção (aumentado de 512m em 25/05/2026).
 **Mitigação ativa:** `NODE_OPTIONS=--max-old-space-size=400` limita o heap do Node.js a 400m, dando margem de segurança antes de atingir 768m. Redis cache reduz pressão de memória.
-**Impacto:** OOM Killer mata o container. Tenants perdem WhatsApp temporariamente.
+**Impacto:** OOM Killer mata o container. Central de Atendimento (add-on) indisponível temporariamente. WhatsApp da Loja não é afetado.
 **Como detectar:** `docker stats` mostrando Evolution próximo de 768m.
 **Solução:** Aumentar limite no `docker-compose.production.yml` para 1024m (se VPS tiver memória).
 

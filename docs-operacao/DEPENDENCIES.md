@@ -181,8 +181,8 @@ CI/CD
 | Supabase PostgreSQL | **CRÍTICA** | Todos | Nenhum — produto para |
 | Supabase Auth | **CRÍTICA** | Auth, Dashboard | Nenhum |
 | Asaas API | **Alta** | Billing novo | Assinaturas existentes continuam |
-| Evolution API | **Alta** | WhatsApp/Central | WhatsApp indisponível |
-| Redis | **Alta** | Evolution cache | Evolution mais lento |
+| Evolution API | **Alta** | Central de Atendimento (add-on) | Central indisponível — produto base não afetado |
+| Redis | **Alta** | Evolution cache (add-on) | Evolution mais lento — add-on degradado, produto base não afetado |
 | OpenRouter | **Média** | IA classify/suggest | Features IA desabilitadas |
 | Vercel | **Alta** | Frontend | Último deploy continua |
 | GHCR | **Alta** | CI/CD backend | Deploy manual |
