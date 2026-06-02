@@ -101,10 +101,22 @@ Visitante na vitrine /:slug
 
 ---
 
-## Fluxo 4: Captura de Lead (WhatsApp)
+## Dois Conceitos de WhatsApp — Nunca Confundir
+
+| Conceito | Produto base? | Requer Evolution? | Configuração |
+|---|---|---|---|
+| **WhatsApp da Loja** | Sim | Não | Configurações → Contato Público → WhatsApp (link `wa.me`) |
+| **Central de Atendimento** | Não — add-on | Sim | Add-ons → Central de Atendimento → conectar QR Code |
+
+---
+
+## Fluxo 4: Captura de Lead via WhatsApp Automação (add-on — opcional)
+
+> **Requer:** add-on `whatsapp_automation` contratado + instância Evolution conectada (QR Code).
+> Não faz parte do produto base. Lead salvo no Supabase + visível em `/admin/leads` já é funcionamento completo.
 
 ```
-Cliente manda mensagem no WhatsApp da loja
+Cliente manda mensagem no WhatsApp da loja (número da instância Evolution)
   → Evolution API recebe mensagem
   → POST /api/webhooks/evolution (apikey no header)
       → Evento "messages.upsert"
@@ -115,6 +127,9 @@ Cliente manda mensagem no WhatsApp da loja
       → INSERT lead_activities (type='whatsapp', description=mensagem)
   → Lead aparece no /leads com atividade WhatsApp
 ```
+
+**Nota:** O WhatsApp da Loja (contato público configurado em Configurações → Contato Público) é distinto:
+usa link `wa.me/{telefone}`, não requer Evolution nem add-on.
 
 ---
 
@@ -216,9 +231,10 @@ Asaas webhook PAYMENT_CONFIRMED
 
 ---
 
-## Fluxo 10: WhatsApp
+## Fluxo 10: Central de Atendimento — WhatsApp Automação (add-on `whatsapp_automation`)
 
-Ver `16_EVOLUTION.md` para detalhes completos.
+> **Requer:** add-on `whatsapp_automation` + instância Evolution conectada.
+> Ver `16_EVOLUTION.md` para detalhes completos.
 
 ```
 /whatsapp → GET /api/evolution/status

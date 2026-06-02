@@ -14,7 +14,7 @@ RevendaClick é uma plataforma SaaS multi-tenant para revendas de veículos.
 
 **Proposta de valor:**
 - Loja pública com SEO automático (sem custo extra)
-- CRM de leads integrado ao WhatsApp
+- CRM de leads com comunicação via WhatsApp (add-on opcional)
 - Controle financeiro e de comissões
 - Assinatura recorrente com upgrade/downgrade flexível
 
@@ -46,7 +46,7 @@ SaaS (RevendaClick)
         ├── Leads / Clientes
         ├── Vendas / Financeiro
         ├── Assinatura (plano + add-ons)
-        └── Instância WhatsApp (Evolution)
+        └── Instância WhatsApp (Evolution) ← add-on `whatsapp_automation` — opcional
 ```
 
 ### Tenant
