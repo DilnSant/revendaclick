@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 01/06/2026 (sessão 31 — pipeline comercial de leads)
+> Última atualização: 01/06/2026 (sessão 32 — consolidação arquitetura WhatsApp)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -46,6 +46,29 @@
 | **Admin Lead Detalhe** | ✓ Produção (sessão 31) | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
 | **Pipeline Comercial Leads** | ✓ Produção (migrations 030-031) | 5 status: novo → contatado → em_negociacao → convertido / perdido |
 | **Webhook landing lead** | ✓ Produção (opcional) | `POST /api/webhooks/landing-lead` no backend Go — ativo sem Evolution; notificação WA opcional |
+
+---
+
+## 2026-06-01 (sessão 32) — Consolidação arquitetura: WhatsApp da Loja vs Central de Atendimento
+
+**Objetivo:** Eliminar toda ambiguidade documental entre os dois conceitos de WhatsApp — produto base vs add-on opcional.
+
+**Commits:** `2839603`, `556eeef`
+
+**Migrations aplicadas:** nenhuma.
+
+**Arquivos alterados:**
+- `docs-operacao/PRODUCT_ARCHITECTURE.md` — Proposta de valor corrigida ("add-on opcional"); diagrama marcado com `← add-on whatsapp_automation — opcional`
+- `docs-operacao/17_FLUXOS_NEGOCIO.md` — Tabela comparativa dos dois conceitos adicionada; Fluxo 4 renomeado como add-on; Fluxo 10 renomeado como "Central de Atendimento (add-on)"
+- `docs-operacao/19_RISCOS.md` — R1/R3/R13: linguagem corrigida — falha da Evolution não afeta produto base; WhatsApp da Loja não é afetado
+- `docs-operacao/DEPENDENCIES.md` — Tabela de dependências externas: Evolution e Redis corrigidos para "(add-on)"
+- `docs-operacao/architecture/STACK_OVERVIEW.md` — Camada "WhatsApp" → "Central de Atendimento (add-on)"
+- `docs-operacao/21_DECISOES_TECNICAS.md` — D34 registrada
+
+**Decisões desta sessão:**
+- **D34**: WhatsApp da Loja = produto base (link `wa.me`, sem Evolution). Central de Atendimento = add-on `whatsapp_automation` (Evolution + QR Code obrigatórios). Falha da Evolution não afeta o produto base.
+
+**Testes:** Sessão documental — sem alterações de código ou banco. Deploy: não executado.
 
 ---
 

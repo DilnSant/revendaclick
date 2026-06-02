@@ -318,7 +318,7 @@ const isActiveAndCurrent = isCurrent && subscription?.status === 'active'
 **Regra permanente:** Nunca usar `plan_name === X` no frontend. Sempre feature flags.
 
 **Gate Pro:** `has_crm` (inalterado — coerente com D26)
-**Gate Premium:** `has_api_access` — proxy de plano Performance/Scale
+**Gate Premium:** `has_api_access` — proxy de plano Premium/Scale
 
 **Ver:** `frontend/components/layout/DashboardShell.tsx`, `components/financial/FinancialSubNav.tsx`, `components/billing/BillingSubNav.tsx`
 
@@ -401,3 +401,20 @@ supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/d
 **Por quê:** Simplicidade operacional. O painel é acessado pela equipe comercial — o alerta aparece no momento certo, sem infra adicional.
 
 **Trade-off:** Não notifica a equipe proativamente (push). Exige que alguém abra o painel. Aceitável para o estágio atual de operação.
+
+---
+
+## D34 — WhatsApp da Loja é produto base; Central de Atendimento é add-on (01/06/2026 — sessão 32)
+
+**Decisão:** O RevendaClick tem dois conceitos de WhatsApp completamente distintos e independentes:
+
+**WhatsApp da Loja (produto base):** Número público de contato da revenda configurado em Configurações → Contato Público. Exibido na vitrine pública `/:slug` como botão `wa.me/{telefone}`. Disponível em todos os planos. **Não depende de Evolution, QR Code ou automação.**
+
+**Central de Atendimento (add-on `whatsapp_automation`):** Integração de WhatsApp via Evolution API para atendimento interno e CRM. Requer: add-on contratado + instância Evolution conectada + QR Code escaneado. Gate: `has_central_atendimento`. Pode usar o mesmo número da loja ou um número separado.
+
+**Por quê:** Documentação anterior mesclava os dois conceitos, criando impressão de que a Central de Atendimento (Evolution) é requisito do produto base. Isso gerava classificações de risco incorretas (falha da Evolution = produto base parado) e expectativa errada de que todo tenant precisa de QR Code.
+
+**Regra operacional:** Falha da Evolution API não afeta o produto base. Produto base funciona completamente sem Evolution, sem webhook, sem QR Code. Validação: `Landing → Supabase → /admin/leads` é fluxo completo.
+
+**Documentos corrigidos:** `PRODUCT_ARCHITECTURE.md`, `17_FLUXOS_NEGOCIO.md`, `19_RISCOS.md`, `DEPENDENCIES.md`, `STACK_OVERVIEW.md`.
+

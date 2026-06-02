@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 01/06/2026 (sessão 31 — pipeline comercial de leads, migrations 030-031)
+> Atualizado em: 01/06/2026 (sessão 32 — consolidação arquitetura WhatsApp, D34)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 31 — 01/06/2026)
+## Estado Atual do Projeto (sessão 32 — 01/06/2026)
 
 | Componente | Status |
 |---|---|
@@ -82,6 +82,7 @@
 | **Migrations 030–031** | ✓ aplicadas (sessão 31) | Pipeline comercial leads: status, notes, last_contact_at, next_action |
 | **Admin leads pipeline** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação, alerta 4h; `/admin/leads/[id]` — detalhe |
 | **Webhook landing lead** | ✓ Deployado (sessão 31) | `POST /api/webhooks/landing-lead` — opcional; Evolution/WA opcionais (D31) |
+| **D34 — Arquitetura WhatsApp** | ✓ Documentada (sessão 32) | WhatsApp da Loja = base; Central de Atendimento = add-on Evolution; sem ambiguidade |
 
 ---
 
