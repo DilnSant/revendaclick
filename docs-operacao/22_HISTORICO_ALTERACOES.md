@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 02/06/2026 (sessão 33 — auditoria final de homologação)
+> Última atualização: 02/06/2026 (sessão 35 — auditoria asaas_subscription_id santos-car)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -35,7 +35,7 @@
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
-| **Billing Asaas — santos-car** | ✓ **dev_test_* ativo** (sessão 28 — Opção A) | `sub_gqu4uiro0sisshxt` cancelado no Asaas (zero cobrança); DB restaurado para `dev_test_fd1172f6-...`; usar AdminSimulateEvent para testes |
+| **Billing Asaas — santos-car** | ⚠️ **Sem assinatura ativa no Asaas** (sessão 35) | `sub_gqu4uiro0sisshxt` deletado/INACTIVE no Asaas; DB atualizado do legado `dev_test_...` para o ID real; upgrade/downgrade bloqueados até nova assinatura ser criada via subscribe |
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
 | **BUG-01/02/03 — Feature flags Premium** | ✓ **Corrigido** (sessão 29) | Sidebar Premium gateada por `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
@@ -52,6 +52,35 @@
 | **Bugs billing/planos corrigidos** | ✓ Corrigidos (sessão 34) | Seleção dupla + sucesso falso + Asaas 404 — ver sessão 34 abaixo |
 | **Bugs add-ons corrigidos** | ✓ Corrigidos (sessão 34) | UI não atualizava após contratar + sem botão cancelar pendente |
 | **Security: RLS Evolution API** | ✓ Migration 032 (sessão 34) | 36 tabelas Evolution com RLS deny-all; alertas `rls_disabled` + `sensitive_columns` eliminados |
+
+---
+
+## 2026-06-02 (sessão 35) — Auditoria e correção asaas_subscription_id santos-car
+
+**Objetivo:** Localizar a assinatura Asaas real do tenant santos-car e corrigir o campo `asaas_subscription_id` que continha valor legado fictício.
+
+**Migrations aplicadas:** nenhuma (correção de dados via execute_sql)
+
+**Arquivos alterados:**
+- `database/migrations/033_fix_santos_car_asaas_subscription_id.sql` — criado para rastreabilidade
+
+**Auditoria realizada:**
+- `asaas_customer_id` no banco: `cus_000178518508` (real, produção)
+- Assinaturas Asaas do customer: 3 add-ons ativos + 1 plano principal encontrado
+- `sub_gqu4uiro0sisshxt` (Pro R$ 197/mês): `deleted: true`, `status: INACTIVE` — criado sessão 27, cancelado posteriormente
+- Nenhuma assinatura ativa do plano principal existe no Asaas
+
+**Correção aplicada:**
+- `asaas_subscription_id`: `dev_test_fd1172f6-11e7-4555-8fe3-082fd1849587` → `sub_gqu4uiro0sisshxt`
+- Efeito: ID agora é rastreável e o Asaas responde com erro correto (`400 invalid_action`) em vez de `404 not found`
+
+**Testes pós-correção:**
+- Upgrade Pro → Premium: `400 "A assinatura [sub_gqu4uiro0sisshxt] não pode ser atualizada."` (esperado — assinatura deletada)
+- Mensal → Anual: `400 invalid_action` (mesmo motivo)
+- Upgrade/downgrade completo: **BLOQUEADO** até nova assinatura ser criada via subscribe
+
+**Resolução pendente (ação manual):**
+Para reativar upgrade/downgrade, Dilney deve acessar /settings e passar pelo fluxo de assinatura (re-subscribe ao plano Pro). Isso criará um novo `sub_xxx` ativo no Asaas e salvará no banco automaticamente.
 
 ---
 

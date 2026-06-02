@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 02/06/2026 (sessão 34 — bugs billing corrigidos + RLS Evolution API)
+> Atualizado em: 02/06/2026 (sessão 35 — auditoria asaas_subscription_id santos-car)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 34 — 02/06/2026)
+## Estado Atual do Projeto (sessão 35 — 02/06/2026)
 
 | Componente | Status |
 |---|---|
@@ -51,7 +51,7 @@
 | Prompts operacionais | ✓ /prompts/ (raiz) — 5 arquivos; procedimento oficial de sessão |
 | Migration 026 | ✓ performance → premium (definitivo); DB + código + docs sincronizados |
 | FC030 | ✓ SettingsTabs name:'premium' vs DB 'performance' — corrigido via migration 026 |
-| **Billing santos-car (sessão 28 — Opção A)** | ✓ `sub_gqu4uiro0sisshxt` cancelado no Asaas (zero cobrança); DB em `dev_test_fd1172f6-...`; usar AdminSimulateEvent para testes |
+| **Billing santos-car (sessão 35 — auditoria)** | ⚠️ `sub_gqu4uiro0sisshxt` deletado no Asaas; DB corrigido para ID real; upgrade/downgrade bloqueados até re-subscribe |
 | D29 | ✓ plan.name = 'premium' definitivo — decisão técnica registrada |
 | **FC031 — ActivateByAsaasSubID** | ✓ `canceled_at = NULL` corrigido em `repository.go` (sessão 28) |
 | **Nomenclatura add-ons** | ✓ "Add-on" → "Recurso"; chips técnicos removidos; ia_recovery = "Recuperação por IA" (sessão 29) |
@@ -85,6 +85,8 @@
 | **D34 — Arquitetura WhatsApp** | ✓ Documentada (sessão 32) | WhatsApp da Loja = base; Central de Atendimento = add-on Evolution; sem ambiguidade |
 | **Auditoria final homologação (sessão 33)** | ✓ APROVADO | build/tsc/vet/test limpos; infra saudável; fluxos validados; divergências docs corrigidas |
 | **Feature flags docs corrigidas (sessão 33)** | ✓ Corrigida | `has_api_access` Scale-only; gate Premium = `has_automation`; REFERENCE/MEMORY/D28/snapshots atualizados |
+| **Bugs billing/planos + add-ons + RLS (sessão 34)** | ✓ Corrigidos | 3 bugs billing + 2 bugs add-ons + migration 032 RLS deny-all Evolution API |
+| **asaas_subscription_id santos-car (sessão 35)** | ✓ Corrigido | `dev_test_...` → `sub_gqu4uiro0sisshxt`; assinatura deletada no Asaas; upgrade bloqueado (ação manual necessária) |
 
 ---
 
