@@ -52,6 +52,7 @@
 | [FC031](FC031_ACTIVATE_CANCELED_AT_NULL.md) | ActivateByAsaasSubID não limpava canceled_at — tenant ativo com canceled_at preenchido | Billing / Backend | ALTA | 2026-05-31 |
 | [FC032](FC032_ADDONS_SEM_BILLING_ASAAS.md) | Add-ons ativados sem cobrança Asaas — asaas_addon_id sempre NULL | Billing / Add-ons | ALTA | 2026-05-31 |
 | [FC033](FC033_CANCEL_SUBSCRIPTION_NAO_CANCELA_ADDONS.md) | CancelSubscription não cancela subscription_addons — add-ons continuam cobrando | Billing / Add-ons | MÉDIA | 2026-05-31 |
+| [FC034](FC034_ASAAS_INVALID_ACTION_DELETED_SUBSCRIPTION.md) | Asaas `invalid_action` em upgrade/downgrade — assinatura deletada não pode ser atualizada via PUT | Billing / Asaas | ALTA | 02/06/2026 |
 
 ---
 

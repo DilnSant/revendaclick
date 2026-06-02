@@ -64,8 +64,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 031 |
-| Próxima migration | `032_...` |
+| Migrations aplicadas | 001 → 033 |
+| Próxima migration | `034_...` |
 | Tenants no banco | santos-car (Pro/active), sandbox-revendaclick (Pro/active), devecar (is_active=false) |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
@@ -75,8 +75,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 33 (FC001–FC033) |
-| Próxima FC | **FC034** |
+| Total documentadas | 34 (FC001–FC034) |
+| Próxima FC | **FC035** |
 
 ## Landing Page — CONGELADA (sessão 31)
 

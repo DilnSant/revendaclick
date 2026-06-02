@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 02/06/2026 (sessão 36 — fix upgrade/downgrade Asaas invalid_action)
+> Última atualização: 02/06/2026 (sessão 36 — fix upgrade/downgrade Asaas invalid_action + rebuild VPS + FC034)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -52,6 +52,7 @@
 | **Bugs billing/planos corrigidos** | ✓ Corrigidos (sessão 34) | Seleção dupla + sucesso falso + Asaas 404 — ver sessão 34 abaixo |
 | **Bugs add-ons corrigidos** | ✓ Corrigidos (sessão 34) | UI não atualizava após contratar + sem botão cancelar pendente |
 | **Security: RLS Evolution API** | ✓ Migration 032 (sessão 34) | 36 tabelas Evolution com RLS deny-all; alertas `rls_disabled` + `sensitive_columns` eliminados |
+| **FC034 — Asaas invalid_action deleted sub** | ✓ Corrigido (sessão 36) | Fallback em `UpgradeSubscription`; cria nova sub quando deletada; 6/6 cenários aprovados |
 
 ---
 
@@ -88,6 +89,15 @@
 - Plan: Pro, monthly, active
 - `asaas_subscription_id`: `sub_b3y3xwo9s18g50xc` (ativo no Asaas)
 - Go vet: VET_OK | TypeScript: clean
+
+**Rebuild VPS (encerramento sessão 36):**
+- `git pull origin main` → Already up to date
+- `docker compose down` → rc_backend, rc_evolution parados
+- `docker compose up -d --build` → rebuildo local da imagem; containers `revendaclick-backend-1` + `revendaclick-evolution-1` saudáveis
+- `GET /health` → `{"db":"ok","status":"ok"}` ✅
+- Observação: containers `rc_redis` e `rc_backup` seguem como orphans — correto; não afetam operação
+
+**FC034 documentado:** `docs-operacao/FalhasCorrigidas/FC034_ASAAS_INVALID_ACTION_DELETED_SUBSCRIPTION.md`
 
 ---
 
