@@ -692,6 +692,7 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionData | null }) {
+  const router = useRouter()
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly')
   const [pending, startTransition] = useTransition()
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
@@ -705,14 +706,39 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
     setPlanSuccess(null)
     startTransition(async () => {
       try {
+        // Assinatura ativa em plano diferente → endpoint de upgrade
+        if (subscription?.status === 'active' && subscription.plan_name !== planName) {
+          const res = await fetch('/api/billing/upgrade-action', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan_name: planName, billing_cycle: cycle }),
+          })
+          const data = await res.json()
+          if (!res.ok) {
+            setPlanError(data.error ?? 'Erro ao alterar plano. Tente novamente.')
+          } else {
+            setSubscription(data as SubscriptionData)
+            setPlanSuccess('Plano alterado! A nova cobrança será aplicada no próximo ciclo.')
+            router.refresh()
+          }
+          return
+        }
+
+        // Nova assinatura ou ativação de trial
         const result = await subscribePlan(planName, cycle)
         if (!result.error) {
+          // Guard ativado: backend retornou assinatura existente em plano diferente
+          if (result.data.plan_name !== planName && result.data.asaas_subscription_id) {
+            setPlanError('Você já possui uma assinatura ativa. Para trocar de plano, acesse a aba Planos.')
+            setSubscription(result.data)
+            return
+          }
           setSubscription(result.data)
           if (result.data.asaas_payment_link) {
             setPlanSuccess('Assinatura criada! Redirecionando para pagamento…')
             window.open(result.data.asaas_payment_link, '_blank')
           } else {
-            setPlanSuccess('Assinatura ativada com sucesso.')
+            setPlanSuccess('Assinatura solicitada! Você receberá o link de pagamento por e-mail.')
           }
         } else {
           setPlanError(result.error.message)

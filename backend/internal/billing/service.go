@@ -91,7 +91,24 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 	desc := fmt.Sprintf("RevendaClick — Plano %s (%s)", capitalize(req.PlanName), capitalize(req.BillingCycle))
 	sub, err := s.asaas.createSubscription(asaasCustomerID, value, cycle, billingType, desc, tenantID)
 	if err != nil {
-		return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
+		// Se o customer não existe no Asaas (404), recriar e tentar novamente
+		if strings.Contains(err.Error(), "404") && asaasCustomerID != "" {
+			customer, cerr := s.asaas.createCustomer(name, email, "", req.CPFOrCNPJ, tenantID)
+			if cerr != nil {
+				return nil, fmt.Errorf("%s", asaasUserErr(cerr.Error()))
+			}
+			asaasCustomerID = customer.ID
+			if serr := s.repo.SaveAsaasCustomerID(ctx, tenantID, asaasCustomerID); serr != nil {
+				return nil, fmt.Errorf("save customer id: %w", serr)
+			}
+			_ = s.repo.UpsertBillingCustomer(ctx, tenantID, customer.ID, name, email, req.CPFOrCNPJ, "")
+			sub, err = s.asaas.createSubscription(asaasCustomerID, value, cycle, billingType, desc, tenantID)
+			if err != nil {
+				return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
+			}
+		} else {
+			return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
+		}
 	}
 
 	paymentLink := sub.PaymentLink

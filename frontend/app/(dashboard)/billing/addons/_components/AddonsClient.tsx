@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/billing-utils'
 
 interface PlanAddon {
@@ -55,6 +56,7 @@ const ADDON_COLORS: Record<string, string> = {
 }
 
 export default function AddonsClient({ available, active }: Props) {
+  const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
   const [messages, setMessages] = useState<Record<string, { type: 'success' | 'error'; text: string }>>({})
 
@@ -72,6 +74,7 @@ export default function AddonsClient({ available, active }: Props) {
       if (!res.ok) {
         setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: data.error ?? 'Erro ao ativar.' } }))
       } else {
+        router.refresh()
         const payLink = data.data?.payment_link ?? ''
         setMessages((m) => ({
           ...m,
@@ -100,7 +103,8 @@ export default function AddonsClient({ available, active }: Props) {
       if (!res.ok) {
         setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: data.error ?? 'Erro ao cancelar.' } }))
       } else {
-        setMessages((m) => ({ ...m, [addonType]: { type: 'success', text: 'Recurso cancelado. Recarregue a página.' } }))
+        router.refresh()
+        setMessages((m) => ({ ...m, [addonType]: { type: 'success', text: 'Recurso cancelado com sucesso.' } }))
       }
     } catch {
       setMessages((m) => ({ ...m, [addonType]: { type: 'error', text: 'Erro de conexão.' } }))
@@ -143,20 +147,38 @@ export default function AddonsClient({ available, active }: Props) {
                 <p className="text-xs text-gray-600 mb-4">
                   Acesso liberado automaticamente após confirmação do pagamento.
                 </p>
-                {addon.payment_link ? (
-                  <a
-                    href={addon.payment_link}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full rounded-lg bg-amber-500 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
-                  >
-                    Pagar agora →
-                  </a>
-                ) : (
-                  <p className="text-xs text-amber-700 text-center">
-                    Link de pagamento enviado para o e-mail cadastrado.
-                  </p>
+                {messages[addon.addon_type] && (
+                  <div className={`mb-3 rounded-lg px-3 py-2 text-xs ${
+                    messages[addon.addon_type].type === 'success'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-50 text-red-700'
+                  }`}>
+                    {messages[addon.addon_type].text}
+                  </div>
                 )}
+                <div className="flex flex-col gap-2">
+                  {addon.payment_link ? (
+                    <a
+                      href={addon.payment_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full rounded-lg bg-amber-500 px-3 py-2 text-center text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
+                    >
+                      Pagar agora →
+                    </a>
+                  ) : (
+                    <p className="text-xs text-amber-700 text-center">
+                      Link de pagamento enviado para o e-mail cadastrado.
+                    </p>
+                  )}
+                  <button
+                    onClick={() => handleCancel(addon.addon_type)}
+                    disabled={loading === addon.addon_type}
+                    className="w-full rounded-lg border border-amber-300 px-3 py-2 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors disabled:opacity-50"
+                  >
+                    {loading === addon.addon_type ? 'Processando…' : 'Cancelar contratação'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>

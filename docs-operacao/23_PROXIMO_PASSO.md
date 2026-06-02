@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 02/06/2026 (sessão 33 — auditoria final de homologação — APROVADO)
+> Atualizado em: 02/06/2026 (sessão 34 — bugs billing corrigidos + RLS Evolution API)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 32 — 01/06/2026)
+## Estado Atual do Projeto (sessão 34 — 02/06/2026)
 
 | Componente | Status |
 |---|---|

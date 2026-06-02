@@ -49,6 +49,34 @@
 
 | **Documentação feature flags** | ✓ Corrigida (sessão 33) | `has_api_access` era incorretamente documentado como Premium+ — é Scale-only; gate Premium = `has_automation` |
 | **Auditoria final homologação** | ✓ APROVADO (sessão 33) | build/tsc/vet/test limpos; infra saudável; fluxos validados; docs sincronizadas |
+| **Bugs billing/planos corrigidos** | ✓ Corrigidos (sessão 34) | Seleção dupla + sucesso falso + Asaas 404 — ver sessão 34 abaixo |
+| **Bugs add-ons corrigidos** | ✓ Corrigidos (sessão 34) | UI não atualizava após contratar + sem botão cancelar pendente |
+| **Security: RLS Evolution API** | ✓ Migration 032 (sessão 34) | 36 tabelas Evolution com RLS deny-all; alertas `rls_disabled` + `sensitive_columns` eliminados |
+
+---
+
+## 2026-06-02 (sessão 34) — Correção bugs billing + security RLS Evolution API
+
+**Objetivo:** Corrigir 3 bugs de billing/planos, 2 bugs de add-ons e eliminar alertas críticos do Security Advisor.
+
+**Migrations aplicadas:** `032_evolution_api_rls_deny_all`
+
+**Arquivos alterados (código):**
+- `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx` — PlanTab: roteamento upgrade, detecção guard, msg sucesso corrigida
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx` — msg sucesso quando sem payment link
+- `frontend/app/(dashboard)/billing/addons/_components/AddonsClient.tsx` — router.refresh() pós-ação + botão cancelar pendente
+- `backend/internal/billing/service.go` — retry Asaas 404 (recriar customer)
+- `database/migrations/032_evolution_api_rls_deny_all.sql` — criado localmente
+
+**Resultados:**
+- Billing/Planos Bug 1 (seleção dupla): corrigido — upgrade routing + guard detection
+- Billing/Planos Bug 2 (sucesso falso): corrigido — msg indica pagamento pendente
+- Billing/Planos Bug 3 (Asaas 404): corrigido — retry automático com novo customer
+- Add-ons Bug 1 (UI não atualiza): corrigido — router.refresh() pós-activate
+- Add-ons Bug 2 (sem cancelar pendente): corrigido — botão "Cancelar contratação" adicionado
+- Security: 36 tabelas Evolution com RLS deny-all; `rls_disabled_in_public` + `sensitive_columns_exposed` eliminados
+- Evolution API: operacional após migration (HTTP 200, instâncias respondendo)
+- TypeScript: clean | Go vet: VET_OK
 
 ---
 

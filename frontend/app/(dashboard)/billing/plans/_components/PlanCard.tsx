@@ -128,7 +128,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
         setSuccess('Redirecionando para pagamento…')
         window.open(data.asaas_payment_link, '_blank')
       } else {
-        setSuccess('Assinatura ativada! Recarregue a página.')
+        setSuccess('Assinatura solicitada! Você receberá o link de pagamento por e-mail.')
       }
     } catch { setError('Erro de conexão. Tente novamente.') }
     finally { setLoading(false) }
