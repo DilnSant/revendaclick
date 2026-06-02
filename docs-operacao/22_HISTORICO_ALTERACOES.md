@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 02/06/2026 (sessão 35 — auditoria asaas_subscription_id santos-car)
+> Última atualização: 02/06/2026 (sessão 36 — fix upgrade/downgrade Asaas invalid_action)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -35,7 +35,7 @@
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
-| **Billing Asaas — santos-car** | ⚠️ **Sem assinatura ativa no Asaas** (sessão 35) | `sub_gqu4uiro0sisshxt` deletado/INACTIVE no Asaas; DB atualizado do legado `dev_test_...` para o ID real; upgrade/downgrade bloqueados até nova assinatura ser criada via subscribe |
+| **Billing Asaas — santos-car** | ✓ **Operacional** (sessão 36) | `sub_b3y3xwo9s18g50xc` ativo; fallback recria assinatura quando deletada; upgrade/downgrade/ciclo funcionando |
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
 | **BUG-01/02/03 — Feature flags Premium** | ✓ **Corrigido** (sessão 29) | Sidebar Premium gateada por `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
@@ -52,6 +52,42 @@
 | **Bugs billing/planos corrigidos** | ✓ Corrigidos (sessão 34) | Seleção dupla + sucesso falso + Asaas 404 — ver sessão 34 abaixo |
 | **Bugs add-ons corrigidos** | ✓ Corrigidos (sessão 34) | UI não atualizava após contratar + sem botão cancelar pendente |
 | **Security: RLS Evolution API** | ✓ Migration 032 (sessão 34) | 36 tabelas Evolution com RLS deny-all; alertas `rls_disabled` + `sensitive_columns` eliminados |
+
+---
+
+## 2026-06-02 (sessão 36) — Fix upgrade/downgrade Asaas invalid_action
+
+**Objetivo:** Diagnosticar e corrigir `400 invalid_action` em todas as operações de upgrade/downgrade/ciclo do tenant santos-car.
+
+**Migrations aplicadas:** nenhuma
+
+**Arquivos alterados:**
+- `backend/internal/billing/service.go` — `UpgradeSubscription`: fallback para criar nova assinatura quando `PUT /subscriptions/{id}` retorna `invalid_action`
+
+**Diagnóstico:**
+- `sub_gqu4uiro0sisshxt`: `deleted: true` no Asaas — `PUT` rejeitado com `400 invalid_action`
+- Comportamento correto Asaas: assinatura deletada NÃO pode ser atualizada; deve ser recriada
+- Divergência: código tentava sempre `PUT`; não havia fallback para assinatura deletada
+
+**Correção (service.go — UpgradeSubscription):**
+- Ao detectar `invalid_action` no erro do `updateSubscription`: cria nova assinatura Asaas via `POST /subscriptions`
+- Salva novo `asaas_subscription_id` + `billing_cycle` + `plan_id` via `UpdateSubscriptionAsaas` (status = trialing)
+- Em caso de erro ao salvar: cancela a nova assinatura no Asaas (best-effort cleanup)
+
+**Testes executados:**
+| Cenário | Resultado | Novo ID |
+|---|---|---|
+| Upgrade Pro → Premium (assinatura deletada) | ✅ Fallback ativado — nova assinatura criada | `sub_b3y3xwo9s18g50xc` |
+| Downgrade Premium → Pro (assinatura ativa) | ✅ PUT normal funcionou | — |
+| Mensal → Anual | ✅ | — |
+| Anual → Mensal | ✅ | — |
+| Upgrade Pro → Premium (assinatura ativa) | ✅ PUT normal funcionou | — |
+| Downgrade Premium → Starter | ✅ | — |
+
+**Estado final santos-car:**
+- Plan: Pro, monthly, active
+- `asaas_subscription_id`: `sub_b3y3xwo9s18g50xc` (ativo no Asaas)
+- Go vet: VET_OK | TypeScript: clean
 
 ---
 
