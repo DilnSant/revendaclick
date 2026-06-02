@@ -52,11 +52,17 @@
 | `has_analytics` | Pro+ |
 | `has_whatsapp` | Pro+ |
 | `has_kanban` | Pro+ |
-| `has_api_access` | Premium+ |
-| `has_white_label` | Premium+ |
-| `has_central_atendimento` | Add-on `whatsapp_automation` |
-| `has_whatsapp_qr` | Add-on |
-| `has_lead_recovery` | Add-on `ia_recovery` |
+| `has_automation` | **Premium+** (gate do sidebar Premium) |
+| `has_campaigns` | Premium+ |
+| `has_central_atendimento` | Premium+ OU Add-on `whatsapp_automation` OU tenant_feature |
+| `has_whatsapp_qr` | Premium+ OU Add-on |
+| `has_ai_assistance` | Premium+ |
+| `has_lead_recovery` | Premium+ OU Add-on `ia_recovery` |
+| `has_api_access` | **Scale only** (não está em Premium) |
+| `has_white_label` | Scale only |
+
+> **CORREÇÃO (sessão 33):** `has_api_access` é Scale-only. Gate do sidebar Premium é `has_automation`.
+> Verificado no banco: `plans.features` — Premium não contém `api_access`.
 
 **Regra:** Nunca usar `plan_name === X` no frontend. Sempre feature flags.
 

@@ -144,17 +144,25 @@ cd frontend && npx tsc --noEmit
 ## Feature flags (nomes exatos)
 
 ```
-has_crm                  → Pro+
-has_analytics            → Pro+
-has_central_atendimento  → add-on whatsapp_automation ou tenant_feature override
-has_whatsapp             → Pro+
-has_kanban               → Pro+
-has_api_access           → Premium+
-has_white_label          → Premium+
 has_financial            → Starter+
 has_vendors              → Starter+
-has_whatsapp_qr          → add-on
+has_crm                  → Pro+
+has_analytics            → Pro+
+has_whatsapp             → Pro+
+has_kanban               → Pro+
+has_automation           → Premium+ (feature "automation" no plano)
+has_campaigns            → Premium+
+has_central_atendimento  → Premium+ OU add-on whatsapp_automation OU tenant_feature override
+has_whatsapp_qr          → Premium+ OU add-on
+has_ai_assistance        → Premium+
+has_lead_recovery        → Premium+ OU add-on ia_recovery
+has_api_access           → Scale only (não está em Premium — apenas Scale)
+has_white_label          → Scale only
 ```
+
+> **ATENÇÃO (corrigido sessão 33):** `has_api_access` é exclusivo do plano Scale — não do Premium.
+> O gate do sidebar para a seção Premium é `has_automation`, não `has_api_access`.
+> Fonte de verdade: `plans.features` no banco + `ComputeFeatureFlags()` em `backend/internal/plans/model.go`.
 
 ## Planos (nomes exatos no banco)
 
@@ -181,7 +189,7 @@ has_whatsapp_qr          → add-on
 |---|---|---|
 | Base (Starter+) | sempre | Dashboard, Veículos, Interessados, Clientes, Financeiro¹ |
 | Pro | `has_crm` | Atendimento (CRM), Analytics |
-| Premium | `has_api_access` | Automações, Campanhas |
+| Premium | `has_automation` | Automações, Campanhas |
 | Sempre visível | — | Assinatura², Configurações³ |
 
 ¹ Financeiro tem sub-nav interno: **Resumo** / **Vendas** / **Comissões**

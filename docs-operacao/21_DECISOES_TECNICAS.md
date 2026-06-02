@@ -318,7 +318,9 @@ const isActiveAndCurrent = isCurrent && subscription?.status === 'active'
 **Regra permanente:** Nunca usar `plan_name === X` no frontend. Sempre feature flags.
 
 **Gate Pro:** `has_crm` (inalterado — coerente com D26)
-**Gate Premium:** `has_api_access` — proxy de plano Premium/Scale
+**Gate Premium:** `has_automation` — feature presente em Premium e Scale; `has_api_access` é Scale-only
+
+> **CORREÇÃO (sessão 33):** Gate Premium era documentado como `has_api_access` mas o código sempre usou `has_automation`. O banco confirma: `api_access` só existe no plano Scale; `automation` existe em Premium e Scale. Docs atualizados para refletir o código real.
 
 **Ver:** `frontend/components/layout/DashboardShell.tsx`, `components/financial/FinancialSubNav.tsx`, `components/billing/BillingSubNav.tsx`
 

@@ -30,11 +30,14 @@ O resultado é consolidado em um array único. A presença do nome já indica ac
 | `has_analytics` | — | ✓ | ✓ | ✓ | — |
 | `has_whatsapp` | — | ✓ | ✓ | ✓ | — |
 | `has_kanban` | — | ✓ | ✓ | ✓ | — |
-| `has_api_access` | — | — | ✓ | ✓ | — |
-| `has_white_label` | — | — | ✓ | ✓ | — |
-| `has_central_atendimento` | — | — | — | — | `whatsapp_automation` |
-| `has_whatsapp_qr` | — | — | — | — | (add-on futuro) |
-| `has_lead_recovery` | — | — | — | — | `ia_recovery` |
+| `has_automation` | — | — | ✓ | ✓ | — |
+| `has_campaigns` | — | — | ✓ | ✓ | — |
+| `has_central_atendimento` | — | — | ✓ | ✓ | `whatsapp_automation` |
+| `has_whatsapp_qr` | — | — | ✓ | ✓ | (add-on futuro) |
+| `has_ai_assistance` | — | — | ✓ | ✓ | — |
+| `has_lead_recovery` | — | — | ✓ | ✓ | `ia_recovery` |
+| `has_api_access` | — | — | — | ✓ | — |
+| `has_white_label` | — | — | — | ✓ | — |
 
 ---
 
@@ -54,8 +57,12 @@ O resultado é consolidado em um array único. A presença do nome já indica ac
 |---|---|---|
 | Base (Dashboard, Veículos, Interessados, Clientes, Financeiro) | Sempre | — |
 | Pro (Atendimento, Analytics) | `has_crm` | Upgrade prompt "Desbloqueie com Pro" |
-| Premium (Automações, Campanhas) | `has_api_access` | Oculto (sem prompt) |
+| Premium (Automações, Campanhas) | `has_automation` | Oculto (sem prompt) |
 | Assinatura, Configurações | Sempre | — |
+
+> **CORREÇÃO (sessão 33):** Gate Premium era `has_api_access` na documentação mas o código usa `has_automation`.
+> `api_access` é feature exclusiva do plano Scale. `automation` está em Premium e Scale.
+> Fonte: `DashboardShell.tsx` linha 259 + banco `plans.features`.
 
 ---
 

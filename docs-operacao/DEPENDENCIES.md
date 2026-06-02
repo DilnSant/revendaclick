@@ -153,7 +153,7 @@ Observabilidade
 
 **Impacto da falha BetterStack:** Logs só em stdout. Ver `docker logs rc_backend`.
 
-**ATENÇÃO:** METRICS_TOKEN ausente no .env VPS atual → /metrics retorna 403. Pendente.
+**METRICS_TOKEN:** Confirmado presente e funcional no VPS (sessão 26). `/metrics` retorna 200 via localhost com Bearer token. Nginx bloqueia acesso externo — correto.
 
 ---
 

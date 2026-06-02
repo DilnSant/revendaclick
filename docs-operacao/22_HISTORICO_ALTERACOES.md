@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 01/06/2026 (sessão 32 — consolidação arquitetura WhatsApp)
+> Última atualização: 02/06/2026 (sessão 33 — auditoria final de homologação)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -46,6 +46,45 @@
 | **Admin Lead Detalhe** | ✓ Produção (sessão 31) | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
 | **Pipeline Comercial Leads** | ✓ Produção (migrations 030-031) | 5 status: novo → contatado → em_negociacao → convertido / perdido |
 | **Webhook landing lead** | ✓ Produção (opcional) | `POST /api/webhooks/landing-lead` no backend Go — ativo sem Evolution; notificação WA opcional |
+
+| **Documentação feature flags** | ✓ Corrigida (sessão 33) | `has_api_access` era incorretamente documentado como Premium+ — é Scale-only; gate Premium = `has_automation` |
+| **Auditoria final homologação** | ✓ APROVADO (sessão 33) | build/tsc/vet/test limpos; infra saudável; fluxos validados; docs sincronizadas |
+
+---
+
+## 2026-06-02 (sessão 33) — Auditoria final de homologação
+
+**Objetivo:** Validar o estado completo do sistema antes da abertura comercial.
+
+**Commits:** _(ver commit desta sessão)_
+
+**Migrations aplicadas:** nenhuma.
+
+**Arquivos alterados (docs):**
+- `docs-operacao/DEPENDENCIES.md` — METRICS_TOKEN corrigido (estava como ausente; confirmado presente)
+- `docs-operacao/REFERENCE.md` — feature flags corrigidas: `has_api_access` Scale-only; gate Premium = `has_automation`; sidebar gates atualizado
+- `docs-operacao/21_DECISOES_TECNICAS.md` — D28 gate Premium corrigido: `has_automation` (não `has_api_access`)
+- `docs-operacao/MEMORY.md` — feature flags Premium/Scale corrigidas
+- `docs-operacao/features/FEATURE_FLAGS_SNAPSHOT.md` — tabela completa reescrita com flags reais do banco
+- `docs-operacao/features/SIDEBAR_SNAPSHOT.md` — gate Premium: `has_automation`
+
+**Código alterado:** nenhum (código estava correto).
+
+**Resultados da auditoria:**
+- `npm run build` → ✓ 53 páginas compiladas sem erros
+- `npx tsc --noEmit` → ✓ clean
+- `go vet ./...` → ✓ VET_OK
+- `go test ./...` → ✓ billing/leads/observability/onboarding — 4 packages OK
+- Containers produção → ✓ rc_backend (healthy 9.8MB), rc_evolution (healthy 165MB), rc_redis (healthy 3.8MB)
+- `POST /api/leads/landing` → ✓ `{"success":true}` testado em produção
+- Vitrine santos-car → ✓ 200 OK
+
+**Divergências encontradas e corrigidas:**
+1. FC033 ainda listada como pendente na auto-memory → removida (resolvida na sessão 30 com Opção A)
+2. METRICS_TOKEN descrito como ausente em DEPENDENCIES.md → corrigido (confirmado presente desde sessão 26)
+3. `has_api_access` documentado como gate Premium → corrigido para `has_automation` (banco confirma: `api_access` só em Scale)
+
+**Veredicto:** REVENDACLICK APROVADO PARA PRODUÇÃO
 
 ---
 

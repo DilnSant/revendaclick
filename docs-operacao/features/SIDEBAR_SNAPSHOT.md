@@ -40,7 +40,7 @@
 |---|---|---|
 | Base | Qualquer plano ativo | Sempre visível |
 | Pro | `features.has_crm === true` | Substituído por upgrade prompt |
-| Premium | `features.has_api_access === true` | Seção oculta (sem prompt) |
+| Premium | `features.has_automation === true` | Seção oculta (sem prompt) |
 | Assinatura / Configurações | Sempre | Sempre visível |
 
 ---

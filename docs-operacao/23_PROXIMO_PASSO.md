@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 01/06/2026 (sessão 32 — consolidação arquitetura WhatsApp, D34)
+> Atualizado em: 02/06/2026 (sessão 33 — auditoria final de homologação — APROVADO)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -83,6 +83,8 @@
 | **Admin leads pipeline** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação, alerta 4h; `/admin/leads/[id]` — detalhe |
 | **Webhook landing lead** | ✓ Deployado (sessão 31) | `POST /api/webhooks/landing-lead` — opcional; Evolution/WA opcionais (D31) |
 | **D34 — Arquitetura WhatsApp** | ✓ Documentada (sessão 32) | WhatsApp da Loja = base; Central de Atendimento = add-on Evolution; sem ambiguidade |
+| **Auditoria final homologação (sessão 33)** | ✓ APROVADO | build/tsc/vet/test limpos; infra saudável; fluxos validados; divergências docs corrigidas |
+| **Feature flags docs corrigidas (sessão 33)** | ✓ Corrigida | `has_api_access` Scale-only; gate Premium = `has_automation`; REFERENCE/MEMORY/D28/snapshots atualizados |
 
 ---
 
@@ -125,7 +127,14 @@ Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / 
 
 ## Próximos Passos (por prioridade)
 
-### 1. Verificar sidebar no browser em produção (ALTA — pendente de sessões anteriores)
+### 1. ~~Verificar sidebar no browser em produção~~ (CONCLUÍDA — sessão 33)
+
+Auditoria de código confirmou sidebar correta para santos-car (Pro):
+- Pro section (Atendimento/Analytics) via `has_crm` ✓
+- Premium section oculta (Pro não tem `has_automation`) ✓
+- Sub-navs Financeiro/Assinatura/Configurações corretos ✓
+
+### 1a. Verificar sidebar visualmente no browser (MÉDIA)
 
 santos-car está em plano Pro. Testar:
 
