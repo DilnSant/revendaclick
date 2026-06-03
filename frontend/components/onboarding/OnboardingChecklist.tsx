@@ -173,9 +173,9 @@ export default function OnboardingChecklist({ checklist }: Props) {
             </div>
             <div className="flex-1">
               <p className={`text-sm font-medium leading-tight ${checklist.whatsapp_connected ? 'text-gray-400 line-through' : 'text-gray-600'}`}>
-                Conectar Central de Atendimento
+                Ativar Automação WhatsApp
               </p>
-              <p className="text-xs text-gray-400">Opcional — receba leads via WhatsApp</p>
+              <p className="text-xs text-gray-400">Opcional — transforme contatos em oportunidades</p>
             </div>
             {!checklist.whatsapp_connected && (
               <Link

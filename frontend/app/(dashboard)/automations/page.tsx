@@ -47,12 +47,11 @@ export default async function AutomationsPage() {
       <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900">Automação via WhatsApp</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Automação de Atendimento WhatsApp</h3>
             <p className="mt-0.5 text-sm text-gray-500">
-              Disparo automático de mensagens, follow-up de leads e recuperação de clientes inativos.
               {hasWhatsApp
-                ? ' Você já tem esse add-on ativo.'
-                : ' Disponível como add-on — R$39/mês.'}
+                ? 'Registre automaticamente todos os contatos e evite perder clientes por falta de acompanhamento. Recurso ativo na sua conta.'
+                : 'Registre automaticamente todos os contatos e evite perder clientes por falta de acompanhamento. Disponível como recurso adicional — R$39/mês.'}
             </p>
           </div>
           {hasWhatsApp ? (
@@ -60,14 +59,14 @@ export default async function AutomationsPage() {
               href="/whatsapp"
               className="shrink-0 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
             >
-              Abrir Central de Atendimento
+              Abrir Automação WhatsApp
             </Link>
           ) : (
             <Link
               href="/billing/addons"
               className="shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
             >
-              Contratar add-on →
+              Ativar recurso →
             </Link>
           )}
         </div>

@@ -55,6 +55,13 @@ const ADDON_COLORS: Record<string, string> = {
   user_extra:          'bg-blue-50 text-blue-600 border-blue-200',
 }
 
+const ADDON_COPY_OVERRIDES: Record<string, { name: string; description: string }> = {
+  whatsapp_automation: {
+    name: 'Automação de Atendimento WhatsApp',
+    description: 'Registre automaticamente todos os contatos do WhatsApp no CRM. Cada conversa vira oportunidade — sua equipe não perde nenhum atendimento.',
+  },
+}
+
 export default function AddonsClient({ available, active }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState<string | null>(null)
@@ -137,7 +144,7 @@ export default function AddonsClient({ available, active }: Props) {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{addon.display_name}</p>
+                    <p className="text-sm font-semibold text-gray-900 truncate">{ADDON_COPY_OVERRIDES[addon.addon_type]?.name ?? addon.display_name}</p>
                     <p className="text-xs text-gray-500">{formatCurrency(addon.price_monthly)}/mês</p>
                   </div>
                   <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-800">
@@ -206,7 +213,7 @@ export default function AddonsClient({ available, active }: Props) {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{addon.display_name}</p>
+                    <p className="text-sm font-semibold text-gray-900 truncate">{ADDON_COPY_OVERRIDES[addon.addon_type]?.name ?? addon.display_name}</p>
                     <p className="text-xs text-gray-500">{formatCurrency(addon.price_monthly)}/mês</p>
                   </div>
                   {addon.status === 'past_due' ? (
@@ -220,7 +227,7 @@ export default function AddonsClient({ available, active }: Props) {
                   )}
                 </div>
 
-                <p className="text-xs text-gray-600 flex-1 mb-3">{addon.description}</p>
+                <p className="text-xs text-gray-600 flex-1 mb-3">{ADDON_COPY_OVERRIDES[addon.addon_type]?.description ?? addon.description}</p>
 
                 {/* D4: redundancy warning */}
                 {addon.is_redundant && (
@@ -283,12 +290,12 @@ export default function AddonsClient({ available, active }: Props) {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">{addon.display_name}</p>
+                      <p className="text-sm font-semibold text-gray-900 truncate">{ADDON_COPY_OVERRIDES[addon.addon_type]?.name ?? addon.display_name}</p>
                       <p className="text-xs text-primary font-medium">{formatCurrency(addon.price_monthly)}/mês</p>
                     </div>
                   </div>
 
-                  <p className="text-xs text-gray-500 flex-1 mb-4 leading-relaxed">{addon.description}</p>
+                  <p className="text-xs text-gray-500 flex-1 mb-4 leading-relaxed">{ADDON_COPY_OVERRIDES[addon.addon_type]?.description ?? addon.description}</p>
 
                   {msg && (
                     <div className={`mb-3 rounded-lg px-3 py-2 text-xs ${

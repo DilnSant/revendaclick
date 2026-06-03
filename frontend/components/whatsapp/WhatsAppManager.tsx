@@ -413,12 +413,12 @@ export default function WhatsAppManager({
             </button>
           </div>
           <p className="text-sm text-gray-600">
-            Clientes que enviarem mensagens para seu WhatsApp serão registrados automaticamente como leads no CRM.
+            Cada conversa é registrada como oportunidade no CRM, com histórico completo para que sua equipe não perca nenhum atendimento.
           </p>
           <div className="rounded-lg bg-green-50 border border-green-100 p-4">
-            <p className="text-sm font-medium text-green-800">Automação ativa</p>
+            <p className="text-sm font-medium text-green-800">Atendimento automatizado ativo</p>
             <p className="mt-1 text-xs text-green-700">
-              Mensagem recebida → lead criado ou atualizado → atividade registrada no CRM → equipe notificada
+              Cliente envia mensagem → lead identificado automaticamente → histórico registrado no CRM → equipe acompanha o atendimento
             </p>
           </div>
         </div>
@@ -427,17 +427,17 @@ export default function WhatsAppManager({
       {/* Info when disconnected */}
       {isDisconnected && !qr && (
         <div className="card p-6 space-y-4">
-          <h2 className="text-base font-semibold text-gray-900">Como funciona a Central de Atendimento</h2>
+          <h2 className="text-base font-semibold text-gray-900">Como funciona a Automação WhatsApp</h2>
           <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
             <li>Clique em &ldquo;Conectar canal&rdquo; e escaneie o QR code com o WhatsApp da revenda</li>
-            <li>Clientes que enviarem mensagens são criados automaticamente como leads no CRM</li>
-            <li>Cada mensagem é registrada como atividade na linha do tempo do lead</li>
-            <li>A equipe de atendimento acompanha e responde pelo painel de Leads</li>
+            <li>Cada contato via WhatsApp é registrado automaticamente como oportunidade</li>
+            <li>O histórico completo fica disponível para toda a equipe acompanhar</li>
+            <li>Menos oportunidades perdidas, mais atendimentos concluídos</li>
           </ol>
           <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-            <p className="text-xs font-medium text-blue-800">Canal exclusivo de atendimento e CRM</p>
+            <p className="text-xs font-medium text-blue-800">Canal exclusivo de atendimento</p>
             <p className="mt-0.5 text-xs text-blue-700">
-              Este canal é utilizado para atendimento individual de leads e clientes — não para envios em massa.
+              Este canal é utilizado para atendimento individual — não para envios em massa.
               Para configurar o botão público de contato da loja, acesse Configurações → Contato Público.
             </p>
           </div>

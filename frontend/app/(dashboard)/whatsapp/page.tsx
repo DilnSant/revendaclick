@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabaseServer'
 import { getSubscription } from '@/lib/billing'
 import WhatsAppManager from '@/components/whatsapp/WhatsAppManager'
 
-export const metadata = { title: 'Central de Atendimento' }
+export const metadata = { title: 'Automação de Atendimento WhatsApp' }
 
 const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
@@ -39,9 +39,9 @@ export default async function AttendanceCenterPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-graphite">Central de Atendimento</h1>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Automação de Atendimento WhatsApp</h1>
         <p className="mt-0.5 text-sm text-gray-500">
-          Conecte seu canal de atendimento para receber e gerenciar leads automaticamente no CRM
+          Transforme conversas em oportunidades e evite perder clientes por falta de acompanhamento.
         </p>
       </div>
       <WhatsAppManager initialStatus={status} tenantSlug={tenant.slug} />
@@ -65,20 +65,20 @@ async function fetchStatus(token: string): Promise<InstanceStatus> {
 
 function CentralAtendimentoGate({ planDisplay }: { planDisplay: string }) {
   const benefits = [
-    'WhatsApp conectado via QR Code — em segundos',
-    'Leads criados automaticamente ao receber mensagens',
-    'CRM completo com kanban e linha do tempo',
-    'Analytics avançado de atendimento',
-    'Histórico completo de conversas',
-    'Resposta rápida com templates',
+    'Todo contato via WhatsApp vira lead automaticamente',
+    'Histórico completo de conversas no CRM',
+    'Equipe acompanha cada oportunidade em um único lugar',
+    'Menos clientes esquecidos por falta de acompanhamento',
+    'Mais chances de conversão com atendimento organizado',
+    'Sem perder vendas por troca de atendentes',
   ]
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-heading font-bold text-graphite">Central de Atendimento</h1>
+        <h1 className="text-2xl font-heading font-bold text-graphite">Automação de Atendimento WhatsApp</h1>
         <p className="mt-0.5 text-sm text-gray-500">
-          Conecte seu canal de atendimento para receber e gerenciar leads automaticamente no CRM
+          Transforme conversas em oportunidades e evite perder clientes por falta de acompanhamento.
         </p>
       </div>
 
@@ -88,12 +88,12 @@ function CentralAtendimentoGate({ planDisplay }: { planDisplay: string }) {
           <div className="bg-gradient-to-br from-primary/8 to-primary/4 border-b border-primary/15 px-8 py-7 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/10">
               <svg className="h-7 w-7 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Central de Atendimento</h2>
+            <h2 className="text-xl font-bold text-gray-900">Automação de Atendimento WhatsApp</h2>
             <p className="mt-1.5 text-sm text-gray-500">
-              Disponível com o <strong className="text-gray-700">Plano Premium</strong> ou Add-on WhatsApp Automação
+              Disponível com o <strong className="text-gray-700">Plano Premium</strong> ou Recurso Automação WhatsApp
             </p>
             <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700">
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -120,6 +120,24 @@ function CentralAtendimentoGate({ planDisplay }: { planDisplay: string }) {
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Why section */}
+          <div className="px-8 pb-6 space-y-3">
+            <p className="text-sm font-semibold text-gray-700">Por que ativar a Automação WhatsApp?</p>
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Muitos clientes entram em contato e acabam ficando sem acompanhamento adequado.
+              Com a Automação WhatsApp do RevendaClick, cada conversa é registrada automaticamente,
+              permitindo que sua equipe acompanhe todas as oportunidades em um único lugar.
+              Evite perder vendas por esquecimento, falta de organização ou troca de atendentes.
+            </p>
+            <div className="rounded-xl bg-green-50 border border-green-100 px-5 py-4 text-center">
+              <p className="text-sm font-semibold text-green-800">
+                Menos oportunidades perdidas.
+                <br />Mais controle do atendimento.
+                <br />Mais vendas.
+              </p>
+            </div>
           </div>
 
           {/* CTA */}

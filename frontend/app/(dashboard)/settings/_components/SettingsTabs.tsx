@@ -355,7 +355,7 @@ function ContactTab({
         <p className="text-sm font-semibold text-blue-900">Contato público da loja</p>
         <p className="mt-0.5 text-xs text-blue-700">
           Esses dados aparecem na vitrine pública para clientes entrarem em contato.
-          Independente da Central de Atendimento (Evolution/CRM).
+          Independente da Automação WhatsApp.
         </p>
       </div>
 
@@ -622,10 +622,10 @@ function WhatsAppTab() {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-4">
-        <h2 className="text-base font-semibold text-gray-900">Central de Atendimento</h2>
+        <h2 className="text-base font-semibold text-gray-900">Automação de Atendimento WhatsApp</h2>
         <p className="text-sm text-gray-600">
-          Conecte um número WhatsApp para receber e responder leads diretamente na plataforma.
-          O atendimento centralizado está disponível nos planos Pro+ com o add-on de WhatsApp ativado.
+          Receba contatos via WhatsApp e registre automaticamente todas as oportunidades no CRM.
+          Disponível como recurso adicional em qualquer plano.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <a
@@ -635,13 +635,13 @@ function WhatsAppTab() {
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            Abrir Central de Atendimento
+            Abrir Automação WhatsApp
           </a>
           <a
             href="/billing/addons"
             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
           >
-            Ver add-ons disponíveis →
+            Ver recursos disponíveis →
           </a>
         </div>
       </div>
