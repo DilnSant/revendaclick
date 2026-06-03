@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 03/06/2026 (sessão 37 — eliminação de pendências + auditoria documental + uptime monitoring)
+> Última atualização: 03/06/2026 (sessão 37 — auditoria documental + uptime monitoring + fix rc_backup)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -55,10 +55,11 @@
 | **FC034 — Asaas invalid_action deleted sub** | ✓ Corrigido (sessão 36) | Fallback em `UpgradeSubscription`; cria nova sub quando deletada; 6/6 cenários aprovados |
 | **Uptime monitoring** | ✓ Ativo (sessão 37) | Cron job `*/5 * * * *` no VPS; checa api+evolution+frontend; falhas logadas + BetterStack |
 | **Auditoria documental (sessão 37)** | ✓ Concluída | 9 arquivos corrigidos: `has_api_access` → `has_automation`; FC033→FC034; contagem FCs; flags Premium/Scale |
+| **rc_backup fix (sessão 37)** | ✓ Operacional | `alpine:3.20` → `postgres:17-alpine`; pg_dump 17.10; backup 2.2M; cleanup ok |
 
 ---
 
-## 2026-06-03 (sessão 37) — Eliminação de pendências + auditoria documental + uptime monitoring
+## 2026-06-03 (sessão 37) — Auditoria documental + uptime monitoring + fix rc_backup
 
 **Objetivo:** Eliminar pendências autônomas sem alterar arquitetura ou criar funcionalidades.
 
@@ -80,16 +81,24 @@
 - Crontab `*/5 * * * *` — executa a cada 5 min; log em `/var/log/rc_health.log`
 - Testado: todos endpoints retornando 200 ✓
 
+**Fix rc_backup:**
+- Causa raiz: `alpine:3.20` instala `postgresql-client` 16.x — incompatível com servidor Supabase 17.6
+- Erro: `pg_dump: error: aborting because of server version mismatch — server version: 17.6; pg_dump version: 16.14`
+- Solução: `docker-compose.production.yml` — `alpine:3.20` → `postgres:17-alpine` (inclui pg_dump 17.10 nativamente)
+- Removida linha `apk add --no-cache postgresql-client bash` (não mais necessária)
+- Aplicado no VPS e sincronizado para o repositório git (commit `f9839cb`)
+- Validação: pg_dump 17.10 ✓; backup `backup-2026-06-03_14-01-07.sql.gz` (2.2M) ✓; cleanup `>7d` executou ✓
+- VEREDITO: BACKUP OPERACIONAL
+
 **Diagnósticos entregues:**
 - BetterStack backend: ✓ operacional (token VPS + container + `betterstack/syncer.go`)
 - BetterStack frontend: ✓ operacional (`@logtail/next` + `instrumentation.ts` + `/api/log/error` route)
   - Pendência manual: confirmar `BETTER_STACK_SOURCE_TOKEN` nas env vars do Vercel dashboard
-- Backup rc_backup: ERRO — pg_dump version mismatch (server 17.6 vs cliente 16.14)
-  - Solução: trocar `alpine:3.20` + `postgresql-client` por `postgres:17-alpine` no `docker-compose.production.yml`
-  - S3: não configurado (BACKUP_S3_BUCKET vazio) — comportamento esperado/opcional
 - E2E Playwright: estrutura OK; 4 senhas faltando no `.env.e2e`
 
-**Código alterado:** nenhum
+**Commits:**
+- `640b2b1` — docs: sessão 37 — auditoria documental + uptime monitoring
+- `f9839cb` — fix(backup): usar postgres:17-alpine para pg_dump compatível com PostgreSQL 17.6
 
 ---
 

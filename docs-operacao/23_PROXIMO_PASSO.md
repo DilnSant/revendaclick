@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 03/06/2026 (sessão 37 — auditoria documental + uptime monitoring)
+> Atualizado em: 03/06/2026 (sessão 37 — auditoria documental + uptime monitoring + fix rc_backup)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -91,6 +91,7 @@
 | **Rebuild VPS (sessão 36)** | ✓ Executado | `docker compose down` + `up -d --build`; backend healthy; DB ok |
 | **Uptime monitoring (sessão 37)** | ✓ Ativo | Cron job `*/5 * * * *` no VPS; checa 3 endpoints; falhas → `/var/log/rc_health.log` + BetterStack |
 | **Auditoria documental (sessão 37)** | ✓ Concluída | 9 arquivos corrigidos; `has_api_access` → `has_automation`; FC count 33→34; flags Premium/Scale sincronizadas |
+| **Fix rc_backup (sessão 37)** | ✓ Operacional | `alpine:3.20` → `postgres:17-alpine`; pg_dump 17.10 ✓; backup 2.2M gerado; cleanup executou |
 
 ---
 
