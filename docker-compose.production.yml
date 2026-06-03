@@ -131,12 +131,11 @@ services:
 
   # ── Daily backup (03:00 UTC) ──────────────────────────────────────────────────
   backup:
-    image: alpine:3.20
+    image: postgres:17-alpine
     container_name: rc_backup
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        apk add --no-cache postgresql-client bash > /dev/null 2>&1
         while true; do
           NOW=$$(date -u +%s)
           H=$$(date -u +%H | sed 's/^0//'); M=$$(date -u +%M | sed 's/^0//'); S=$$(date -u +%S | sed 's/^0//')
