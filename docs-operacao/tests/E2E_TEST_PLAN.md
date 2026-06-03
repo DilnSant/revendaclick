@@ -172,7 +172,7 @@ Tenant loga: não vê seção Pro
 |---|---|
 | Starter (`santos-car`) | Base + upgrade prompt Pro |
 | Pro (`has_crm`) | Base + seção Pro (Atendimento, Analytics) |
-| Premium (`has_api_access`) | Base + Pro + seção Premium (Automações, Campanhas) |
+| Premium (`has_automation`) | Base + Pro + seção Premium (Automações, Campanhas) |
 
 **Validação manual:** Login com cada perfil no browser.
 
@@ -184,7 +184,7 @@ Tenant loga: não vê seção Pro
 
 ```
 Tenant SEM add-on whatsapp_automation:
-  → /automations retorna 404 (sem has_api_access)
+  → /automations retorna 404 (sem has_automation)
   → Configurações → aba WhatsApp visível
   → Link "Contratar add-on" → /billing/addons
 

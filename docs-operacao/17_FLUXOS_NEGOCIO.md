@@ -34,8 +34,8 @@
 | Comissões | `/financial/commissions` | `/api/commissions` |
 | Vendas | `/sales` | `/api/sales` |
 | Analytics | `/analytics` | `/api/analytics/summary` (gate `has_analytics` — Pro+) |
-| Automações | `/automations` | — (placeholder — gate `has_api_access`) |
-| Campanhas | `/campaigns` | — (placeholder — gate `has_api_access`) |
+| Automações | `/automations` | — (placeholder — gate `has_automation`) |
+| Campanhas | `/campaigns` | — (placeholder — gate `has_campaigns`) |
 | Assinatura | `/billing` | `/api/billing/subscription` |
 | Add-ons | `/billing/addons` | `/api/billing/addon` |
 | Faturas | `/billing/history` | `/api/billing/invoices` |

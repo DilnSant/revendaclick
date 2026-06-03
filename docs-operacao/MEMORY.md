@@ -36,7 +36,7 @@
 |---|---|---|---|
 | `starter` | Starter | — (base) | Funcionalidades básicas |
 | `pro` | Pro | `has_crm` | Seção Pro na sidebar |
-| `premium` | **Premium** | `has_api_access` | `plan.name = 'premium'` (migration 026 — definitivo) |
+| `premium` | **Premium** | `has_automation` | `plan.name = 'premium'` (migration 026 — definitivo) |
 | `scale` | Scale | `has_api_access` | Oculto do grid; CTA "Enterprise" é label de grade, não plan.name |
 
 > **CRÍTICO:** `plan.name` no banco é `premium` (migration 026 — definitivo). Nome comercial e nome interno coincidem.
@@ -99,7 +99,7 @@ Clientes
 Atendimento
 Analytics
 
-─── Premium (has_api_access) ─
+─── Premium (has_automation) ─
 Automações
 Campanhas
 
@@ -127,7 +127,7 @@ Financeiro sub-nav: Resumo (`/financial`) | Vendas (`/sales`) | Comissões (`/fi
 3. **Variáveis com `$` literal no .env VPS devem usar `$$`** (ver D18)
 4. **RLS obrigatório** em todas as tabelas de negócio
 5. **tenant_id em toda tabela de negócio** (nunca cross-tenant)
-6. **Sidebar gate Pro = `has_crm`; Premium = `has_api_access`** (ver D28)
+6. **Sidebar gate Pro = `has_crm`; Premium = `has_automation`** (ver D28)
 7. **Add-ons são cobrados separadamente** da assinatura principal
 8. **WhatsApp automação é add-on**, não funcionalidade de plano
 9. **`plan.name = 'premium'` no banco (migration 026 — definitivo)** — DB e nome comercial coincidem; nunca usar `performance` como plan.name

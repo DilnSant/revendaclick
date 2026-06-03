@@ -1,6 +1,6 @@
 # Sidebar — Snapshot Atual
 
-> Última atualização: 2026-05-30 (sessão 24 — estrutura definitiva)
+> Última atualização: 2026-06-03 (sessão 37 — gate Premium corrigido: has_api_access → has_automation)
 > Implementado em: `frontend/components/layout/DashboardShell.tsx`
 > Decisão técnica: D28 em `21_DECISOES_TECNICAS.md`
 
@@ -22,7 +22,7 @@
 │  Atendimento          /crm              │
 │  Analytics            /analytics        │
 │                                         │
-│  ─── Premium ─────── (has_api_access)── │
+│  ─── Premium ─────── (has_automation)── │
 │  Automações           /automations      │
 │  Campanhas            /campaigns        │
 │                                         │

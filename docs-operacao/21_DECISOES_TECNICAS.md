@@ -297,7 +297,7 @@ const isActiveAndCurrent = isCurrent && subscription?.status === 'active'
 
 - **NAV_BASE** (Starter+, sempre): Dashboard, Veículos, Interessados, **Clientes**, Financeiro
 - **NAV_PRO** (`has_crm`): Atendimento, Analytics — header "Pro"
-- **NAV_PREMIUM** (`has_api_access`): Automações, Campanhas — header "Premium"
+- **NAV_PREMIUM** (`has_automation`): Automações, Campanhas — header "Premium"
 - **Rodapé sempre-visível** (sem header): Assinatura, Configurações
 
 **Itens retirados da sidebar:**

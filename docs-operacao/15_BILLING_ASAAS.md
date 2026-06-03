@@ -23,7 +23,7 @@ Ciclos: `MONTHLY` | `YEARLY`
 |---|---|---|
 | `starter` | Starter | Funcionalidades básicas |
 | `pro` | Pro | + CRM, Analytics (gate `has_crm`) |
-| `premium` | Premium | + API access (gate `has_api_access`) |
+| `premium` | Premium | + Automações, Campanhas, IA (gate `has_automation`) |
 | `scale` | Scale | Sem limites; oculto do grid público |
 
 > Nomes exatos no banco: `starter`, `pro`, `premium`, `scale`.

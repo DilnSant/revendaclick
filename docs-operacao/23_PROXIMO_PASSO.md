@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 02/06/2026 (sessão 36 — fix upgrade/downgrade Asaas invalid_action + rebuild VPS)
+> Atualizado em: 03/06/2026 (sessão 37 — auditoria documental + uptime monitoring)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -89,6 +89,8 @@
 | **asaas_subscription_id santos-car (sessão 35)** | ✓ Corrigido | `dev_test_...` → `sub_gqu4uiro0sisshxt`; assinatura deletada no Asaas; corrigido definitivamente na sessão 36 |
 | **Fix invalid_action upgrade/downgrade (sessão 36)** | ✓ Corrigido | Fallback em `UpgradeSubscription`; nova assinatura `sub_b3y3xwo9s18g50xc`; FC034 documentado |
 | **Rebuild VPS (sessão 36)** | ✓ Executado | `docker compose down` + `up -d --build`; backend healthy; DB ok |
+| **Uptime monitoring (sessão 37)** | ✓ Ativo | Cron job `*/5 * * * *` no VPS; checa 3 endpoints; falhas → `/var/log/rc_health.log` + BetterStack |
+| **Auditoria documental (sessão 37)** | ✓ Concluída | 9 arquivos corrigidos; `has_api_access` → `has_automation`; FC count 33→34; flags Premium/Scale sincronizadas |
 
 ---
 
@@ -117,7 +119,7 @@ Clientes              ← todos os planos (antes era Pro+)
 Atendimento (CRM)
 Analytics
 
-─── Premium ────────── gated has_api_access
+─── Premium ────────── gated has_automation
 Automações
 Campanhas
 
@@ -138,7 +140,12 @@ Auditoria de código confirmou sidebar correta para santos-car (Pro):
 - Premium section oculta (Pro não tem `has_automation`) ✓
 - Sub-navs Financeiro/Assinatura/Configurações corretos ✓
 
-### 1a. Verificar sidebar visualmente no browser (MÉDIA)
+### ~~1a. Uptime monitoring~~ (CONCLUÍDA — sessão 37)
+
+Cron job `*/5 * * * *` ativo no VPS. Script `/opt/revendaclick/scripts/health-check.sh`.
+Log em `/var/log/rc_health.log` + alertas via BetterStack.
+
+### 1b. Verificar sidebar visualmente no browser (MÉDIA)
 
 santos-car está em plano Pro. Testar:
 
@@ -192,7 +199,7 @@ Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar container
 
 ### 4. Etapas comerciais (próximas sessões)
 
-- **FC034** — Próxima falha a registrar (se identificada)
+- **FC035** — Próxima falha a registrar (se identificada)
 - **Etapa 5 follow-up** — `AdminSimulateEvent` suportar `addon_type` param para simular webhooks de add-on direto pelo painel admin
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
@@ -204,8 +211,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **33 falhas documentadas (FC001–FC033)**.
-Próximo número disponível: **FC034**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **34 falhas documentadas (FC001–FC034)**.
+Próximo número disponível: **FC035**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

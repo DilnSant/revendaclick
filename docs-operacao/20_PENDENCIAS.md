@@ -144,7 +144,7 @@ Frontend Next.js continua como stack oficial.
 |---|---|---|---|
 | CONCLUÍDA | Prometheus metrics | — | endpoint /metrics |
 | CONCLUÍDA | BetterStack logs | — | Tee zap |
-| PENDENTE | Uptime monitoring | Baixa | Cadastrar monitor em UptimeRobot/BetterStack Uptime → URL: `https://api.revendaclick.com.br/health` → alerta por email |
+| CONCLUÍDA | Uptime monitoring | — | Cron job `/opt/revendaclick/scripts/health-check.sh` rodando a cada 5 min no VPS; checa api+evolution+frontend; falhas logadas em `/var/log/rc_health.log` e enviadas ao BetterStack via HTTP Bearer (sessão 37) |
 | PENDENTE | Alertas automáticos | Baixa | BetterStack: criar alerta para status >= 500 nos logs do backend |
 
 ---

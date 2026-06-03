@@ -72,7 +72,7 @@ SaaS (RevendaClick)
 |---|---|---|---|
 | `starter` | **Starter** | Funcionalidades básicas | Sim |
 | `pro` | **Pro** | `has_crm` libera seção Pro na sidebar | Sim |
-| `premium` | **Premium** | `has_api_access` libera seção Premium na sidebar | Sim |
+| `premium` | **Premium** | `has_automation` libera seção Premium na sidebar | Sim |
 | `scale` | Scale | Igual Premium + limites maiores | **Não** — CTA "Enterprise" no grid é label de grade para contato comercial |
 
 > **`plan.name` no banco é `premium` (migration 026 — definitivo).** DB e nome comercial agora coincidem.
@@ -98,11 +98,14 @@ Flags disponíveis (nomes exatos):
 | `has_analytics` | Pro+ |
 | `has_whatsapp` | Pro+ |
 | `has_kanban` | Pro+ |
-| `has_api_access` | Premium+ |
-| `has_white_label` | Premium+ |
-| `has_central_atendimento` | add-on `whatsapp_automation` |
-| `has_whatsapp_qr` | add-on |
-| `has_lead_recovery` | add-on `ia_recovery` |
+| `has_automation` | Premium+ |
+| `has_campaigns` | Premium+ |
+| `has_ai_assistance` | Premium+ |
+| `has_central_atendimento` | Premium+ ou add-on `whatsapp_automation` |
+| `has_whatsapp_qr` | Premium+ ou add-on |
+| `has_lead_recovery` | Premium+ ou add-on `ia_recovery` |
+| `has_api_access` | Scale only |
+| `has_white_label` | Scale only |
 
 **Regra:** Nunca usar `plan_name === X` no frontend. Sempre usar feature flags.
 
@@ -147,12 +150,12 @@ Flags disponíveis (nomes exatos):
 
 ### Automações (`/automations`) — Em desenvolvimento
 - Automações de fluxo e integrações via API
-- Requires: `has_api_access` (Premium+)
+- Requires: `has_automation` (Premium+)
 - WhatsApp automation disponível via add-on separado
 
 ### Campanhas (`/campaigns`) — Em desenvolvimento
 - Campanhas de marketing segmentadas
-- Requires: `has_api_access` (Premium+)
+- Requires: `has_campaigns` (Premium+)
 
 ### Configurações (`/settings`)
 - Abas: Loja | Contato Público | Usuários | Plano | WhatsApp
@@ -294,7 +297,7 @@ Clientes
 Atendimento (CRM)
 Analytics
 
-─── Premium ─────── gated has_api_access
+─── Premium ─────── gated has_automation
 Automações
 Campanhas
 

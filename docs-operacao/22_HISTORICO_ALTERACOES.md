@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 02/06/2026 (sessão 36 — fix upgrade/downgrade Asaas invalid_action + rebuild VPS + FC034)
+> Última atualização: 03/06/2026 (sessão 37 — eliminação de pendências + auditoria documental + uptime monitoring)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -53,6 +53,43 @@
 | **Bugs add-ons corrigidos** | ✓ Corrigidos (sessão 34) | UI não atualizava após contratar + sem botão cancelar pendente |
 | **Security: RLS Evolution API** | ✓ Migration 032 (sessão 34) | 36 tabelas Evolution com RLS deny-all; alertas `rls_disabled` + `sensitive_columns` eliminados |
 | **FC034 — Asaas invalid_action deleted sub** | ✓ Corrigido (sessão 36) | Fallback em `UpgradeSubscription`; cria nova sub quando deletada; 6/6 cenários aprovados |
+| **Uptime monitoring** | ✓ Ativo (sessão 37) | Cron job `*/5 * * * *` no VPS; checa api+evolution+frontend; falhas logadas + BetterStack |
+| **Auditoria documental (sessão 37)** | ✓ Concluída | 9 arquivos corrigidos: `has_api_access` → `has_automation`; FC033→FC034; contagem FCs; flags Premium/Scale |
+
+---
+
+## 2026-06-03 (sessão 37) — Eliminação de pendências + auditoria documental + uptime monitoring
+
+**Objetivo:** Eliminar pendências autônomas sem alterar arquitetura ou criar funcionalidades.
+
+**Migrations aplicadas:** nenhuma
+
+**Arquivos documentais corrigidos:**
+- `docs-operacao/features/SIDEBAR_SNAPSHOT.md` — gate Premium: `has_api_access` → `has_automation`
+- `docs-operacao/MEMORY.md` — 3 ocorrências: tabela planos + sidebar + regra 6
+- `docs-operacao/PRODUCT_ARCHITECTURE.md` — 5 ocorrências: planos table, feature flags table, sidebar, automações/campanhas requires
+- `docs-operacao/23_PROXIMO_PASSO.md` — sidebar + FC033→FC034 + contagem 33→34 FCs
+- `docs-operacao/21_DECISOES_TECNICAS.md` — D28: NAV_PREMIUM gate corrigido
+- `docs-operacao/17_FLUXOS_NEGOCIO.md` — gates automações/campanhas corrigidos
+- `docs-operacao/15_BILLING_ASAAS.md` — Premium plan description corrigida
+- `docs-operacao/tests/E2E_TEST_PLAN.md` — 2 ocorrências corrigidas
+- `docs-operacao/20_PENDENCIAS.md` — uptime monitoring marcado como CONCLUÍDA
+
+**Infraestrutura configurada (VPS):**
+- Script `/opt/revendaclick/scripts/health-check.sh` — verifica api+evolution+frontend; alerta via BetterStack
+- Crontab `*/5 * * * *` — executa a cada 5 min; log em `/var/log/rc_health.log`
+- Testado: todos endpoints retornando 200 ✓
+
+**Diagnósticos entregues:**
+- BetterStack backend: ✓ operacional (token VPS + container + `betterstack/syncer.go`)
+- BetterStack frontend: ✓ operacional (`@logtail/next` + `instrumentation.ts` + `/api/log/error` route)
+  - Pendência manual: confirmar `BETTER_STACK_SOURCE_TOKEN` nas env vars do Vercel dashboard
+- Backup rc_backup: ERRO — pg_dump version mismatch (server 17.6 vs cliente 16.14)
+  - Solução: trocar `alpine:3.20` + `postgresql-client` por `postgres:17-alpine` no `docker-compose.production.yml`
+  - S3: não configurado (BACKUP_S3_BUCKET vazio) — comportamento esperado/opcional
+- E2E Playwright: estrutura OK; 4 senhas faltando no `.env.e2e`
+
+**Código alterado:** nenhum
 
 ---
 
