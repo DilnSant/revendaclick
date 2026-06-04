@@ -2,14 +2,10 @@
 
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
-import LeadCaptureForm from './LeadCaptureForm'
 import ConversionLink from './ConversionLink'
-import { trackWhatsApp } from '@/lib/marketing/events'
 
 const VideoModal = dynamic(() => import('./VideoModal'), { ssr: false })
 
-const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '5511999999999'
-const WA_LINK = `https://wa.me/${WA_NUMBER}?text=Ol%C3%A1!%20Quero%20conhecer%20o%20RevendaClick.`
 
 export default function HeroSection() {
   const [videoOpen, setVideoOpen] = useState(false)
@@ -50,14 +46,33 @@ export default function HeroSection() {
               </h1>
 
               <p className="mt-5 max-w-lg text-lg leading-relaxed text-gray-400">
-                Centralize seu estoque, divulgue seus veículos, gere mais
-                contatos e aumente suas vendas com uma plataforma criada para
-                lojistas.
+                Cadastre seu estoque, publique seus veículos, receba contatos e
+                organize suas vendas em um único lugar.
               </p>
 
-              {/* ── Lead form ─────────────────────────────────────── */}
+              {/* ── CTA ─────────────────────────────────────────── */}
               <div className="mt-8">
-                <LeadCaptureForm />
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-light">
+                  Teste grátis por 30 dias
+                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <ConversionLink
+                    href="/register"
+                    variant="signup"
+                    className="rounded-xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-brand transition-all hover:bg-primary-dark active:scale-[0.98]"
+                  >
+                    Começar Agora
+                  </ConversionLink>
+                  <a
+                    href="#como-funciona"
+                    className="flex items-center gap-2 rounded-xl border border-white/20 px-6 py-4 text-sm font-semibold text-gray-300 transition-all hover:border-white/40 hover:text-white"
+                  >
+                    Ver Demonstração
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </a>
+                </div>
               </div>
 
               {/* Trust micro-copy */}
@@ -72,23 +87,6 @@ export default function HeroSection() {
                 ))}
               </ul>
 
-              {/* Secondary CTA */}
-              <div className="mt-6 flex items-center gap-4">
-                <div className="h-px flex-1 bg-white/10" aria-hidden />
-                <span className="text-xs text-gray-500">ou</span>
-                <div className="h-px flex-1 bg-white/10" aria-hidden />
-              </div>
-              <a
-                href={WA_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={trackWhatsApp}
-                aria-label="Falar diretamente com a equipe pelo WhatsApp"
-                className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-green-400 transition-colors hover:text-green-300"
-              >
-                <WhatsAppIcon />
-                Falar diretamente no WhatsApp
-              </a>
             </div>
 
             {/* ── Right: Mockup + Video ─────────────────────────────── */}
@@ -233,16 +231,8 @@ export default function HeroSection() {
   )
 }
 
-function WhatsAppIcon() {
-  return (
-    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-      <path d="M12 0C5.373 0 0 5.373 0 12c0 2.12.554 4.112 1.522 5.843L.057 23.57a.5.5 0 00.61.637l5.917-1.516A11.946 11.946 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22a9.942 9.942 0 01-5.13-1.427l-.368-.217-3.813.977.997-3.692-.239-.381A9.944 9.944 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z" />
-    </svg>
-  )
-}
 
-const TRUST = ['30 dias grátis', 'Sem cartão de crédito', 'Cancele quando quiser', '+500 revendas']
+const TRUST = ['30 dias grátis', 'Sem cartão de crédito', 'Cancele quando quiser', 'Configuração em menos de 5 minutos']
 
 const STATS = [
   { value: '+500',  label: 'Revendas cadastradas' },

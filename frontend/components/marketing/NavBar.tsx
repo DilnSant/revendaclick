@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import ConversionLink from './ConversionLink'
 
 const NAV_LINKS = [
@@ -18,14 +17,12 @@ export default function NavBar() {
     <nav className="sticky top-0 z-50 border-b border-white/10 bg-graphite/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <ConversionLink href="/" variant="generic" label="logo" className="flex-shrink-0">
-          <Image
-            src="/logo.png"
-            alt="RevendaClick"
-            width={160}
-            height={40}
-            className="h-8 w-auto object-contain brightness-200"
-            priority
-          />
+          <span
+            className="font-heading text-2xl font-bold tracking-tight"
+            aria-label="RevendaClick"
+          >
+            <span className="text-white">Revenda</span><span className="text-primary">Click</span>
+          </span>
         </ConversionLink>
 
         {/* Desktop nav */}
