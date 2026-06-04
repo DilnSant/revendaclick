@@ -58,7 +58,7 @@ export default function SettingsTabs({ tab, tenant, users, subscription, storeCo
               href={`/settings?tab=${key}`}
               className={`px-4 pb-3 text-sm font-medium border-b-2 transition-colors ${
                 tab === key
-                  ? 'border-red-600 text-red-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
@@ -152,11 +152,11 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
           <label className="label">Logo da loja</label>
           <div className="flex items-center gap-4">
             <div
-              className="relative flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 overflow-hidden hover:border-red-400 transition-colors"
+              className="relative flex h-20 w-20 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 overflow-hidden hover:border-primary/60 transition-colors"
               onClick={() => logoInputRef.current?.click()}
             >
               {logoUploading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               ) : logoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={logoUrl} alt="Logo" className="h-full w-full object-contain p-1" />
@@ -503,13 +503,13 @@ function UsersTab({ users, subscription }: { users: User[]; subscription: Subscr
             <span className="ml-2 text-sm font-normal text-gray-400">{users.length} usuário{users.length !== 1 ? 's' : ''}</span>
           </h2>
           <div className="flex items-center gap-3">
-            <Link href="/vendors" className="text-xs font-medium text-red-600 hover:text-red-700">
+            <Link href="/vendors" className="text-xs font-medium text-primary hover:text-primary/90">
               Vendedores →
             </Link>
             {!isBlocked && (
               <button
                 onClick={openModal}
-                className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90"
               >
                 + Convidar Membro
               </button>
@@ -799,7 +799,7 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
               href={subscription.asaas_payment_link}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-block text-sm font-medium text-red-600 hover:underline"
+              className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
             >
               Pagar agora →
             </a>
@@ -813,13 +813,13 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
         <button
           onClick={() => setCycle('monthly')}
           className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            cycle === 'monthly' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            cycle === 'monthly' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >Mensal</button>
         <button
           onClick={() => setCycle('yearly')}
           className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-            cycle === 'yearly' ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            cycle === 'yearly' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
           Anual <span className="ml-1 text-green-600 font-semibold">-16%</span>
@@ -835,7 +835,7 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
             <div
               key={plan.name}
               className={`rounded-xl border p-5 space-y-4 ${
-                isCurrentPlan ? 'border-red-500 bg-red-50' : 'border-gray-200 bg-white'
+                isCurrentPlan ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'
               }`}
             >
               <div>
@@ -853,14 +853,14 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
                 ))}
               </ul>
               {isCurrentPlan && subscription?.status === 'active' ? (
-                <button disabled className="w-full rounded-lg border border-red-300 bg-red-50 py-2 text-sm font-semibold text-red-700 cursor-default select-none">
+                <button disabled className="w-full rounded-lg border border-primary/30 bg-primary/10 py-2 text-sm font-semibold text-primary cursor-default select-none">
                   Plano atual ✓
                 </button>
               ) : (
                 <button
                   onClick={() => handleSubscribe(plan.name)}
                   disabled={pending || pendingPlan === plan.name}
-                  className="w-full rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60 transition-colors"
+                  className="w-full rounded-lg bg-primary py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60 transition-colors"
                 >
                   {pendingPlan === plan.name ? 'Aguarde…' : isCurrentPlan ? 'Renovar' : 'Assinar'}
                 </button>

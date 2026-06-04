@@ -184,7 +184,7 @@ export default function CustomersView({
                     {/* Name + avatar */}
                     <td className="td">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-semibold text-red-700">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
                           {initials(c.name)}
                         </div>
                         <div>
@@ -286,7 +286,7 @@ export default function CustomersView({
                     onClick={() => goPage(p)}
                     className={`min-w-[32px] rounded-md px-2 py-1.5 text-xs font-medium transition-colors
                       ${p === page
-                        ? 'bg-red-600 text-white'
+                        ? 'bg-primary text-white'
                         : 'text-gray-600 hover:bg-gray-200'}`}
                   >
                     {p}

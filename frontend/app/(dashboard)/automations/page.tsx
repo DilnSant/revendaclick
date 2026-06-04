@@ -30,8 +30,8 @@ export default async function AutomationsPage() {
 
       {/* Em breve */}
       <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-10 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-50">
-          <svg className="h-7 w-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+          <svg className="h-7 w-7 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
@@ -64,7 +64,7 @@ export default async function AutomationsPage() {
           ) : (
             <Link
               href="/billing/addons"
-              className="shrink-0 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+              className="shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
             >
               Ativar recurso →
             </Link>

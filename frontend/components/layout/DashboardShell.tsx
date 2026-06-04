@@ -248,7 +248,7 @@ export default function DashboardShell(props: Props) {
             <p className="text-xs text-gray-400">Loja</p>
             <p className="truncate text-sm font-medium text-gray-800">{tenantName}</p>
             {planDisplay && (
-              <span className="mt-0.5 inline-block rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600">
+              <span className="mt-0.5 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                 {planDisplay}
               </span>
             )}
@@ -276,7 +276,7 @@ export default function DashboardShell(props: Props) {
                 </p>
                 <a
                   href="/billing/plans"
-                  className="mt-2 block rounded-lg bg-red-600 px-3 py-1.5 text-center text-xs font-semibold text-white hover:bg-red-700 transition-colors"
+                  className="mt-2 block rounded-lg bg-primary px-3 py-1.5 text-center text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
                 >
                   Ver planos →
                 </a>
@@ -397,10 +397,10 @@ function NavItem({
       href={href}
       className={`
         flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
-        ${active ? 'bg-red-50 text-red-700' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+        ${active ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
       `}
     >
-      <span className={active ? 'text-red-600' : 'text-gray-400'}>
+      <span className={active ? 'text-primary' : 'text-gray-400'}>
         {icon}
       </span>
       {label}
@@ -465,7 +465,7 @@ function UserFooter(props: { userEmail: string; tenantSlug: string }) {
         onClick={() => setOpen(!open)}
         className="flex w-full items-center gap-2.5 rounded-lg p-2 text-left hover:bg-gray-50 transition-colors"
       >
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-xs font-bold text-red-700">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
           {initials}
         </div>
         <div className="min-w-0 flex-1">

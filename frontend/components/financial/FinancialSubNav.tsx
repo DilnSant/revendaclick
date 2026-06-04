@@ -16,7 +16,7 @@ export default function FinancialSubNav({ active }: { active: Tab }) {
             href={t.href}
             className={`px-4 pb-3 text-sm font-medium border-b-2 transition-colors ${
               active === t.key
-                ? 'border-red-600 text-red-600'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >

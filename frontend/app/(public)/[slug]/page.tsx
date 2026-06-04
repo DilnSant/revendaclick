@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import type React from 'react'
 import { notFound } from 'next/navigation'
 import { getTenantBySlug, getPublicStoreContact, buildWhatsAppUrl } from '@/lib/tenant'
 
@@ -62,6 +63,8 @@ export default async function StorePage({ params, searchParams }: Props) {
   const perPage = 12
   const pages   = Math.ceil(total / perPage)
 
+  const primaryChannels = hexToRgbChannels((tenant as { theme?: { primary_color?: string } }).theme?.primary_color ?? '#E53935') ?? '229 57 53'
+
   // Build filter URL helper — keeps all current params, overrides the changed one
   function filterUrl(overrides: Record<string, string | undefined>) {
     const p: Record<string, string> = {}
@@ -81,7 +84,7 @@ export default async function StorePage({ params, searchParams }: Props) {
   }
 
   return (
-    <>
+    <div style={{ '--primary': primaryChannels } as React.CSSProperties}>
       {/* Hero */}
       <section className="border-b border-gray-100 bg-white py-8">
         <div className="mx-auto max-w-7xl px-4">
@@ -236,7 +239,7 @@ export default async function StorePage({ params, searchParams }: Props) {
           {(query.marca || query.condicao || query.combustivel || query.min || query.max || query.ordenar || query.busca) && (
             <a
               href={`/${slug}`}
-              className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
+              className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/20"
             >
               Limpar filtros ✕
             </a>
@@ -294,7 +297,7 @@ export default async function StorePage({ params, searchParams }: Props) {
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }
 
@@ -355,7 +358,7 @@ function VehicleCard({
           <p className="mt-0.5 text-xs text-gray-500">
             {v.year_model} &bull; {v.mileage.toLocaleString('pt-BR')} km &bull; {FUEL_LABELS[v.fuel] ?? v.fuel}
           </p>
-          <p className="mt-2 text-lg font-bold" style={{ color: 'var(--color-primary)' }}>{price}</p>
+          <p className="mt-2 text-lg font-bold text-primary">{price}</p>
           {v.price_negotiable && (
             <p className="text-xs text-gray-400">Valor negociável</p>
           )}
@@ -367,8 +370,7 @@ function VehicleCard({
           href={waUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-white transition-colors hover:opacity-90"
-          style={{ backgroundColor: 'var(--color-primary)' }}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2 text-xs font-semibold text-white transition-colors hover:bg-primary/90"
         >
           <WhatsAppIcon />
           Tenho interesse
@@ -413,6 +415,14 @@ async function fetchVehicles(
 const FUEL_LABELS: Record<string, string> = {
   flex: 'Flex', gasoline: 'Gasolina', diesel: 'Diesel',
   electric: 'Elétrico', hybrid: 'Híbrido', ethanol: 'Etanol',
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function hexToRgbChannels(hex: string): string | null {
+  const m = hex.replace('#', '').match(/.{2}/g)
+  if (!m || m.length < 3) return null
+  return m.slice(0, 3).map(x => parseInt(x, 16)).join(' ')
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────

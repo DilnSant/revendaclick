@@ -124,7 +124,7 @@ export default async function CRMPage() {
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Leads recentes</h2>
-            <Link href="/leads" className="text-xs font-medium text-red-600 hover:text-red-700">Ver todos →</Link>
+            <Link href="/leads" className="text-xs font-medium text-primary hover:text-primary/90">Ver todos →</Link>
           </div>
           {recentLeads.length === 0 ? (
             <p className="text-sm text-gray-400">Nenhum lead ainda.</p>

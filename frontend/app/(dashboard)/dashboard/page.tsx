@@ -115,7 +115,7 @@ export default async function DashboardPage() {
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-900">Fluxo de caixa — últimos meses</h2>
-            <Link href="/financial" className="text-xs font-medium text-red-600 hover:text-red-700">Ver completo →</Link>
+            <Link href="/financial" className="text-xs font-medium text-primary hover:text-primary/90">Ver completo →</Link>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-gray-900">Follow-ups pendentes</h2>
-            <Link href="/leads" className="text-xs font-medium text-red-600 hover:text-red-700">Ver leads →</Link>
+            <Link href="/leads" className="text-xs font-medium text-primary hover:text-primary/90">Ver leads →</Link>
           </div>
           <div className="space-y-2">
             {followUps.slice(0, 5).map(lead => {

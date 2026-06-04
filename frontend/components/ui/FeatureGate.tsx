@@ -31,8 +31,8 @@ const FEATURE_LABELS: Record<FeatureKey, string> = {
 function UpgradePrompt({ feature }: { feature: FeatureKey }) {
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 py-12 text-center">
-      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
-        <svg className="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+        <svg className="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-9V4m0 4l-2 2m2-2l2 2" />
         </svg>
       </div>
@@ -44,7 +44,7 @@ function UpgradePrompt({ feature }: { feature: FeatureKey }) {
       </p>
       <Link
         href="/billing/plans"
-        className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
+        className="mt-4 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
       >
         Ver planos
       </Link>

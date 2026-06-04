@@ -86,7 +86,7 @@ function SearchSelect({ label, required, value, options, loading, disabled, plac
         />
         {loading && (
           <div className="absolute right-2 top-1/2 -translate-y-1/2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-400 border-t-transparent" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         )}
       </div>
@@ -96,8 +96,8 @@ function SearchSelect({ label, required, value, options, loading, disabled, plac
             <li
               key={item.codigo}
               onMouseDown={() => handleSelect(item)}
-              className={`cursor-pointer px-3 py-2 hover:bg-red-50 hover:text-red-700 ${
-                item.nome === value ? 'bg-red-50 font-medium text-red-700' : 'text-gray-700'
+              className={`cursor-pointer px-3 py-2 hover:bg-primary/10 hover:text-primary ${
+                item.nome === value ? 'bg-primary/10 font-medium text-primary' : 'text-gray-700'
               }`}
             >
               {item.nome}

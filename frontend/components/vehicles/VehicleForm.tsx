@@ -298,10 +298,10 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
             {upgradeRequired && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-                <p className="text-sm font-semibold text-red-700">Limite atingido</p>
-                <p className="mt-1 text-xs text-red-600">Faça upgrade para cadastrar mais veículos.</p>
-                <Link href="/billing/plans" className="mt-2 inline-block text-xs font-semibold text-red-700 underline">Ver planos →</Link>
+              <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3">
+                <p className="text-sm font-semibold text-primary">Limite atingido</p>
+                <p className="mt-1 text-xs text-primary/80">Faça upgrade para cadastrar mais veículos.</p>
+                <Link href="/billing/plans" className="mt-2 inline-block text-xs font-semibold text-primary underline">Ver planos →</Link>
               </div>
             )}
 
@@ -323,12 +323,12 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
                 className={`relative flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors
-                  ${dragging ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-gray-50 hover:border-red-300 hover:bg-red-50/30'}`}
+                  ${dragging ? 'border-primary/60 bg-primary/10' : 'border-gray-200 bg-gray-50 hover:border-primary/30 hover:bg-primary/5'}`}
               >
                 {uploading ? (
                   <div className="w-full space-y-2 px-2">
                     <div className="flex items-center justify-center gap-2">
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                       <p className="text-xs text-gray-500">
                         {uploadProgress
                           ? `Enviando ${uploadProgress.done}/${uploadProgress.total}…`
@@ -338,7 +338,7 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
                     {uploadProgress && (
                       <div className="h-1.5 w-full rounded-full bg-gray-200">
                         <div
-                          className="h-1.5 rounded-full bg-red-500 transition-all duration-300"
+                          className="h-1.5 rounded-full bg-primary transition-all duration-300"
                           style={{ width: `${(uploadProgress.done / uploadProgress.total) * 100}%` }}
                         />
                       </div>
@@ -350,7 +350,7 @@ export default function VehicleForm({ vehicle, onClose, onSaved }: Props) {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                     </svg>
                     <p className="text-xs text-gray-500">
-                      Arraste fotos aqui ou <span className="font-medium text-red-600">clique para adicionar</span>
+                      Arraste fotos aqui ou <span className="font-medium text-primary">clique para adicionar</span>
                     </p>
                     <p className="text-[10px] text-gray-400">
                       JPEG, PNG, WebP · máx {MAX_SIZE_MB} MB · até {MAX_PHOTOS} fotos

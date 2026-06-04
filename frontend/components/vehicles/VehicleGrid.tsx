@@ -145,15 +145,15 @@ export default function VehicleGrid({ vehicles, usage }: Omit<Props, 'total'> & 
       )}
 
       {upgradeRequired && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-          <p className="text-sm font-semibold text-red-700">Limite de veículos atingido</p>
-          <p className="mt-1 text-xs text-red-600">
+        <div className="rounded-xl border border-primary/30 bg-primary/10 px-5 py-4">
+          <p className="text-sm font-semibold text-primary">Limite de veículos atingido</p>
+          <p className="mt-1 text-xs text-primary/80">
             Faça upgrade do seu plano para cadastrar mais veículos.
           </p>
-          <Link href="/settings" className="mt-3 inline-block rounded-lg bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-700">
+          <Link href="/settings" className="mt-3 inline-block rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white hover:bg-primary/90">
             Ver planos
           </Link>
-          <button onClick={() => setUpgradeRequired(false)} className="mt-3 ml-3 text-xs text-red-400">
+          <button onClick={() => setUpgradeRequired(false)} className="mt-3 ml-3 text-xs text-primary/60">
             Fechar
           </button>
         </div>
