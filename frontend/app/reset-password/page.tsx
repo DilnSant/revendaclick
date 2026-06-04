@@ -92,12 +92,12 @@ function ResetForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-graphite px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
             <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
-              style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
+              className="object-contain h-20 w-auto sm:h-28 lg:h-32" priority />
           </div>
           <h1 className="text-xl font-bold text-white">Nova senha</h1>
           <p className="mt-1 text-sm text-gray-400">Escolha uma senha segura para sua conta.</p>

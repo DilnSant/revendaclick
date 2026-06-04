@@ -64,11 +64,11 @@ export default function RegisterPage() {
 
   if (done) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-graphite px-4">
+      <div className="flex min-h-screen items-center justify-center bg-black px-4">
         <div className="w-full max-w-md text-center space-y-4">
           <div className="flex justify-center mb-6">
             <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
-              style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
+              className="object-contain h-24 w-auto sm:h-36 lg:h-40" priority />
           </div>
           <div className="rounded-xl border border-green-200 bg-green-50 p-6 shadow-sm">
             <div className="text-4xl mb-3">📧</div>
@@ -99,13 +99,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-graphite px-4 pt-14 pb-8">
+    <div className="flex min-h-screen items-start justify-center bg-black px-4 pt-10 pb-8">
       <div className="w-full max-w-md space-y-6">
 
         <div className="text-center">
           <div className="flex justify-center mb-5">
             <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
-              style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
+              className="object-contain h-24 w-auto sm:h-36 lg:h-40" priority />
           </div>
           <h1 className="text-2xl font-heading font-bold text-white">Crie sua conta grátis</h1>
           <p className="mt-1.5 text-sm text-gray-400">Teste por 30 dias sem cartão de crédito.</p>

@@ -51,8 +51,7 @@ function LoginForm() {
           alt="RevendaClick"
           width={1536}
           height={1024}
-          style={{ height: '80px', width: 'auto' }}
-          className="object-contain"
+          className="object-contain h-24 w-auto sm:h-36 lg:h-40"
           priority
         />
       </div>
@@ -136,7 +135,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-graphite px-4">
+    <div className="flex min-h-screen items-center justify-center bg-black px-4">
       <Suspense fallback={<div className="w-full max-w-sm" />}>
         <LoginForm />
       </Suspense>

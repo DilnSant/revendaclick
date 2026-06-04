@@ -15,9 +15,9 @@ export const metadata: Metadata = {
   description: 'A plataforma que acelera sua revenda. CRM, estoque e leads em um só lugar.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.com.br'),
   icons: {
-    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: [{ url: '/favicon.png', type: 'image/png' }],
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 }
 
