@@ -97,7 +97,7 @@ export default function ResetPasswordPage() {
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
             <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
-              className="object-contain h-20 w-auto sm:h-28 lg:h-32" priority />
+              className="object-contain h-28 w-auto max-w-full sm:h-40 lg:h-48" priority />
           </div>
           <h1 className="text-xl font-bold text-white">Nova senha</h1>
           <p className="mt-1 text-sm text-gray-400">Escolha uma senha segura para sua conta.</p>

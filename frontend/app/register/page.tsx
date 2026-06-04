@@ -68,7 +68,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md text-center space-y-4">
           <div className="flex justify-center mb-6">
             <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
-              className="object-contain h-24 w-auto sm:h-36 lg:h-40" priority />
+              className="object-contain h-36 w-auto max-w-full sm:h-48 lg:h-56" priority />
           </div>
           <div className="rounded-xl border border-green-200 bg-green-50 p-6 shadow-sm">
             <div className="text-4xl mb-3">📧</div>
@@ -105,7 +105,7 @@ export default function RegisterPage() {
         <div className="text-center">
           <div className="flex justify-center mb-5">
             <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
-              className="object-contain h-24 w-auto sm:h-36 lg:h-40" priority />
+              className="object-contain h-36 w-auto max-w-full sm:h-48 lg:h-56" priority />
           </div>
           <h1 className="text-2xl font-heading font-bold text-white">Crie sua conta grátis</h1>
           <p className="mt-1.5 text-sm text-gray-400">Teste por 30 dias sem cartão de crédito.</p>
