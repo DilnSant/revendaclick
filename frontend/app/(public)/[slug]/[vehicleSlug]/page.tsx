@@ -1,7 +1,18 @@
 import type { Metadata } from 'next'
+import type React from 'react'
 import { notFound } from 'next/navigation'
 import { getTenantBySlug, buildWhatsAppUrl } from '@/lib/tenant'
 import ShareButton from '@/components/vehicles/ShareButton'
+
+function hexToRgbChannels(hex: string): string | null {
+  const clean = hex.replace('#', '')
+  if (clean.length !== 6) return null
+  const r = parseInt(clean.slice(0, 2), 16)
+  const g = parseInt(clean.slice(2, 4), 16)
+  const b = parseInt(clean.slice(4, 6), 16)
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return null
+  return `${r} ${g} ${b}`
+}
 
 interface Props {
   params: Promise<{ slug: string; vehicleSlug: string }>
@@ -87,6 +98,7 @@ export default async function VehiclePage({ params }: Props) {
   const waUrl = buildWhatsAppUrl(tenant.phone_whatsapp, waMsg)
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.com.br'
   const shareUrl = `${appUrl}/${slug}/${vehicleSlug}`
+  const primaryChannels = hexToRgbChannels((tenant as { theme?: { primary_color?: string } }).theme?.primary_color ?? '#E53935') ?? '229 57 53'
 
   // schema.org structured data
   const jsonLd = {
@@ -113,7 +125,7 @@ export default async function VehiclePage({ params }: Props) {
   }
 
   return (
-    <>
+    <div style={{ '--primary': primaryChannels } as React.CSSProperties}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -244,7 +256,7 @@ export default async function VehiclePage({ params }: Props) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   )
 }
 

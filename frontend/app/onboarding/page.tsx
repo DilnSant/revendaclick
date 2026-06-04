@@ -147,7 +147,7 @@ export default function OnboardingPage() {
             {/* Slug */}
             <div>
               <label className="label">Endereço da loja *</label>
-              <div className="flex items-center rounded-lg border border-gray-300 shadow-sm focus-within:border-red-600 focus-within:ring-1 focus-within:ring-red-600 overflow-hidden">
+              <div className="flex items-center rounded-lg border border-gray-300 shadow-sm focus-within:border-primary focus-within:ring-1 focus-within:ring-primary overflow-hidden">
                 <span className="shrink-0 bg-gray-50 px-3 py-2 text-sm text-gray-400 border-r border-gray-300">
                   revendaclick.com.br/
                 </span>

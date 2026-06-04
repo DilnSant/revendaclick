@@ -110,7 +110,7 @@ export default function OnboardingChecklist({ checklist }: Props) {
             <div
               key={step.key}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors ${
-                isNext ? 'bg-primary/8 border border-primary/20' : ''
+                isNext ? 'bg-primary/10 border border-primary/20' : ''
               }`}
             >
               {/* Step indicator */}
