@@ -18,6 +18,24 @@ export default function ForgotPasswordPage() {
     setError(null)
 
     startTransition(async () => {
+      // Verifica se o e-mail está cadastrado antes de enviar o link
+      try {
+        const checkRes = await fetch('/api/auth/check-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        })
+        if (checkRes.ok) {
+          const { exists } = await checkRes.json()
+          if (!exists) {
+            setError('Nenhuma conta foi encontrada com este endereço de e-mail.')
+            return
+          }
+        }
+      } catch {
+        // Falha no check: prossegue normalmente para não bloquear o usuário
+      }
+
       const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${appUrl}/auth/callback?type=recovery`,
