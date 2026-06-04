@@ -2,13 +2,13 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 03/06/2026 (sessão 37 — auditoria documental + uptime monitoring + fix rc_backup)
+> Última atualização: 03/06/2026 (sessão 38 — auditoria auth APROVADO + otimização hero landing page)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
 | Módulo / Feature | Status | Observações |
 |---|---|---|
-| **Auth / Onboarding** | ✓ Produção | Hybrid session+service role; checklist v2; triggers automáticos |
+| **Auth / Onboarding** | ✓ Produção | Hybrid session+service role; checklist v2; triggers automáticos; email confirmation ON; password "No requirements" min 8; forgot-password appUrl fix FC035 (sessão 38) |
 | **Dashboard** | ✓ Produção | KPIs + OnboardingChecklist widget |
 | **Sidebar** | ✓ Refatorado (sessão 23) | Starter/Pro/Premium por feature flag — ver D28 |
 | **Veículos** | ✓ Produção | CRUD + vitrine pública SEO + filtros |
@@ -41,7 +41,7 @@
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
 | **FC033 — Cancel sub não cancela add-ons** | ✓ **Corrigido** (sessão 30) | Opção A: cancelTenantAddons em cascata; 7/7 smoke tests — commit `529efb2` |
 | **Etapa 5 — Billing real add-ons** | ✓ **Implementado** (sessão 30) | Asaas subscription por add-on; status lifecycle; webhook routing; is_redundant |
-| **Landing Page** | ✓ **CONGELADA** (sessões 31+) | Fluxo completo: formulário + API + Supabase + /admin/leads; não adicionar features |
+| **Landing Page** | ✓ **Hero reformulado** (sessão 38) | Hero: formulário removido → CTA direto /register; logo tipográfico; copy novo. Fluxo de leads backend: INALTERADO (CONGELADO) |
 | **Admin Leads** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação 25/pág, alerta leads sem contato 4h |
 | **Admin Lead Detalhe** | ✓ Produção (sessão 31) | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
 | **Pipeline Comercial Leads** | ✓ Produção (migrations 030-031) | 5 status: novo → contatado → em_negociacao → convertido / perdido |
@@ -56,6 +56,52 @@
 | **Uptime monitoring** | ✓ Ativo (sessão 37) | Cron job `*/5 * * * *` no VPS; checa api+evolution+frontend; falhas logadas + BetterStack |
 | **Auditoria documental (sessão 37)** | ✓ Concluída | 9 arquivos corrigidos: `has_api_access` → `has_automation`; FC033→FC034; contagem FCs; flags Premium/Scale |
 | **rc_backup fix (sessão 37)** | ✓ Operacional | `alpine:3.20` → `postgres:17-alpine`; pg_dump 17.10; backup 2.2M; cleanup ok |
+| **FC035 — forgot-password appUrl localhost** | ✓ Corrigido (sessão 38) | `window.location.origin` em vez de `localhost:3000`; links de recovery agora apontam para o domínio real |
+| **Auth audit (sessão 38)** | ✓ AUTH APROVADO | 6 fluxos validados; email confirmation ON; password "No requirements"; forgot-password + login "Email not confirmed" corrigidos |
+| **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto; logo tipográfico Revenda/Click; copy atualizado |
+
+---
+
+## 2026-06-03 (sessão 38) — Auditoria auth APROVADO + otimização hero landing page
+
+**Objetivo:** Validar e corrigir os 6 fluxos de autenticação. Otimizar hero da landing para conversão direta.
+
+**Migrations aplicadas:** nenhuma
+
+**Arquivos alterados:**
+- `frontend/app/forgot-password/page.tsx` — FC035: `appUrl` fallback `'http://localhost:3000'` → `window.location.origin`
+- `frontend/app/login/page.tsx` — mensagem específica "Confirme seu e-mail antes de entrar" quando erro = "Email not confirmed"
+- `frontend/components/marketing/NavBar.tsx` — logo PNG `<Image>` → logo CSS `<span>` (`Revenda` branco + `Click` vermelho; +50% tamanho; contraste perfeito em fundo escuro)
+- `frontend/components/marketing/HeroSection.tsx` — formulário de captura removido; CTA "Começar Agora" (→ /register) + "Ver Demonstração" (→ #como-funciona); subtítulo atualizado; benefício: `+500 revendas` → `Configuração em menos de 5 minutos`
+
+**Configurações Supabase Dashboard (executadas pelo usuário):**
+- Password Strength: "No requirements" (mínimo 8 caracteres)
+- Email confirmations: ON
+- Redirect URLs: `https://app.revendaclick.com.br/auth/callback` adicionado
+
+**Bugs corrigidos:**
+- FC035: link de recuperação de senha apontava para `localhost:3000` se `NEXT_PUBLIC_APP_URL` ausente na Vercel
+- Login: "Email or password invalid" genérico → mensagem específica quando e-mail ainda não confirmado
+
+**Auditoria auth — resultado:** AUTH APROVADO
+
+| Fluxo | Status |
+|---|---|
+| Cadastro de usuário novo | ✓ |
+| Confirmação de e-mail | ✓ |
+| Login após confirmação | ✓ |
+| Recuperação de senha | ✓ FC035 corrigido |
+| Redefinição de senha | ✓ |
+| Login após redefinição | ✓ |
+
+**Commits:**
+- `234abe4` — fix(auth): corrigir appUrl no forgot-password — fallback era localhost:3000
+- `a64143d` — fix(auth): mensagem específica quando e-mail não confirmado no login
+- `39b8ad9` — feat(landing): otimização hero — logo texto, CTA direto, copy novo
+
+**Deploy:** Frontend: EXECUTADO (Vercel — push automático) | Backend: NÃO EXECUTADO | Banco: NÃO EXECUTADO
+
+**TypeScript:** ✓ clean | **Go build/vet:** NÃO EXECUTADO (sem alteração Go)
 
 ---
 

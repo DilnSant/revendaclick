@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 01/06/2026 (sessão 31 — pipeline comercial de leads)
+> Atualizado em: 03/06/2026 (sessão 38 — auth APROVADO + hero landing page)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -86,7 +86,9 @@
 | CONCLUÍDA | Fix BUG 5: Settings/Users invite modal | — | + Convidar Membro com roles Administrador/Gerente |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
-| CONCLUÍDA | Landing page — fluxo completo (sessões 31) | — | Formulário + API + Supabase + /admin/leads + /admin/leads/[id]; migrations 028-031; **CONGELADA** |
+| CONCLUÍDA | Landing page — fluxo completo (sessões 31) | — | Formulário + API + Supabase + /admin/leads + /admin/leads/[id]; migrations 028-031; backend CONGELADO |
+| CONCLUÍDA | Landing page — hero reformulado (sessão 38) | — | Formulário → CTA direto /register; logo tipográfico; copy novo; fluxo de leads backend inalterado |
+| CONCLUÍDA | Auth — auditoria e correções (sessão 38) | — | FC035 forgot-password appUrl; login "Email not confirmed" msg; email confirmation ON; password "No requirements"; AUTH APROVADO |
 | CONCLUÍDA | Admin leads — pipeline comercial (sessão 31) | — | Filtros, paginação, status 5-estados, alerta 4h, notas, próxima ação, último contato |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |
 | CONCLUÍDA | Módulo Clientes | — | CRUD |

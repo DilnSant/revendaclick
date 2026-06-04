@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 03/06/2026 (sessão 37 — auditoria documental + uptime monitoring + fix rc_backup)
+> Atualizado em: 03/06/2026 (sessão 38 — auditoria auth APROVADO + otimização hero landing page)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -60,7 +60,7 @@
 | Evolution API v2.3.7 | ✓ healthy |
 | Billing Asaas | ✓ subscribe + upgrade end-to-end |
 | Supabase security advisors | ✓ limpos |
-| FalhasCorrigidas | ✓ 33 FCs documentadas (FC001–FC033) |
+| FalhasCorrigidas | ✓ 35 FCs documentadas (FC001–FC035) |
 | PRODUCT_ARCHITECTURE.md | ✓ criado — fonte única da arquitetura de negócio |
 | DEPENDENCIES.md | ✓ criado — mapa de dependências por módulo |
 | ENVIRONMENTS.md | ✓ criado — produção / homologação / desenvolvimento |
@@ -92,6 +92,9 @@
 | **Uptime monitoring (sessão 37)** | ✓ Ativo | Cron job `*/5 * * * *` no VPS; checa 3 endpoints; falhas → `/var/log/rc_health.log` + BetterStack |
 | **Auditoria documental (sessão 37)** | ✓ Concluída | 9 arquivos corrigidos; `has_api_access` → `has_automation`; FC count 33→34; flags Premium/Scale sincronizadas |
 | **Fix rc_backup (sessão 37)** | ✓ Operacional | `alpine:3.20` → `postgres:17-alpine`; pg_dump 17.10 ✓; backup 2.2M gerado; cleanup executou |
+| **FC035 — forgot-password appUrl (sessão 38)** | ✓ Corrigido | `window.location.origin` substitui fallback `localhost:3000`; commit `234abe4` |
+| **Auth audit — 6 fluxos (sessão 38)** | ✓ AUTH APROVADO | Email confirmation ON; password "No requirements"; login "Email not confirmed" msg corrigida |
+| **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto /register; logo tipográfico; subtítulo e benefícios atualizados |
 
 ---
 
@@ -200,7 +203,7 @@ Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar container
 
 ### 4. Etapas comerciais (próximas sessões)
 
-- **FC035** — Próxima falha a registrar (se identificada)
+- **FC036** — Próxima falha a registrar (se identificada)
 - **Etapa 5 follow-up** — `AdminSimulateEvent` suportar `addon_type` param para simular webhooks de add-on direto pelo painel admin
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
@@ -212,8 +215,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **34 falhas documentadas (FC001–FC034)**.
-Próximo número disponível: **FC035**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **35 falhas documentadas (FC001–FC035)**.
+Próximo número disponível: **FC036**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
