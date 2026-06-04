@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabaseClient'
 
 function ResetForm() {
@@ -91,14 +92,15 @@ function ResetForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-graphite px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-600 text-xl font-bold text-white">
-            RC
+          <div className="flex justify-center mb-4">
+            <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
+              style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Nova senha</h1>
-          <p className="mt-1 text-sm text-gray-500">Escolha uma senha segura para sua conta.</p>
+          <h1 className="text-xl font-bold text-white">Nova senha</h1>
+          <p className="mt-1 text-sm text-gray-400">Escolha uma senha segura para sua conta.</p>
         </div>
 
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">

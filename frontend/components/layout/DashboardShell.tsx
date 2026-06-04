@@ -261,25 +261,12 @@ export default function DashboardShell(props: Props) {
             <NavGroup items={NAV_BASE} pathname={pathname} />
 
             {/* Pro+ — Atendimento + Analytics */}
-            {features.has_crm ? (
+            {features.has_crm && (
               <div>
                 <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
                   Pro
                 </p>
                 <NavGroup items={NAV_PRO} pathname={pathname} />
-              </div>
-            ) : (
-              <div className="mx-1 rounded-xl border border-dashed border-white/20 bg-white/5 px-3 py-3">
-                <p className="text-xs font-medium text-gray-300">Desbloqueie com Pro</p>
-                <p className="mt-0.5 text-[11px] text-gray-400 leading-snug">
-                  Atendimento, Analytics e mais
-                </p>
-                <a
-                  href="/billing/plans"
-                  className="mt-2 block rounded-lg bg-primary px-3 py-1.5 text-center text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
-                >
-                  Ver planos →
-                </a>
               </div>
             )}
 

@@ -50,15 +50,15 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-graphite px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
-            <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
+            <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
               style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">Recuperar senha</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-xl font-bold text-white">Recuperar senha</h1>
+          <p className="mt-1 text-sm text-gray-400">
             Informe seu email para receber o link de redefinição.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
             <p className="mt-1 text-sm text-green-700">
               Verifique sua caixa de entrada e siga as instruções.
             </p>
-            <Link href="/login" className="mt-4 block text-sm font-medium text-red-600 hover:text-red-700">
+            <Link href="/login" className="mt-4 block text-sm font-medium text-primary hover:text-primary-dark">
               Voltar ao login
             </Link>
           </div>

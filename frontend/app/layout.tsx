@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   title: { default: 'RevendaClick', template: '%s | RevendaClick' },
   description: 'A plataforma que acelera sua revenda. CRM, estoque e leads em um só lugar.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.com.br'),
+  icons: {
+    icon: [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export const viewport: Viewport = {

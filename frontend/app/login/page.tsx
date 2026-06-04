@@ -47,10 +47,10 @@ function LoginForm() {
       {/* Logo */}
       <div className="flex justify-center">
         <Image
-          src="/logo.png"
+          src="/logo-dark.png"
           alt="RevendaClick"
-          width={870}
-          height={592}
+          width={1536}
+          height={1024}
           style={{ height: '80px', width: 'auto' }}
           className="object-contain"
           priority
@@ -124,7 +124,7 @@ function LoginForm() {
         </form>
       </div>
 
-      <p className="text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-gray-400">
         Não tem conta?{' '}
         <Link href="/register" className="font-semibold text-primary hover:text-primary-dark transition-colors">
           Criar gratuitamente
@@ -136,7 +136,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-graphite px-4">
       <Suspense fallback={<div className="w-full max-w-sm" />}>
         <LoginForm />
       </Suspense>

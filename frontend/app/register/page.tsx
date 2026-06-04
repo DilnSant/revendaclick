@@ -64,10 +64,10 @@ export default function RegisterPage() {
 
   if (done) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-graphite px-4">
         <div className="w-full max-w-md text-center space-y-4">
           <div className="flex justify-center mb-6">
-            <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
+            <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
               style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
           </div>
           <div className="rounded-xl border border-green-200 bg-green-50 p-6 shadow-sm">
@@ -88,7 +88,7 @@ export default function RegisterPage() {
             Enviou para o email errado?{' '}
             <button
               onClick={() => setDone(false)}
-              className="text-red-600 underline hover:text-red-700"
+              className="text-primary underline hover:text-primary-dark"
             >
               Usar outro email
             </button>
@@ -99,16 +99,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 pt-14 pb-8">
+    <div className="flex min-h-screen items-start justify-center bg-graphite px-4 pt-14 pb-8">
       <div className="w-full max-w-md space-y-6">
 
         <div className="text-center">
           <div className="flex justify-center mb-5">
-            <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
+            <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
               style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
           </div>
-          <h1 className="text-2xl font-heading font-bold text-graphite">Crie sua conta grátis</h1>
-          <p className="mt-1.5 text-sm text-gray-500">Teste por 30 dias sem cartão de crédito.</p>
+          <h1 className="text-2xl font-heading font-bold text-white">Crie sua conta grátis</h1>
+          <p className="mt-1.5 text-sm text-gray-400">Teste por 30 dias sem cartão de crédito.</p>
         </div>
 
         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -169,9 +169,9 @@ export default function RegisterPage() {
           </form>
         </div>
 
-        <p className="text-center text-sm text-gray-500">
+        <p className="text-center text-sm text-gray-400">
           Já tem conta?{' '}
-          <Link href="/login" className="font-medium text-red-600 hover:text-red-700">
+          <Link href="/login" className="font-medium text-primary hover:text-primary-dark">
             Fazer login
           </Link>
         </p>
