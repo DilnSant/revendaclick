@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 03/06/2026 (sessão 38 — auditoria auth APROVADO + otimização hero landing page)
+> Atualizado em: 04/06/2026 (sessão 39 — auditoria UX fluxo ativação lojista)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -95,6 +95,7 @@
 | **FC035 — forgot-password appUrl (sessão 38)** | ✓ Corrigido | `window.location.origin` substitui fallback `localhost:3000`; commit `234abe4` |
 | **Auth audit — 6 fluxos (sessão 38)** | ✓ AUTH APROVADO | Email confirmation ON; password "No requirements"; login "Email not confirmed" msg corrigida |
 | **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto /register; logo tipográfico; subtítulo e benefícios atualizados |
+| **UX ativação lojista (sessão 39)** | ✓ 9 problemas corrigidos | /vehicles/new→/vehicles; tab=contact; pré-fill; erros amigáveis; logo 80px; spam — commit `ee85f9c` |
 
 ---
 

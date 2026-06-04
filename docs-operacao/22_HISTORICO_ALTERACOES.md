@@ -62,6 +62,42 @@
 
 ---
 
+## 2026-06-04 (sessão 39) — Auditoria UX fluxo de ativação do lojista
+
+**Objetivo:** Auditar e corrigir o fluxo Landing → Cadastro → Email → Login → Onboarding → Dashboard. Foco em remover atritos que impedem ativação do primeiro lojista pagante.
+
+**Migrations aplicadas:** nenhuma
+
+**Arquivos alterados:**
+- `docs-operacao/REFERENCE.md` — FC count 34→35; próxima FC035→FC036
+- `frontend/components/onboarding/OnboardingChecklist.tsx` — P1: `/vehicles/new` (404) → `/vehicles`; P2: `tab=contato-publico` → `tab=contact`
+- `frontend/app/onboarding/page.tsx` — P3/P4: pré-preencher nome+email da sessão Supabase; P5: erros amigáveis via `friendlyError()`; logo 280px → 80px; catch genérico sanitizado; P9: typo `sujarevenda` → `suarevenda`
+- `frontend/app/register/page.tsx` — P7: logo 280px → 80px (form + tela done); P6: aviso de spam/promoções na tela de confirmação; copy "Tentar novamente" → "Usar outro email"
+- `frontend/app/login/page.tsx` — P7: logo 280px → 80px
+- `frontend/app/forgot-password/page.tsx` — P8: "RC" quadrado → logo.png (80px), consistente com auth flow
+
+**Problemas corrigidos:**
+
+| # | Problema | Impacto | Correção |
+|---|---|---|---|
+| P1 | `/vehicles/new` → 404 | CRÍTICO — bloqueava ativação | href → `/vehicles` |
+| P2 | `tab=contato-publico` → tab errado | CRÍTICO — bloqueava publicação | href → `?tab=contact` |
+| P3 | Nome pedido 2x | Alto — atrito desnecessário | pré-preencher do user_metadata |
+| P4 | E-mail da loja vazio | Alto — atrito desnecessário | pré-preencher do user.email |
+| P5 | Erros técnicos expostos | Alto — confundia usuário | `friendlyError()` por código |
+| P6 | Sem aviso de spam | Alto — abandono por não receber email | Texto orientativo adicionado |
+| P7 | Logo 280px em auth | Médio — bloqueava form mobile | Reduzido para 80px |
+| P8 | Logo inconsistente forgot-password | Médio — desorientação | logo.png 80px |
+| P9 | Typo "sujarevenda" | Baixo | Corrigido |
+
+**Commit:** `ee85f9c`
+
+| Módulo / Feature | Status |
+|---|---|
+| **UX ativação lojista (sessão 39)** | ✓ 9 problemas corrigidos — commit `ee85f9c` |
+
+---
+
 ## 2026-06-03 (sessão 38) — Auditoria auth APROVADO + otimização hero landing page
 
 **Objetivo:** Validar e corrigir os 6 fluxos de autenticação. Otimizar hero da landing para conversão direta.

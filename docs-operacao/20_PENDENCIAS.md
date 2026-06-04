@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 03/06/2026 (sessão 38 — auth APROVADO + hero landing page)
+> Atualizado em: 04/06/2026 (sessão 39 — auditoria UX fluxo ativação lojista)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -89,6 +89,7 @@
 | CONCLUÍDA | Landing page — fluxo completo (sessões 31) | — | Formulário + API + Supabase + /admin/leads + /admin/leads/[id]; migrations 028-031; backend CONGELADO |
 | CONCLUÍDA | Landing page — hero reformulado (sessão 38) | — | Formulário → CTA direto /register; logo tipográfico; copy novo; fluxo de leads backend inalterado |
 | CONCLUÍDA | Auth — auditoria e correções (sessão 38) | — | FC035 forgot-password appUrl; login "Email not confirmed" msg; email confirmation ON; password "No requirements"; AUTH APROVADO |
+| CONCLUÍDA | UX ativação lojista (sessão 39) | — | 9 problemas corrigidos no fluxo cadastro→onboarding: /vehicles/new→/vehicles; tab=contact; pré-fill; erros amigáveis; logo 80px; aviso spam — commit `ee85f9c` |
 | CONCLUÍDA | Admin leads — pipeline comercial (sessão 31) | — | Filtros, paginação, status 5-estados, alerta 4h, notas, próxima ação, último contato |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |
 | CONCLUÍDA | Módulo Clientes | — | CRUD |
