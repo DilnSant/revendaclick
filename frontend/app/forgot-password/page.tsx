@@ -23,8 +23,8 @@ export default function ForgotPasswordPage() {
         redirectTo: `${appUrl}/auth/callback?type=recovery`,
       })
 
-      if (error) {
-        setError('Não foi possível enviar o email. Verifique o endereço informado.')
+      if (error && error.status === 429) {
+        setError('Muitas tentativas. Aguarde alguns minutos e tente novamente.')
         return
       }
       setSent(true)

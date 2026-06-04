@@ -77,7 +77,7 @@ export default async function PlansPage() {
       {publicPlans.length > 0 && (
         <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
           <div className="border-b border-gray-100 px-6 py-4">
-            <h3 className="text-sm font-semibold text-gray-900">Comparativo completo de recursos</h3>
+            <h3 className="text-sm font-semibold text-gray-900">O que cada plano inclui</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
@@ -99,48 +99,48 @@ export default async function PlansPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                <SectionRow label="LIMITES" colSpan={publicPlans.length + 1} />
+                <SectionRow label="CAPACIDADE" colSpan={publicPlans.length + 1} />
                 <ValueRow
-                  label="Veículos"
+                  label="Veículos anunciados"
                   values={publicPlans.map((p) => fmtLimit(p.max_vehicles))}
                   plans={publicPlans}
                 />
                 <ValueRow
-                  label="Usuários"
+                  label="Usuários da equipe"
                   values={publicPlans.map((p) => fmtLimit(p.max_users))}
                   plans={publicPlans}
                 />
                 <ValueRow
-                  label="Leads / mês"
+                  label="Leads recebidos / mês"
                   values={publicPlans.map((p) => fmtLimit(p.max_leads))}
                   plans={publicPlans}
                 />
 
-                <SectionRow label="LOJA & MARKETPLACE" colSpan={publicPlans.length + 1} />
-                <BoolRow label="Marketplace público" feat="marketplace" plans={publicPlans} />
-                <BoolRow label="WhatsApp da Loja (contato)" feat="whatsapp_button" plans={publicPlans} />
-                <BoolRow label="Captura de leads" feat="lead_capture" plans={publicPlans} />
-                <BoolRow label="Página pública SEO" feat="marketplace" plans={publicPlans} />
+                <SectionRow label="VITRINE ONLINE" colSpan={publicPlans.length + 1} />
+                <BoolRow label="Vitrine pública de veículos" feat="marketplace" plans={publicPlans} />
+                <BoolRow label="Botão WhatsApp na vitrine" feat="whatsapp_button" plans={publicPlans} />
+                <BoolRow label="Captura automática de leads" feat="lead_capture" plans={publicPlans} />
+                <BoolRow label="Aparece no Google (SEO)" feat="marketplace" plans={publicPlans} />
 
-                <SectionRow label="GESTÃO" colSpan={publicPlans.length + 1} />
-                <BoolRow label="Financeiro básico" feat="financial" plans={publicPlans} />
-                <BoolRow label="Vendedores / equipe" feat="vendors" plans={publicPlans} />
-                <BoolRow label="CRM Atendimento" feat="crm" plans={publicPlans} />
-                <BoolRow label="Kanban de leads" feat="kanban" plans={publicPlans} />
-                <BoolRow label="Analytics avançado" feat="analytics" plans={publicPlans} />
+                <SectionRow label="GESTÃO DA REVENDA" colSpan={publicPlans.length + 1} />
+                <BoolRow label="Controle financeiro" feat="financial" plans={publicPlans} />
+                <BoolRow label="Equipe de vendedores" feat="vendors" plans={publicPlans} />
+                <BoolRow label="CRM de atendimento" feat="crm" plans={publicPlans} />
+                <BoolRow label="Pipeline visual de leads" feat="kanban" plans={publicPlans} />
+                <BoolRow label="Relatórios e Analytics" feat="analytics" plans={publicPlans} />
 
                 <SectionRow label="WHATSAPP & AUTOMAÇÃO" colSpan={publicPlans.length + 1} />
-                <BoolRow label="WhatsApp operacional (QR Code)" feat="whatsapp_qr" plans={publicPlans} />
-                <BoolRow label="Automações e lembretes" feat="automation" plans={publicPlans} />
-                <BoolRow label="Campanhas" feat="campaigns" plans={publicPlans} />
+                <BoolRow label="WhatsApp conectado (QR Code)" feat="whatsapp_qr" plans={publicPlans} />
+                <BoolRow label="Follow-up automatizado" feat="automation" plans={publicPlans} />
+                <BoolRow label="Campanhas de reativação" feat="campaigns" plans={publicPlans} />
 
-                <SectionRow label="IA" colSpan={publicPlans.length + 1} />
-                <BoolRow label="IA: sugestão de resposta" feat="ai_assistance" plans={publicPlans} />
-                <BoolRow label="IA: recuperação de leads" feat="lead_recovery" plans={publicPlans} />
+                <SectionRow label="INTELIGÊNCIA ARTIFICIAL" colSpan={publicPlans.length + 1} />
+                <BoolRow label="IA que sugere respostas" feat="ai_assistance" plans={publicPlans} />
+                <BoolRow label="IA que recupera leads perdidos" feat="lead_recovery" plans={publicPlans} />
 
-                <SectionRow label="ENTERPRISE" colSpan={publicPlans.length + 1} />
-                <BoolRow label="Acesso à API REST" feat="api_access" plans={publicPlans} />
-                <BoolRow label="White-label completo" feat="white_label" plans={publicPlans} />
+                <SectionRow label="RECURSOS AVANÇADOS" colSpan={publicPlans.length + 1} />
+                <BoolRow label="Integração via API REST" feat="api_access" plans={publicPlans} />
+                <BoolRow label="Marca própria (White-label)" feat="white_label" plans={publicPlans} />
               </tbody>
             </table>
           </div>

@@ -158,13 +158,26 @@ interface Props {
   planDisplay: string
   subscriptionStatus?: string
   planFeatures?: Partial<PlanUsage>
+  tenantLogoUrl?: string | null
+  tenantColor?: string | null
   children: React.ReactNode
+}
+
+function hexToRgbChannels(hex: string): string | null {
+  const clean = hex.replace('#', '')
+  if (clean.length !== 6) return null
+  const r = parseInt(clean.slice(0, 2), 16)
+  const g = parseInt(clean.slice(2, 4), 16)
+  const b = parseInt(clean.slice(4, 6), 16)
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return null
+  return `${r} ${g} ${b}`
 }
 
 // ─── Shell ────────────────────────────────────────────────────────────────────
 
 export default function DashboardShell(props: Props) {
-  const { tenantName, tenantSlug, userEmail, planDisplay, planFeatures, children } = props
+  const { tenantName, tenantSlug, userEmail, planDisplay, planFeatures, tenantLogoUrl, tenantColor, children } = props
+  const rgbChannels = tenantColor ? hexToRgbChannels(tenantColor) : null
   const [mobileOpen, setMobileOpen] = useState(false)
   const pathname = usePathname()
 
@@ -187,7 +200,10 @@ export default function DashboardShell(props: Props) {
 
   return (
     <PlanFeaturesCtx.Provider value={features}>
-      <div className="min-h-screen bg-gray-50">
+      <div
+        className="min-h-screen bg-gray-50"
+        style={rgbChannels ? ({ '--primary': rgbChannels } as React.CSSProperties) : undefined}
+      >
         {/* Mobile overlay */}
         {mobileOpen && (
           <div
@@ -203,16 +219,28 @@ export default function DashboardShell(props: Props) {
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           {/* Logo */}
-          <div className="flex h-40 shrink-0 items-center border-b border-gray-100 px-4">
-            <Image
-              src="/logo.png"
-              alt="RevendaClick"
-              width={870}
-              height={592}
-              style={{ height: '144px', width: 'auto' }}
-              className="object-contain"
-              priority
-            />
+          <div className="flex h-20 shrink-0 items-center border-b border-gray-100 px-4">
+            {tenantLogoUrl ? (
+              <Image
+                src={tenantLogoUrl}
+                alt={tenantName}
+                width={200}
+                height={80}
+                style={{ height: '52px', width: 'auto', maxWidth: '176px' }}
+                className="object-contain"
+                priority
+              />
+            ) : (
+              <Image
+                src="/logo.png"
+                alt="RevendaClick"
+                width={870}
+                height={592}
+                style={{ height: '52px', width: 'auto' }}
+                className="object-contain"
+                priority
+              />
+            )}
           </div>
 
           {/* Store identity */}
@@ -307,8 +335,13 @@ export default function DashboardShell(props: Props) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
-            <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
-              style={{ height: '96px', width: 'auto' }} className="object-contain" />
+            {tenantLogoUrl ? (
+              <Image src={tenantLogoUrl} alt={tenantName} width={200} height={80}
+                style={{ height: '40px', width: 'auto', maxWidth: '140px' }} className="object-contain" />
+            ) : (
+              <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
+                style={{ height: '40px', width: 'auto' }} className="object-contain" />
+            )}
           </header>
 
           {/* Desktop topbar */}
@@ -319,7 +352,7 @@ export default function DashboardShell(props: Props) {
                 href={`/${tenantSlug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
               >
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

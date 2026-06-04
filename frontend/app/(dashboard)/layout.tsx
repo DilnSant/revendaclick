@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantForUser, getTenantById, getUsageFromAPI } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import { getSubscription } from '@/lib/billing'
 import PlanAlertBanner from '@/components/ui/PlanAlertBanner'
@@ -26,6 +26,8 @@ export default async function DashboardLayout({ children }: Props) {
 
   const tenant = await getTenantForUser(uid)
   if (!tenant) redirect('/onboarding')
+
+  const fullTenant = await getTenantById(tenant.id)
 
   // Resolve access token — non-fatal so a Supabase hiccup won't crash the layout
   let token = ''
@@ -58,6 +60,8 @@ export default async function DashboardLayout({ children }: Props) {
       planDisplay={usage?.plan_display ?? ''}
       subscriptionStatus={sub?.status}
       planFeatures={usage ?? undefined}
+      tenantLogoUrl={fullTenant?.logo_url ?? null}
+      tenantColor={fullTenant?.theme?.primary_color ?? null}
     >
       <SubscriptionBanner sub={sub} />
       {usage && <PlanAlertBanner usage={usage} />}
