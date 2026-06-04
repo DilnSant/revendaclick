@@ -78,7 +78,7 @@ export default function PlansGrid({ plans, subscription }: Props) {
           </p>
         </div>
         <a
-          href="https://wa.me/5511999999999?text=Ol%C3%A1%2C%20tenho%20interesse%20em%20uma%20solu%C3%A7%C3%A3o%20Enterprise%20para%20o%20RevendaClick."
+          href={`https://wa.me/5548988482877?text=${encodeURIComponent('Olá! Gostaria de entender melhor qual plano do RevendaClick é mais indicado para minha loja.')}`}
           target="_blank"
           rel="noopener noreferrer"
           className="shrink-0 rounded-xl border-2 border-gray-900 px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-900 hover:text-white transition-all"

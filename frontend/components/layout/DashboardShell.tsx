@@ -214,12 +214,12 @@ export default function DashboardShell(props: Props) {
 
         {/* Sidebar */}
         <aside className={`
-          fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-white border-r border-gray-100 shadow-sm
-          transition-transform duration-200 ease-in-out lg:translate-x-0 lg:shadow-none
+          fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-[#1F2937] border-r border-white/10
+          transition-transform duration-200 ease-in-out lg:translate-x-0
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           {/* Logo */}
-          <div className="flex h-24 shrink-0 items-center border-b border-gray-100 px-4">
+          <div className="flex h-24 shrink-0 items-center border-b border-white/10 px-4">
             {tenantLogoUrl ? (
               <Image
                 src={tenantLogoUrl}
@@ -244,11 +244,11 @@ export default function DashboardShell(props: Props) {
           </div>
 
           {/* Store identity */}
-          <div className="border-b border-gray-50 px-4 py-3">
+          <div className="border-b border-white/10 px-4 py-3">
             <p className="text-xs text-gray-400">Loja</p>
-            <p className="truncate text-sm font-medium text-gray-800">{tenantName}</p>
+            <p className="truncate text-sm font-medium text-white">{tenantName}</p>
             {planDisplay && (
-              <span className="mt-0.5 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              <span className="mt-0.5 inline-block rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
                 {planDisplay}
               </span>
             )}
@@ -263,14 +263,14 @@ export default function DashboardShell(props: Props) {
             {/* Pro+ — Atendimento + Analytics */}
             {features.has_crm ? (
               <div>
-                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
                   Pro
                 </p>
                 <NavGroup items={NAV_PRO} pathname={pathname} />
               </div>
             ) : (
-              <div className="mx-1 rounded-xl border border-dashed border-gray-200 bg-gray-50/80 px-3 py-3">
-                <p className="text-xs font-medium text-gray-500">Desbloqueie com Pro</p>
+              <div className="mx-1 rounded-xl border border-dashed border-white/20 bg-white/5 px-3 py-3">
+                <p className="text-xs font-medium text-gray-300">Desbloqueie com Pro</p>
                 <p className="mt-0.5 text-[11px] text-gray-400 leading-snug">
                   Atendimento, Analytics e mais
                 </p>
@@ -286,7 +286,7 @@ export default function DashboardShell(props: Props) {
             {/* Premium — Automações + Campanhas */}
             {features.has_automation && (
               <div>
-                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-gray-500">
                   Premium
                 </p>
                 <NavGroup items={NAV_PREMIUM} pathname={pathname} />
@@ -326,10 +326,10 @@ export default function DashboardShell(props: Props) {
         {/* Main area */}
         <div className="lg:pl-64 flex flex-col min-h-screen">
           {/* Mobile topbar */}
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-gray-100 bg-white/95 backdrop-blur px-4 lg:hidden">
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-white/10 bg-[#1F2937] px-4 lg:hidden">
             <button
               onClick={() => setMobileOpen(true)}
-              className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 transition-colors"
+              className="rounded-lg p-1.5 text-gray-300 hover:bg-white/10 transition-colors"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -345,7 +345,7 @@ export default function DashboardShell(props: Props) {
           </header>
 
           {/* Desktop topbar */}
-          <header className="hidden lg:flex h-14 items-center justify-between border-b border-gray-100 bg-white/95 backdrop-blur px-6 sticky top-0 z-10">
+          <header className="hidden lg:flex h-14 items-center justify-between border-b border-white/10 bg-[#1F2937] px-6 sticky top-0 z-10">
             <Breadcrumbs pathname={pathname} />
             <div className="flex items-center gap-3">
               <a
@@ -359,7 +359,7 @@ export default function DashboardShell(props: Props) {
                 </svg>
                 Ver loja
               </a>
-              <span className="text-xs text-gray-400">{userEmail}</span>
+              <span className="text-xs text-gray-400 hidden xl:block">{userEmail}</span>
             </div>
           </header>
 
@@ -397,10 +397,10 @@ function NavItem({
       href={href}
       className={`
         flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors
-        ${active ? 'bg-primary/10 text-primary' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+        ${active ? 'bg-primary/20 text-primary' : 'text-gray-300 hover:bg-white/10 hover:text-white'}
       `}
     >
-      <span className={active ? 'text-primary' : 'text-gray-400'}>
+      <span className={active ? 'text-primary' : 'text-gray-500'}>
         {icon}
       </span>
       {label}
@@ -429,7 +429,7 @@ function UserFooter(props: { userEmail: string; tenantSlug: string }) {
   }
 
   return (
-    <div className="relative border-t border-gray-100 p-3">
+    <div className="relative border-t border-white/10 p-3">
       {open && (
         <div className="absolute bottom-full left-3 right-3 mb-1 rounded-xl border border-gray-100 bg-white shadow-lg">
           <div className="border-b border-gray-50 px-3 py-2.5">
@@ -463,13 +463,13 @@ function UserFooter(props: { userEmail: string; tenantSlug: string }) {
 
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center gap-2.5 rounded-lg p-2 text-left hover:bg-gray-50 transition-colors"
+        className="flex w-full items-center gap-2.5 rounded-lg p-2 text-left hover:bg-white/10 transition-colors"
       >
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xs font-medium text-gray-800">{userEmail}</p>
+          <p className="truncate text-xs font-medium text-white">{userEmail}</p>
         </div>
         <svg
           className={`h-4 w-4 shrink-0 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`}
@@ -514,8 +514,8 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
         const label = ROUTE_LABELS[part] ?? part
         return (
           <span key={i} className="flex items-center gap-1.5">
-            {i > 0 && <span className="text-gray-300">/</span>}
-            <span className={isLast ? 'font-medium text-gray-900' : 'text-gray-400'}>
+            {i > 0 && <span className="text-gray-600">/</span>}
+            <span className={isLast ? 'font-medium text-white' : 'text-gray-400'}>
               {label}
             </span>
           </span>

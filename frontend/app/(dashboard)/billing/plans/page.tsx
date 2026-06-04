@@ -73,76 +73,17 @@ export default async function PlansPage() {
         />
       )}
 
-      {/* Full comparison table — 3 public plans */}
+      {/* Benefit-focused comparison — 3 plan cards */}
       {publicPlans.length > 0 && (
-        <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
-          <div className="border-b border-gray-100 px-6 py-4">
+        <div className="space-y-4">
+          <div className="px-1">
             <h3 className="text-sm font-semibold text-gray-900">O que cada plano inclui</h3>
+            <p className="mt-0.5 text-xs text-gray-400">Escolha o plano certo para o momento da sua revenda.</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/60">
-                  <th className="py-3 pl-6 pr-4 text-left text-xs font-medium text-gray-500 w-52">
-                    Recurso
-                  </th>
-                  {publicPlans.map((p) => (
-                    <th
-                      key={p.id}
-                      className={`py-3 px-4 text-center text-xs font-semibold ${
-                        p.name === 'pro' ? 'text-primary' : 'text-gray-700'
-                      }`}
-                    >
-                      {p.display_name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                <SectionRow label="CAPACIDADE" colSpan={publicPlans.length + 1} />
-                <ValueRow
-                  label="Veículos anunciados"
-                  values={publicPlans.map((p) => fmtLimit(p.max_vehicles))}
-                  plans={publicPlans}
-                />
-                <ValueRow
-                  label="Usuários da equipe"
-                  values={publicPlans.map((p) => fmtLimit(p.max_users))}
-                  plans={publicPlans}
-                />
-                <ValueRow
-                  label="Leads recebidos / mês"
-                  values={publicPlans.map((p) => fmtLimit(p.max_leads))}
-                  plans={publicPlans}
-                />
-
-                <SectionRow label="VITRINE ONLINE" colSpan={publicPlans.length + 1} />
-                <BoolRow label="Vitrine pública de veículos" feat="marketplace" plans={publicPlans} />
-                <BoolRow label="Botão WhatsApp na vitrine" feat="whatsapp_button" plans={publicPlans} />
-                <BoolRow label="Captura automática de leads" feat="lead_capture" plans={publicPlans} />
-                <BoolRow label="Aparece no Google (SEO)" feat="marketplace" plans={publicPlans} />
-
-                <SectionRow label="GESTÃO DA REVENDA" colSpan={publicPlans.length + 1} />
-                <BoolRow label="Controle financeiro" feat="financial" plans={publicPlans} />
-                <BoolRow label="Equipe de vendedores" feat="vendors" plans={publicPlans} />
-                <BoolRow label="CRM de atendimento" feat="crm" plans={publicPlans} />
-                <BoolRow label="Pipeline visual de leads" feat="kanban" plans={publicPlans} />
-                <BoolRow label="Relatórios e Analytics" feat="analytics" plans={publicPlans} />
-
-                <SectionRow label="WHATSAPP & AUTOMAÇÃO" colSpan={publicPlans.length + 1} />
-                <BoolRow label="WhatsApp conectado (QR Code)" feat="whatsapp_qr" plans={publicPlans} />
-                <BoolRow label="Follow-up automatizado" feat="automation" plans={publicPlans} />
-                <BoolRow label="Campanhas de reativação" feat="campaigns" plans={publicPlans} />
-
-                <SectionRow label="INTELIGÊNCIA ARTIFICIAL" colSpan={publicPlans.length + 1} />
-                <BoolRow label="IA que sugere respostas" feat="ai_assistance" plans={publicPlans} />
-                <BoolRow label="IA que recupera leads perdidos" feat="lead_recovery" plans={publicPlans} />
-
-                <SectionRow label="RECURSOS AVANÇADOS" colSpan={publicPlans.length + 1} />
-                <BoolRow label="Integração via API REST" feat="api_access" plans={publicPlans} />
-                <BoolRow label="Marca própria (White-label)" feat="white_label" plans={publicPlans} />
-              </tbody>
-            </table>
+          <div className="grid gap-6 md:grid-cols-3">
+            {publicPlans.map((p) => (
+              <PlanBenefitsCard key={p.id} plan={p} />
+            ))}
           </div>
         </div>
       )}
@@ -150,61 +91,91 @@ export default async function PlansPage() {
   )
 }
 
-function fmtLimit(n: number): string {
-  return n === -1 ? 'Ilimitado' : String(n)
+const PLAN_BENEFITS: Record<string, { tagline: string; includes?: string; benefits: string[] }> = {
+  starter: {
+    tagline: 'Ideal para começar sua revenda online.',
+    benefits: [
+      'Sua vitrine online de veículos',
+      'Página pública para divulgação',
+      'Recebimento automático de interessados',
+      'WhatsApp direto na vitrine',
+      'Controle financeiro básico',
+      'Gestão da equipe',
+    ],
+  },
+  pro: {
+    tagline: 'Ideal para lojas que recebem contatos diariamente.',
+    includes: 'Tudo do Starter, mais:',
+    benefits: [
+      'CRM para organizar atendimentos',
+      'Pipeline visual de oportunidades',
+      'Histórico completo dos contatos',
+      'Relatórios para acompanhar resultados',
+      'Gestão mais profissional da operação',
+    ],
+  },
+  premium: {
+    tagline: 'Ideal para lojas que querem automatizar e escalar vendas.',
+    includes: 'Tudo do Pro, mais:',
+    benefits: [
+      'WhatsApp conectado ao CRM',
+      'Automação de follow-up',
+      'Campanhas de recuperação de clientes',
+      'Inteligência artificial para atendimento',
+      'IA para recuperar oportunidades perdidas',
+      'Operação preparada para crescimento',
+    ],
+  },
 }
 
-function SectionRow({ label, colSpan }: { label: string; colSpan: number }) {
-  return (
-    <tr className="bg-gray-50/70">
-      <td
-        colSpan={colSpan}
-        className="py-2 pl-6 text-[10px] font-semibold uppercase tracking-wider text-gray-400"
-      >
-        {label}
-      </td>
-    </tr>
-  )
-}
+function PlanBenefitsCard({ plan }: { plan: Plan }) {
+  const info = PLAN_BENEFITS[plan.name]
+  const isPro = plan.name === 'pro'
 
-function ValueRow({ label, values, plans }: { label: string; values: string[]; plans: Plan[] }) {
   return (
-    <tr className="hover:bg-gray-50/50">
-      <td className="py-2.5 pl-6 pr-4 text-xs text-gray-600">{label}</td>
-      {values.map((v, i) => (
-        <td
-          key={i}
-          className={`py-2.5 px-4 text-center text-xs font-medium text-gray-700 ${
-            plans[i]?.name === 'pro' ? 'bg-primary/[0.02]' : ''
-          }`}
-        >
-          {v}
-        </td>
-      ))}
-    </tr>
-  )
-}
+    <div className={`flex flex-col rounded-2xl border overflow-hidden ${
+      isPro ? 'border-primary shadow-sm' : 'border-gray-200 bg-white'
+    }`}>
+      {/* Header */}
+      <div className={`px-6 py-5 ${isPro ? 'bg-primary/[0.03] border-b border-primary/10' : 'border-b border-gray-100'}`}>
+        <p className={`text-xs font-bold uppercase tracking-wider mb-1.5 ${isPro ? 'text-primary' : 'text-gray-400'}`}>
+          {plan.display_name}
+        </p>
+        <p className="text-sm text-gray-600 leading-snug">{info?.tagline ?? ''}</p>
+      </div>
 
-function BoolRow({ label, feat, plans }: { label: string; feat: string; plans: Plan[] }) {
-  return (
-    <tr className="hover:bg-gray-50/50">
-      <td className="py-2.5 pl-6 pr-4 text-xs text-gray-600">{label}</td>
-      {plans.map((p) => (
-        <td
-          key={p.id}
-          className={`py-2.5 px-4 text-center ${p.name === 'pro' ? 'bg-primary/[0.02]' : ''}`}
-        >
-          {p.features.includes(feat) ? (
-            <span className="inline-flex items-center justify-center">
-              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+      {/* Benefits */}
+      <div className="px-6 py-5 flex-1 bg-white">
+        {info?.includes && (
+          <p className="mb-3 text-xs font-semibold text-gray-400 uppercase tracking-wide">{info.includes}</p>
+        )}
+        <ul className="space-y-2.5">
+          {info?.benefits.map((b, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+              <svg className="mt-0.5 h-4 w-4 shrink-0 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
-            </span>
-          ) : (
-            <span className="text-gray-300 text-sm">—</span>
-          )}
-        </td>
-      ))}
-    </tr>
+              {b}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Capacity */}
+      <div className="border-t border-gray-100 bg-gray-50/70 px-6 py-4">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400">Capacidade</p>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <span className="text-xs text-gray-500">
+            <span className="font-semibold text-gray-800">{plan.max_vehicles}</span> veículos
+          </span>
+          <span className="text-xs text-gray-500">
+            <span className="font-semibold text-gray-800">{plan.max_users}</span> usuários
+          </span>
+          <span className="text-xs text-gray-500">
+            <span className="font-semibold text-gray-800">{plan.max_leads === -1 ? '∞' : plan.max_leads}</span> leads/mês
+          </span>
+        </div>
+      </div>
+    </div>
   )
 }
