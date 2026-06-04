@@ -219,14 +219,14 @@ export default function DashboardShell(props: Props) {
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           {/* Logo */}
-          <div className="flex h-20 shrink-0 items-center border-b border-gray-100 px-4">
+          <div className="flex h-24 shrink-0 items-center border-b border-gray-100 px-4">
             {tenantLogoUrl ? (
               <Image
                 src={tenantLogoUrl}
                 alt={tenantName}
                 width={200}
                 height={80}
-                style={{ height: '52px', width: 'auto', maxWidth: '176px' }}
+                style={{ height: '80px', width: 'auto', maxWidth: '176px' }}
                 className="object-contain"
                 priority
               />
@@ -236,7 +236,7 @@ export default function DashboardShell(props: Props) {
                 alt="RevendaClick"
                 width={870}
                 height={592}
-                style={{ height: '52px', width: 'auto' }}
+                style={{ height: '80px', width: 'auto' }}
                 className="object-contain"
                 priority
               />
@@ -337,10 +337,10 @@ export default function DashboardShell(props: Props) {
             </button>
             {tenantLogoUrl ? (
               <Image src={tenantLogoUrl} alt={tenantName} width={200} height={80}
-                style={{ height: '40px', width: 'auto', maxWidth: '140px' }} className="object-contain" />
+                style={{ height: '48px', width: 'auto', maxWidth: '140px' }} className="object-contain" />
             ) : (
               <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
-                style={{ height: '40px', width: 'auto' }} className="object-contain" />
+                style={{ height: '48px', width: 'auto' }} className="object-contain" />
             )}
           </header>
 
