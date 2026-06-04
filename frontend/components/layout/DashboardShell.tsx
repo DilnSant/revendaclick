@@ -214,32 +214,36 @@ export default function DashboardShell(props: Props) {
 
         {/* Sidebar */}
         <aside className={`
-          fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-[#1F2937] border-r border-white/10
+          fixed inset-y-0 left-0 z-30 w-64 flex flex-col bg-gray-900 border-r border-white/[0.07]
           transition-transform duration-200 ease-in-out lg:translate-x-0
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           {/* Logo */}
           <div className="flex h-24 shrink-0 items-center border-b border-white/10 px-4">
             {tenantLogoUrl ? (
-              <Image
-                src={tenantLogoUrl}
-                alt={tenantName}
-                width={200}
-                height={80}
-                style={{ height: '80px', width: 'auto', maxWidth: '176px' }}
-                className="object-contain"
-                priority
-              />
+              <div className="shrink-0 rounded-xl border border-primary/30 p-1.5 bg-white/[0.04]">
+                <Image
+                  src={tenantLogoUrl}
+                  alt={tenantName}
+                  width={200}
+                  height={64}
+                  style={{ height: '64px', width: 'auto', maxWidth: '160px' }}
+                  className="object-contain"
+                  priority
+                />
+              </div>
             ) : (
-              <Image
-                src="/logo.png"
-                alt="RevendaClick"
-                width={870}
-                height={592}
-                style={{ height: '80px', width: 'auto' }}
-                className="object-contain"
-                priority
-              />
+              <div className="shrink-0 rounded-xl border border-primary/30 p-1.5 bg-white/[0.04]">
+                <Image
+                  src="/logo.png"
+                  alt="RevendaClick"
+                  width={870}
+                  height={592}
+                  style={{ height: '64px', width: 'auto' }}
+                  className="object-contain"
+                  priority
+                />
+              </div>
             )}
           </div>
 
@@ -313,7 +317,7 @@ export default function DashboardShell(props: Props) {
         {/* Main area */}
         <div className="lg:pl-64 flex flex-col min-h-screen">
           {/* Mobile topbar */}
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-white/10 bg-[#1F2937] px-4 lg:hidden">
+          <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-white/10 bg-gray-900/90 backdrop-blur px-4 lg:hidden">
             <button
               onClick={() => setMobileOpen(true)}
               className="rounded-lg p-1.5 text-gray-300 hover:bg-white/10 transition-colors"
@@ -323,16 +327,20 @@ export default function DashboardShell(props: Props) {
               </svg>
             </button>
             {tenantLogoUrl ? (
-              <Image src={tenantLogoUrl} alt={tenantName} width={200} height={80}
-                style={{ height: '48px', width: 'auto', maxWidth: '140px' }} className="object-contain" />
+              <div className="shrink-0 rounded-lg border border-primary/30 p-1 bg-white/[0.04]">
+                <Image src={tenantLogoUrl} alt={tenantName} width={200} height={40}
+                  style={{ height: '40px', width: 'auto', maxWidth: '120px' }} className="object-contain" />
+              </div>
             ) : (
-              <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
-                style={{ height: '48px', width: 'auto' }} className="object-contain" />
+              <div className="shrink-0 rounded-lg border border-primary/30 p-1 bg-white/[0.04]">
+                <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
+                  style={{ height: '40px', width: 'auto' }} className="object-contain" />
+              </div>
             )}
           </header>
 
           {/* Desktop topbar */}
-          <header className="hidden lg:flex h-14 items-center justify-between border-b border-white/10 bg-[#1F2937] px-6 sticky top-0 z-10">
+          <header className="hidden lg:flex h-14 items-center justify-between border-b border-white/10 bg-gray-900/90 backdrop-blur px-6 sticky top-0 z-10">
             <Breadcrumbs pathname={pathname} />
             <div className="flex items-center gap-3">
               <a
