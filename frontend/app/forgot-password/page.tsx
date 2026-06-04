@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState, useTransition } from 'react'
 import { createClient } from '@/lib/supabaseClient'
 
@@ -34,8 +35,9 @@ export default function ForgotPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-600 text-xl font-bold text-white">
-            RC
+          <div className="flex justify-center mb-4">
+            <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
+              style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
           </div>
           <h1 className="text-xl font-bold text-gray-900">Recuperar senha</h1>
           <p className="mt-1 text-sm text-gray-500">

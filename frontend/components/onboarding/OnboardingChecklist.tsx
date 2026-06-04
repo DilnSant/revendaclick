@@ -30,14 +30,14 @@ const STEPS = [
     key: 'added_vehicle' as const,
     label: 'Cadastrar primeiro veículo',
     description: 'Adicione um veículo ao seu estoque',
-    href: '/vehicles/new',
+    href: '/vehicles',
     alwaysDone: false,
   },
   {
     key: 'published_store' as const,
     label: 'Publicar vitrine',
     description: 'Configure o contato público e publique sua loja',
-    href: '/settings?tab=contato-publico',
+    href: '/settings?tab=contact',
     alwaysDone: false,
   },
   {

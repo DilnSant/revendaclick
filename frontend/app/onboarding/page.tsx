@@ -1,9 +1,23 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { createClient } from '@/lib/supabaseClient'
 import { setupTenant } from './actions'
+
+function friendlyError(code: string, message: string): string {
+  if (code === 'slug_taken' || message.toLowerCase().includes('slug')) {
+    return 'Este endereço já está em uso. Tente um nome diferente para sua loja.'
+  }
+  if (code === 'unauthorized') {
+    return 'Sessão expirada. Faça login novamente.'
+  }
+  if (code === 'validation_error' || code === 'invalid_input') {
+    return 'Verifique os dados informados e tente novamente.'
+  }
+  return 'Erro ao criar loja. Tente novamente.'
+}
 
 function slugify(text: string): string {
   return text
@@ -30,6 +44,20 @@ export default function OnboardingPage() {
     user_name: '',
   })
 
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return
+      const name = (data.user.user_metadata?.full_name as string | undefined) ?? ''
+      const email = data.user.email ?? ''
+      setForm(f => ({
+        ...f,
+        user_name:    f.user_name    || name,
+        tenant_email: f.tenant_email || email,
+      }))
+    })
+  }, [])
+
   function handleNameChange(v: string) {
     setForm(f => ({
       ...f,
@@ -53,15 +81,14 @@ export default function OnboardingPage() {
         })
 
         if (result.error) {
-          setError(`${result.error.code}: ${result.error.message}`)
+          setError(friendlyError(result.error.code, result.error.message))
           return
         }
 
         router.push('/dashboard')
         router.refresh()
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        setError(`Erro inesperado: ${msg}`)
+      } catch {
+        setError('Erro ao criar loja. Tente novamente.')
       }
     })
   }
@@ -77,7 +104,7 @@ export default function OnboardingPage() {
               alt="RevendaClick"
               width={870}
               height={592}
-              style={{ height: '280px', width: 'auto' }}
+              style={{ height: '80px', width: 'auto' }}
               className="object-contain"
               priority
             />
@@ -148,7 +175,7 @@ export default function OnboardingPage() {
                 value={form.tenant_email}
                 onChange={e => setForm(f => ({ ...f, tenant_email: e.target.value }))}
                 required
-                placeholder="contato@sujarevenda.com.br"
+                placeholder="contato@suarevenda.com.br"
                 className="input"
               />
             </div>

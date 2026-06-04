@@ -68,7 +68,7 @@ export default function RegisterPage() {
         <div className="w-full max-w-md text-center space-y-4">
           <div className="flex justify-center mb-6">
             <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
-              style={{ height: '180px', width: 'auto' }} className="object-contain" priority />
+              style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
           </div>
           <div className="rounded-xl border border-green-200 bg-green-50 p-6 shadow-sm">
             <div className="text-4xl mb-3">📧</div>
@@ -80,14 +80,17 @@ export default function RegisterPage() {
             <p className="text-sm text-gray-500 mt-2">
               Clique no link para ativar sua conta e configurar sua loja.
             </p>
+            <p className="mt-3 text-xs text-gray-400">
+              Não encontrou? Verifique também a pasta de <strong>spam</strong> ou <strong>promoções</strong>.
+            </p>
           </div>
           <p className="text-xs text-gray-400">
-            Não recebeu?{' '}
+            Enviou para o email errado?{' '}
             <button
               onClick={() => setDone(false)}
               className="text-red-600 underline hover:text-red-700"
             >
-              Tentar novamente
+              Usar outro email
             </button>
           </p>
         </div>
@@ -102,7 +105,7 @@ export default function RegisterPage() {
         <div className="text-center">
           <div className="flex justify-center mb-5">
             <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
-              style={{ height: '280px', width: 'auto' }} className="object-contain" priority />
+              style={{ height: '80px', width: 'auto' }} className="object-contain" priority />
           </div>
           <h1 className="text-2xl font-heading font-bold text-graphite">Crie sua conta grátis</h1>
           <p className="mt-1.5 text-sm text-gray-500">Teste por 30 dias sem cartão de crédito.</p>
