@@ -1,6 +1,6 @@
 # Sidebar — Snapshot Atual
 
-> Última atualização: 2026-06-03 (sessão 37 — gate Premium corrigido: has_api_access → has_automation)
+> Última atualização: 2026-06-04 (sessão 40 — dark theme: bg-gray-900, topbars backdrop-blur, logo border)
 > Implementado em: `frontend/components/layout/DashboardShell.tsx`
 > Decisão técnica: D28 em `21_DECISOES_TECNICAS.md`
 
@@ -83,6 +83,24 @@ Componente: `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx`
 
 ---
 
+## Tema Visual (sessão 40)
+
+| Elemento | Classe Tailwind | Valor |
+|---|---|---|
+| Sidebar background | `bg-gray-900` | `#111827` |
+| Sidebar border | `border-white/[0.07]` | branco 7% opacidade |
+| Mobile topbar | `bg-gray-900/90 backdrop-blur` | 90% + blur |
+| Desktop topbar | `bg-gray-900/90 backdrop-blur` | 90% + blur |
+| Logo container (sidebar) | `border border-primary/30 rounded-xl p-1.5 bg-white/[0.04]` | frame elegante |
+| Logo container (mobile) | `border border-primary/30 rounded-lg p-1 bg-white/[0.04]` | frame menor |
+| Logo height sidebar | `64px` | reduzido para caber no frame |
+| Logo height mobile | `40px` | reduzido para caber no frame |
+| Nav item ativo | `bg-primary/20 text-primary` | cor da loja (via --primary) |
+| Nav item hover | `hover:bg-white/10 hover:text-white` | efeito discreto |
+| User footer border | `border-white/10` | separador sutil |
+
+---
+
 ## Regras de Implementação
 
 1. **Nunca usar `plan_name` para gate de acesso** — usar feature flags
@@ -90,3 +108,4 @@ Componente: `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx`
 3. **Vendedores não está mais no nav** — acessível via Configurações → Usuários → "Vendedores →"
 4. **WhatsApp não está mais no nav** — acessível via Configurações → aba WhatsApp
 5. **Central de Atendimento** — requer add-on `whatsapp_automation` (`has_central_atendimento`)
+6. **Dark theme** — sidebar/topbars sempre escuros independente do tema do tenant; apenas cor primária varia

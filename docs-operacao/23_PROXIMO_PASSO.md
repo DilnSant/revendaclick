@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 04/06/2026 (sessão 39 — auditoria UX fluxo ativação lojista)
+> Atualizado em: 04/06/2026 (sessão 40 — nav dark theme + auditoria completa fluxo Landing→Lead)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -96,6 +96,8 @@
 | **Auth audit — 6 fluxos (sessão 38)** | ✓ AUTH APROVADO | Email confirmation ON; password "No requirements"; login "Email not confirmed" msg corrigida |
 | **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto /register; logo tipográfico; subtítulo e benefícios atualizados |
 | **UX ativação lojista (sessão 39)** | ✓ 9 problemas corrigidos | /vehicles/new→/vehicles; tab=contact; pré-fill; erros amigáveis; logo 80px; spam — commit `ee85f9c` |
+| **Navegação dark theme (sessão 40)** | ✓ Sidebar `bg-gray-900`; topbars `bg-gray-900/90 backdrop-blur`; logo com frame `border-primary/30` — commit `cb03ab2` |
+| **Auditoria branding fluxo Landing→Lead (sessão 40)** | ✓ 3 correções: focus ring onboarding; bg-primary/8→/10; --primary em vehicle detail — commit `1dc7460` |
 
 ---
 
@@ -216,8 +218,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **35 falhas documentadas (FC001–FC035)**.
-Próximo número disponível: **FC036**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **36 falhas documentadas (FC001–FC036)**.
+Próximo número disponível: **FC037**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

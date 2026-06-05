@@ -75,8 +75,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 35 (FC001–FC035) |
-| Próxima FC | **FC036** |
+| Total documentadas | 36 (FC001–FC036) |
+| Próxima FC | **FC037** |
 
 ## Landing Page — CONGELADA (sessão 31)
 

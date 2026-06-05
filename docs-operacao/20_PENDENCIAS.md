@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 04/06/2026 (sessão 39 — auditoria UX fluxo ativação lojista)
+> Atualizado em: 04/06/2026 (sessão 40 — nav dark theme + auditoria completa fluxo Landing→Lead)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -90,6 +90,8 @@
 | CONCLUÍDA | Landing page — hero reformulado (sessão 38) | — | Formulário → CTA direto /register; logo tipográfico; copy novo; fluxo de leads backend inalterado |
 | CONCLUÍDA | Auth — auditoria e correções (sessão 38) | — | FC035 forgot-password appUrl; login "Email not confirmed" msg; email confirmation ON; password "No requirements"; AUTH APROVADO |
 | CONCLUÍDA | UX ativação lojista (sessão 39) | — | 9 problemas corrigidos no fluxo cadastro→onboarding: /vehicles/new→/vehicles; tab=contact; pré-fill; erros amigáveis; logo 80px; aviso spam — commit `ee85f9c` |
+| CONCLUÍDA | Navegação dark theme (sessão 40) | — | Sidebar `bg-gray-900`; topbars `bg-gray-900/90 backdrop-blur`; logo sidebar/mobile com frame `border-primary/30` — commit `cb03ab2` |
+| CONCLUÍDA | Auditoria branding fluxo Landing→Lead (sessão 40) | — | 3 correções: focus ring onboarding; bg-primary/8→/10; `--primary` em vehicle detail — commit `1dc7460` |
 | CONCLUÍDA | Admin leads — pipeline comercial (sessão 31) | — | Filtros, paginação, status 5-estados, alerta 4h, notas, próxima ação, último contato |
 | CONCLUÍDA | Módulo Veículos | — | CRUD + vitrine pública SEO |
 | CONCLUÍDA | Módulo Clientes | — | CRUD |

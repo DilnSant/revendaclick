@@ -2,15 +2,15 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 03/06/2026 (sessão 38 — auditoria auth APROVADO + otimização hero landing page)
+> Última atualização: 04/06/2026 (sessão 40 — nav visual refinement + auditoria completa fluxo Landing→Lead)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
 | Módulo / Feature | Status | Observações |
 |---|---|---|
-| **Auth / Onboarding** | ✓ Produção | Hybrid session+service role; checklist v2; triggers automáticos; email confirmation ON; password "No requirements" min 8; forgot-password appUrl fix FC035 (sessão 38) |
-| **Dashboard** | ✓ Produção | KPIs + OnboardingChecklist widget |
-| **Sidebar** | ✓ Refatorado (sessão 23) | Starter/Pro/Premium por feature flag — ver D28 |
+| **Auth / Onboarding** | ✓ Produção | Hybrid session+service role; checklist v2; triggers automáticos; email confirmation ON; password "No requirements" min 8; forgot-password appUrl fix FC035 (sessão 38); focus ring onboarding → `border-primary` (sessão 40) |
+| **Dashboard** | ✓ Produção | KPIs + OnboardingChecklist widget; `bg-primary/10` step highlight (sessão 40) |
+| **Sidebar** | ✓ Dark theme (sessão 40) | `bg-gray-900`; logo com frame `border-primary/30`; Starter/Pro/Premium por feature flag — ver D28 + SIDEBAR_SNAPSHOT |
 | **Veículos** | ✓ Produção | CRUD + vitrine pública SEO + filtros |
 | **Leads / CRM / Kanban** | ✓ Produção | Lista, kanban, atividades, follow-ups |
 | **Clientes** | ✓ Produção (Starter+) | Movido para base na sessão 23 |
@@ -59,6 +59,51 @@
 | **FC035 — forgot-password appUrl localhost** | ✓ Corrigido (sessão 38) | `window.location.origin` em vez de `localhost:3000`; links de recovery agora apontam para o domínio real |
 | **Auth audit (sessão 38)** | ✓ AUTH APROVADO | 6 fluxos validados; email confirmation ON; password "No requirements"; forgot-password + login "Email not confirmed" corrigidos |
 | **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto; logo tipográfico Revenda/Click; copy atualizado |
+
+---
+
+## 2026-06-04 (sessão 40) — Refinamento visual da navegação + auditoria completa fluxo Landing→Lead
+
+**Objetivo:** (1) Refinamento visual da sidebar e topbars. (2) Auditoria de branding no fluxo completo Landing → Cadastro → Login → Onboarding → Primeiro veículo → Primeira publicação → Primeiro lead.
+
+**Migrations aplicadas:** nenhuma
+
+**Arquivos alterados:**
+- `frontend/components/layout/DashboardShell.tsx` — sidebar `bg-gray-900`; topbars `bg-gray-900/90 backdrop-blur`; logo sidebar/mobile com frame `border-primary/30 rounded-xl p-1.5 bg-white/[0.04]`; logo sidebar 80px→64px, mobile 48px→40px
+- `frontend/app/onboarding/page.tsx` — focus ring campo slug: `border-red-600 ring-red-600` → `border-primary ring-primary`
+- `frontend/components/onboarding/OnboardingChecklist.tsx` — `bg-primary/8` → `bg-primary/10` (opacidade padrão Tailwind)
+- `frontend/app/(public)/[slug]/[vehicleSlug]/page.tsx` — injeção de `--primary` CSS var do tenant (gap crítico: CTA usava cor padrão da plataforma em vez da cor da loja)
+- `docs-operacao/features/SIDEBAR_SNAPSHOT.md` — atualizado com dark theme
+
+**Commits:**
+- `cb03ab2` — `feat(nav): refinamento visual da navegação — borda logo, sidebar e topbars`
+- `1dc7460` — `fix(branding): auditoria fluxo completo — 3 correções de cor primária`
+
+**Problemas corrigidos:**
+
+| # | Problema | Impacto | Correção |
+|---|---|---|---|
+| B1 | Focus ring campo slug hardcoded `red-600` | Visual — inconsistência com tema | `focus-within:border-primary ring-primary` |
+| B2 | `bg-primary/8` não-padrão Tailwind | Visual — pode não gerar CSS | `bg-primary/10` |
+| B3 | Página detalhe do veículo sem `--primary` var | CRÍTICO — CTA usava cor da plataforma, não da loja | Adicionado `hexToRgbChannels` + wrapper div com `style` |
+
+**Auditoria do fluxo completo:**
+
+| Etapa | Status | Observação |
+|---|---|---|
+| Landing | ✅ OK | NavBar + Hero com `text-primary` / `bg-primary` corretos |
+| Cadastro | ✅ OK | Dark bg, logo-dark.png, btn-primary |
+| Login | ✅ OK | Dark bg, logo-dark.png, text-primary links |
+| Onboarding (config loja) | ✅ OK após B1 | focus ring corrigido |
+| Dashboard | ✅ OK | KPIs, links primários, checklist |
+| Primeiro veículo | ✅ OK | btn-primary, text-primary preço, upgrade card |
+| Primeira publicação (loja pública) | ✅ OK | --primary injetado, filtros/CTA com cor da loja |
+| Detalhe do veículo / Primeiro lead | ✅ OK após B3 | --primary agora injetado corretamente |
+
+| Módulo / Feature | Status |
+|---|---|
+| **Navegação dark theme (sessão 40)** | ✓ Sidebar `bg-gray-900`; topbars `bg-gray-900/90 backdrop-blur`; logo com borda primária |
+| **Auditoria branding fluxo completo (sessão 40)** | ✓ 3 correções — commits `cb03ab2` + `1dc7460` |
 
 ---
 
