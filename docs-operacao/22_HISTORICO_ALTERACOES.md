@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 04/06/2026 (sessão 40 — nav visual refinement + auditoria completa fluxo Landing→Lead)
+> Última atualização: 05/06/2026 (sessão 41 — auditoria ativação lojista + 5 correções UX jornada primeiro acesso)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -59,6 +59,39 @@
 | **FC035 — forgot-password appUrl localhost** | ✓ Corrigido (sessão 38) | `window.location.origin` em vez de `localhost:3000`; links de recovery agora apontam para o domínio real |
 | **Auth audit (sessão 38)** | ✓ AUTH APROVADO | 6 fluxos validados; email confirmation ON; password "No requirements"; forgot-password + login "Email not confirmed" corrigidos |
 | **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto; logo tipográfico Revenda/Click; copy atualizado |
+| **Auditoria ativação lojista (sessão 41)** | ✓ ATIVAÇÃO APROVADA | 5 correções UX: checklist step 4 com CTA; step 3 copy; Termos href; leads empty state; CopyStoreLink — commit `d6307b2` |
+
+---
+
+## 2026-06-05 (sessão 41) — Auditoria de ativação do lojista — jornada primeiro acesso
+
+**Objetivo:** Auditar e corrigir o fluxo completo Landing → Cadastro → Login → Onboarding → Dashboard para o primeiro lojista. Foco em UX sem alterar arquitetura ou fluxos de negócio.
+
+**Migrations aplicadas:** nenhuma
+
+**Arquivos alterados:**
+- `frontend/components/onboarding/OnboardingChecklist.tsx` — step 3: description corrigida ("publique" → "aparecer na vitrine"); step 4: `href: null` → `href: '/leads'` + description orientada à ação
+- `frontend/app/onboarding/page.tsx` — `href="#"` (Termos de Uso) → `href="/terms"`
+- `frontend/app/(dashboard)/leads/page.tsx` — banner contextual quando `total === 0` com link da vitrine e orientação ao lojista
+- `frontend/app/(dashboard)/dashboard/page.tsx` — card do link da loja substituído por `CopyStoreLink`
+- `frontend/components/dashboard/CopyStoreLink.tsx` — **novo** — botão "Copiar" com feedback "✓ Copiado" (2s)
+
+**Problemas corrigidos:**
+
+| # | Problema | Impacto | Correção |
+|---|---|---|---|
+| P1 | Step 4 do checklist sem CTA (`href: null`) | CRÍTICO — lojista sem ação possível | `href: '/leads'` + botão "Fazer agora" |
+| P2 | "Termos de Uso" com `href="#"` | Alto — link morto, desconfiança | `href="/terms"` |
+| P3 | Leads vazio: "Sem leads" sem contexto | Alto — usuário não sabe o que fazer | Banner explicativo com link da vitrine |
+| P4 | Link da loja sem botão copiar | Médio — dificulta compartilhamento | `CopyStoreLink` client component |
+| P5 | Step 3 description: "publique sua loja" | Médio — expectativa de botão inexistente | Copy corrigido para ação real |
+
+**Auditoria de validação:**
+- TypeScript: ✓ limpo (0 erros)
+- Build frontend: ✓ sucesso
+- Rotas `/leads`, `/onboarding`, `/dashboard`, `/terms`: ✓ presentes
+
+**Commit:** `d6307b2`
 
 ---
 

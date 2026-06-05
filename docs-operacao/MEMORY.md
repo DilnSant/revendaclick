@@ -135,3 +135,5 @@ Financeiro sub-nav: Resumo (`/financial`) | Vendas (`/sales`) | Comissões (`/fi
 11. **Financeiro incorpora Vendas e Comissões** via sub-nav — não são módulos separados na sidebar
 12. **Assinatura incorpora Add-ons** via sub-nav — `/billing/addons` é acessado pelo BillingSubNav
 13. **Leaked Password Protection indisponível no Supabase Free** — requer upgrade para Supabase Pro (HaveIBeenPwned.org). Não é erro de implementação; sem correção necessária no RevendaClick.
+14. **CopyStoreLink é client component** — `frontend/components/dashboard/CopyStoreLink.tsx`. Importado pelo Server Component `dashboard/page.tsx`. Não tornar server component.
+15. **Checklist step 4 tem href** — `received_first_lead` aponta para `/leads` (corrigido sessão 41). Não reverter para `null`.

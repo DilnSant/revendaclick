@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 04/06/2026 (sessão 40 — nav dark theme + auditoria completa fluxo Landing→Lead)
+> Atualizado em: 05/06/2026 (sessão 41 — auditoria ativação lojista + 5 correções UX jornada primeiro acesso)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -98,6 +98,7 @@
 | **UX ativação lojista (sessão 39)** | ✓ 9 problemas corrigidos | /vehicles/new→/vehicles; tab=contact; pré-fill; erros amigáveis; logo 80px; spam — commit `ee85f9c` |
 | **Navegação dark theme (sessão 40)** | ✓ Sidebar `bg-gray-900`; topbars `bg-gray-900/90 backdrop-blur`; logo com frame `border-primary/30` — commit `cb03ab2` |
 | **Auditoria branding fluxo Landing→Lead (sessão 40)** | ✓ 3 correções: focus ring onboarding; bg-primary/8→/10; --primary em vehicle detail — commit `1dc7460` |
+| **Auditoria ativação lojista (sessão 41)** | ✓ ATIVAÇÃO APROVADA — 5 correções UX: checklist step 4 CTA `/leads`; step 3 copy; Termos `/terms`; leads empty state; CopyStoreLink — commit `d6307b2` |
 
 ---
 
