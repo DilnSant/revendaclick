@@ -219,15 +219,15 @@ export default function DashboardShell(props: Props) {
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
           {/* Logo */}
-          <div className="flex h-24 shrink-0 items-center border-b border-white/10 px-4">
+          <div className="flex h-36 shrink-0 items-center border-b border-white/10 px-4">
             {tenantLogoUrl ? (
               <div className="shrink-0 rounded-xl border border-primary/30 p-1.5 bg-white/[0.04]">
                 <Image
                   src={tenantLogoUrl}
                   alt={tenantName}
                   width={200}
-                  height={64}
-                  style={{ height: '64px', width: 'auto', maxWidth: '160px' }}
+                  height={110}
+                  style={{ height: '110px', width: 'auto', maxWidth: '200px' }}
                   className="object-contain"
                   priority
                 />
@@ -239,7 +239,7 @@ export default function DashboardShell(props: Props) {
                   alt="RevendaClick"
                   width={870}
                   height={592}
-                  style={{ height: '64px', width: 'auto' }}
+                  style={{ height: '110px', width: 'auto' }}
                   className="object-contain"
                   priority
                 />
@@ -317,7 +317,7 @@ export default function DashboardShell(props: Props) {
         {/* Main area */}
         <div className="lg:pl-64 flex flex-col min-h-screen">
           {/* Mobile topbar */}
-          <header className="sticky top-0 z-10 flex h-16 items-center gap-3 border-b border-white/10 bg-gray-900/90 backdrop-blur px-4 lg:hidden">
+          <header className="sticky top-0 z-10 flex h-20 items-center gap-3 border-b border-white/10 bg-gray-900/90 backdrop-blur px-4 lg:hidden">
             <button
               onClick={() => setMobileOpen(true)}
               className="rounded-lg p-1.5 text-gray-300 hover:bg-white/10 transition-colors"
@@ -328,13 +328,13 @@ export default function DashboardShell(props: Props) {
             </button>
             {tenantLogoUrl ? (
               <div className="shrink-0 rounded-lg border border-primary/30 p-1 bg-white/[0.04]">
-                <Image src={tenantLogoUrl} alt={tenantName} width={200} height={40}
-                  style={{ height: '40px', width: 'auto', maxWidth: '120px' }} className="object-contain" />
+                <Image src={tenantLogoUrl} alt={tenantName} width={200} height={56}
+                  style={{ height: '56px', width: 'auto', maxWidth: '160px' }} className="object-contain" />
               </div>
             ) : (
               <div className="shrink-0 rounded-lg border border-primary/30 p-1 bg-white/[0.04]">
                 <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
-                  style={{ height: '40px', width: 'auto' }} className="object-contain" />
+                  style={{ height: '56px', width: 'auto' }} className="object-contain" />
               </div>
             )}
           </header>
