@@ -80,6 +80,15 @@ func (c *asaasClient) createCustomer(name, email, phone, cpfCnpj, externalRef st
 	return &resp, nil
 }
 
+func (c *asaasClient) updateCustomer(customerID, name, email, phone, cpfCnpj string) error {
+	return c.do("PUT", "/customers/"+customerID, asaasCustomerReq{
+		Name:      name,
+		Email:     email,
+		Phone:     phone,
+		CPFOrCNPJ: cpfCnpj,
+	}, nil)
+}
+
 func (c *asaasClient) createSubscription(customerID string, value float64, cycle, billingType, description, externalRef string) (*asaasSubscriptionResp, error) {
 	// First payment due tomorrow (trial-first flow)
 	nextDue := time.Now().AddDate(0, 0, 1).Format("2006-01-02")

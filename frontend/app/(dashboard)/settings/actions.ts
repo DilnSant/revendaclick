@@ -34,6 +34,7 @@ async function apiCall<T>(method: string, path: string, body?: unknown): Promise
 export interface TenantUpdatePayload {
   name?: string
   phone_whatsapp?: string
+  cpf_cnpj?: string | null
   description?: string
   seo_title?: string
   seo_description?: string

@@ -50,11 +50,11 @@ func (r *Repository) GetSubscription(ctx context.Context, tenantID string) (*Sub
 	return s, err
 }
 
-func (r *Repository) GetAsaasCustomerID(ctx context.Context, tenantID string) (name, email, asaasID string, err error) {
+func (r *Repository) GetAsaasCustomerID(ctx context.Context, tenantID string) (name, email, asaasID, cpfCnpj string, err error) {
 	err = r.pool.QueryRow(ctx,
-		`SELECT name, email, COALESCE(asaas_customer_id, '') FROM tenants WHERE id = $1`,
+		`SELECT name, email, COALESCE(asaas_customer_id, ''), COALESCE(cpf_cnpj, '') FROM tenants WHERE id = $1`,
 		tenantID,
-	).Scan(&name, &email, &asaasID)
+	).Scan(&name, &email, &asaasID, &cpfCnpj)
 	return
 }
 

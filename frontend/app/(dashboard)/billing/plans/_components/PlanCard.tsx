@@ -9,6 +9,7 @@ interface Props {
   cycle: 'monthly' | 'yearly'
   currentPlanName?: string
   subscription?: Subscription | null
+  cpfCnpj?: string | null
 }
 
 type FeatureSection = { section: string; items: string[] }
@@ -58,10 +59,9 @@ const PLAN_BADGE: Record<string, { label: string; className: string } | undefine
   premium: { label: 'Melhor custo-benefício', className: 'bg-amber-500 text-white' },
 }
 
-export default function PlanCard({ plan, cycle, currentPlanName, subscription }: Props) {
+export default function PlanCard({ plan, cycle, currentPlanName, subscription, cpfCnpj }: Props) {
   const [billingType, setBillingType] = useState<'BOLETO' | 'PIX' | 'CREDIT_CARD'>('BOLETO')
   const [loading, setLoading]         = useState(false)
-  const [cpf, setCpf]                 = useState('')
   const [error, setError]             = useState<string | null>(null)
   const [success, setSuccess]         = useState<string | null>(null)
   const [devLoading, setDevLoading]   = useState(false)
@@ -112,7 +112,6 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
           plan_name:     plan.name,
           billing_cycle: cycle,
           billing_type:  billingType,
-          cpf_or_cnpj:   cpf || undefined,
         }),
       })
       const data = await res.json()
@@ -263,7 +262,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
             ))}
           </div>
 
-          {/* Billing type + CPF — only for new subscriptions */}
+          {/* Billing type — only for new subscriptions */}
           {!isActiveAndCurrent && !isUpgradeMode && (
             <div className="mt-5 space-y-2">
               <label className="text-xs font-medium text-gray-500">Forma de pagamento</label>
@@ -276,13 +275,21 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
                 <option value="PIX">PIX</option>
                 <option value="CREDIT_CARD">Cartão de crédito</option>
               </select>
-              <input
-                type="text"
-                placeholder="CPF ou CNPJ (opcional)"
-                value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
-                className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+            </div>
+          )}
+
+          {/* CPF/CNPJ gate — shown when absent and not already active */}
+          {!isActiveAndCurrent && !cpfCnpj && (
+            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 space-y-2">
+              <p className="text-xs font-semibold text-amber-900">
+                Para contratar um plano é necessário informar CPF ou CNPJ nos dados da empresa.
+              </p>
+              <a
+                href="/settings?tab=store"
+                className="inline-block rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition-colors"
+              >
+                Preencher agora
+              </a>
             </div>
           )}
 
@@ -306,7 +313,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription }:
                 ? handleUpgrade
                 : handleSubscribe
             }
-            disabled={isActiveAndCurrent || loading}
+            disabled={isActiveAndCurrent || loading || (!isActiveAndCurrent && !isUpgradeMode && !cpfCnpj)}
             className={`mt-5 w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
               isActiveAndCurrent
                 ? 'cursor-default border border-gray-200 bg-gray-50 text-gray-400'

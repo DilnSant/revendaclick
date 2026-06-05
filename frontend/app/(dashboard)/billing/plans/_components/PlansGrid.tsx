@@ -7,9 +7,10 @@ import PlanCard from './PlanCard'
 interface Props {
   plans: Plan[]
   subscription: Subscription | null
+  cpfCnpj: string | null
 }
 
-export default function PlansGrid({ plans, subscription }: Props) {
+export default function PlansGrid({ plans, subscription, cpfCnpj }: Props) {
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>(
     (subscription?.billing_cycle as 'monthly' | 'yearly') ?? 'monthly'
   )
@@ -64,6 +65,7 @@ export default function PlansGrid({ plans, subscription }: Props) {
             cycle={cycle}
             currentPlanName={subscription?.plan_name}
             subscription={subscription}
+            cpfCnpj={cpfCnpj}
           />
         ))}
       </div>

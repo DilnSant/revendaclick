@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantForUser, getTenantById } from '@/lib/tenant'
 import { getSubscription, getPlans, statusLabel, statusColor } from '@/lib/billing'
 import type { Plan, Subscription } from '@/lib/billing-utils'
 import PlansGrid from './_components/PlansGrid'
@@ -14,7 +14,7 @@ export default async function PlansPage() {
   const tenant = await getTenantForUser(userId)
   if (!tenant) notFound()
 
-  const [sub, plans] = await Promise.all([getSubscription(), getPlans()])
+  const [sub, plans, fullTenant] = await Promise.all([getSubscription(), getPlans(), getTenantById(tenant.id)])
 
   // Only public plans in the comparison table
   const publicPlans = (plans as Plan[]).filter((p) => p.name !== 'scale')
@@ -70,6 +70,7 @@ export default async function PlansPage() {
         <PlansGrid
           plans={plans as Plan[]}
           subscription={sub as Subscription | null}
+          cpfCnpj={fullTenant?.cpf_cnpj ?? null}
         />
       )}
 

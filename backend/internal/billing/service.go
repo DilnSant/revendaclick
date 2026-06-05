@@ -70,13 +70,17 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 		return existing, nil
 	}
 
-	name, email, asaasCustomerID, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
+	name, email, asaasCustomerID, cpfCnpj, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
 	if err != nil {
 		return nil, fmt.Errorf("tenant não encontrado: %w", err)
 	}
 
+	if cpfCnpj == "" {
+		return nil, fmt.Errorf("Para contratar um plano é necessário informar o CPF ou CNPJ nos Dados da Loja.")
+	}
+
 	if asaasCustomerID == "" {
-		customer, cerr := s.asaas.createCustomer(name, email, "", req.CPFOrCNPJ, tenantID)
+		customer, cerr := s.asaas.createCustomer(name, email, "", cpfCnpj, tenantID)
 		if cerr != nil {
 			return nil, fmt.Errorf("%s", asaasUserErr(cerr.Error()))
 		}
@@ -84,8 +88,10 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 		if err = s.repo.SaveAsaasCustomerID(ctx, tenantID, asaasCustomerID); err != nil {
 			return nil, fmt.Errorf("save customer id: %w", err)
 		}
-		// Persist to billing_customers
-		_ = s.repo.UpsertBillingCustomer(ctx, tenantID, customer.ID, name, email, req.CPFOrCNPJ, "")
+		_ = s.repo.UpsertBillingCustomer(ctx, tenantID, customer.ID, name, email, cpfCnpj, "")
+	} else {
+		// Customer exists — sync cpf_cnpj so Asaas accepts subscription creation
+		_ = s.asaas.updateCustomer(asaasCustomerID, name, email, "", cpfCnpj)
 	}
 
 	desc := fmt.Sprintf("RevendaClick — Plano %s (%s)", capitalize(req.PlanName), capitalize(req.BillingCycle))
@@ -93,7 +99,7 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 	if err != nil {
 		// Se o customer não existe no Asaas (404), recriar e tentar novamente
 		if strings.Contains(err.Error(), "404") && asaasCustomerID != "" {
-			customer, cerr := s.asaas.createCustomer(name, email, "", req.CPFOrCNPJ, tenantID)
+			customer, cerr := s.asaas.createCustomer(name, email, "", cpfCnpj, tenantID)
 			if cerr != nil {
 				return nil, fmt.Errorf("%s", asaasUserErr(cerr.Error()))
 			}
@@ -101,7 +107,7 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 			if serr := s.repo.SaveAsaasCustomerID(ctx, tenantID, asaasCustomerID); serr != nil {
 				return nil, fmt.Errorf("save customer id: %w", serr)
 			}
-			_ = s.repo.UpsertBillingCustomer(ctx, tenantID, customer.ID, name, email, req.CPFOrCNPJ, "")
+			_ = s.repo.UpsertBillingCustomer(ctx, tenantID, customer.ID, name, email, cpfCnpj, "")
 			sub, err = s.asaas.createSubscription(asaasCustomerID, value, cycle, billingType, desc, tenantID)
 			if err != nil {
 				return nil, fmt.Errorf("%s", asaasUserErr(err.Error()))
@@ -173,7 +179,7 @@ func (s *Service) UpgradeSubscription(ctx context.Context, tenantID string, req 
 		// Asaas rejects PUT on deleted subscriptions with invalid_action.
 		// Fallback: create a new subscription and replace the stale ID in DB.
 		if strings.Contains(err.Error(), "invalid_action") {
-			_, _, asaasCustomerID, cerr := s.repo.GetAsaasCustomerID(ctx, tenantID)
+			_, _, asaasCustomerID, _, cerr := s.repo.GetAsaasCustomerID(ctx, tenantID)
 			if cerr != nil || asaasCustomerID == "" {
 				return nil, fmt.Errorf("cliente Asaas não encontrado — contate o suporte")
 			}
@@ -278,7 +284,7 @@ func (s *Service) ActivateAddon(ctx context.Context, tenantID, addonType string)
 	}
 
 	// Fetch Asaas customer ID (created during Subscribe)
-	_, _, asaasCustomerID, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
+	_, _, asaasCustomerID, _, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
 	if err != nil || asaasCustomerID == "" {
 		return nil, fmt.Errorf("cliente Asaas não encontrado — finalize a assinatura do plano primeiro")
 	}

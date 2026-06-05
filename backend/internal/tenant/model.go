@@ -11,6 +11,7 @@ type Tenant struct {
 	Name          string          `json:"name"`
 	Email         string          `json:"email"`
 	PhoneWhatsApp string          `json:"phone_whatsapp"`
+	CPFOrCNPJ     *string         `json:"cpf_cnpj,omitempty"`
 	LogoURL       *string         `json:"logo_url,omitempty"`
 	Description   *string         `json:"description,omitempty"`
 	Address       json.RawMessage `json:"address,omitempty"`
@@ -27,6 +28,7 @@ type Tenant struct {
 type UpdateRequest struct {
 	Name          *string          `json:"name"`
 	PhoneWhatsApp *string          `json:"phone_whatsapp"`
+	CPFOrCNPJ     *string          `json:"cpf_cnpj"`
 	LogoURL       *string          `json:"logo_url"`
 	Description   *string          `json:"description"`
 	Address       *json.RawMessage `json:"address"`

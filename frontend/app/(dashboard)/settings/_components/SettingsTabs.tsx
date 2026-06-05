@@ -17,12 +17,60 @@ interface TenantData {
   name: string
   email: string
   phone_whatsapp: string
+  cpf_cnpj: string | null
   description: string | null
   seo_title: string | null
   seo_description: string | null
   logo_url: string | null
   theme: { primary_color?: string } | null
   address: { city?: string; state?: string; street?: string } | null
+}
+
+function formatCpfCnpj(value: string): string {
+  const digits = value.replace(/\D/g, '')
+  if (digits.length <= 11) {
+    return digits
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+  }
+  return digits.substring(0, 14)
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d{1,2})$/, '$1-$2')
+}
+
+function validateCpfCnpj(value: string): boolean {
+  const d = value.replace(/\D/g, '')
+  if (d.length !== 11 && d.length !== 14) return false
+  if (/^(\d)\1+$/.test(d)) return false
+
+  if (d.length === 11) {
+    let sum = 0
+    for (let i = 0; i < 9; i++) sum += +d[i] * (10 - i)
+    let r = (sum * 10) % 11
+    if (r === 10 || r === 11) r = 0
+    if (r !== +d[9]) return false
+    sum = 0
+    for (let i = 0; i < 10; i++) sum += +d[i] * (11 - i)
+    r = (sum * 10) % 11
+    if (r === 10 || r === 11) r = 0
+    return r === +d[10]
+  }
+
+  const w1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+  let sum = 0
+  for (let i = 0; i < 12; i++) sum += +d[i] * w1[i]
+  let r = sum % 11
+  if (r < 2) r = 0; else r = 11 - r
+  if (r !== +d[12]) return false
+  const w2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+  sum = 0
+  for (let i = 0; i < 13; i++) sum += +d[i] * w2[i]
+  r = sum % 11
+  if (r < 2) r = 0; else r = 11 - r
+  return r === +d[13]
 }
 
 interface Props {
@@ -72,7 +120,7 @@ export default function SettingsTabs({ tab, tenant, users, subscription, storeCo
       {tab === 'store'    && <StoreTab tenant={tenant} onToast={addToast} />}
       {tab === 'contact'  && <ContactTab storeContact={storeContact} onToast={addToast} />}
       {tab === 'users'    && <UsersTab users={users} subscription={subscription} />}
-      {tab === 'plan'     && <PlanTab initialSubscription={subscription} />}
+      {tab === 'plan'     && <PlanTab initialSubscription={subscription} cpfCnpj={tenant.cpf_cnpj} />}
       {tab === 'whatsapp' && <WhatsAppTab />}
 
       <ToastContainer toasts={toasts} onDismiss={id => setToasts(p => p.filter(t => t.id !== id))} />
@@ -87,6 +135,7 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
   const [form, setForm] = useState({
     name:            tenant.name,
     phone_whatsapp:  tenant.phone_whatsapp,
+    cpf_cnpj:        tenant.cpf_cnpj ?? '',
     description:     tenant.description ?? '',
     city:            tenant.address?.city ?? '',
     state:           tenant.address?.state ?? '',
@@ -94,6 +143,7 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
     seo_title:       tenant.seo_title ?? '',
     seo_description: tenant.seo_description ?? '',
   })
+  const [cpfCnpjError, setCpfCnpjError] = useState<string | null>(null)
   const [logoUrl, setLogoUrl]         = useState<string | null>(tenant.logo_url)
   const [logoUploading, setLogoUploading] = useState(false)
   const [pending, startTransition]    = useTransition()
@@ -120,10 +170,17 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setCpfCnpjError(null)
+    const rawCpfCnpj = form.cpf_cnpj.trim()
+    if (rawCpfCnpj && !validateCpfCnpj(rawCpfCnpj)) {
+      setCpfCnpjError('CPF ou CNPJ inválido. Verifique e tente novamente.')
+      return
+    }
     startTransition(async () => {
       const result = await updateTenantProfile({
         name:            form.name.trim() || undefined,
         phone_whatsapp:  form.phone_whatsapp.trim() || undefined,
+        cpf_cnpj:        rawCpfCnpj || null,
         description:     form.description.trim() || undefined,
         seo_title:       form.seo_title.trim() || undefined,
         seo_description: form.seo_description.trim() || undefined,
@@ -255,6 +312,26 @@ function StoreTab({ tenant, onToast }: { tenant: TenantData; onToast: (t: Omit<T
               placeholder="SC"
             />
           </div>
+        </div>
+
+        <div>
+          <label className="label">
+            CPF / CNPJ
+            <span className="ml-1 text-xs font-normal text-gray-400">(necessário para contratar plano)</span>
+          </label>
+          <input
+            value={form.cpf_cnpj}
+            onChange={e => {
+              setCpfCnpjError(null)
+              setForm(f => ({ ...f, cpf_cnpj: formatCpfCnpj(e.target.value) }))
+            }}
+            maxLength={18}
+            className={`input ${cpfCnpjError ? 'border-red-400 focus:ring-red-400' : ''}`}
+            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+          />
+          {cpfCnpjError && (
+            <p className="mt-1 text-xs text-red-600">{cpfCnpjError}</p>
+          )}
         </div>
 
         <div>
@@ -691,7 +768,7 @@ const STATUS_COLORS: Record<string, string> = {
   paused: 'bg-gray-100 text-gray-700',
 }
 
-function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionData | null }) {
+function PlanTab({ initialSubscription, cpfCnpj }: { initialSubscription: SubscriptionData | null; cpfCnpj: string | null }) {
   const router = useRouter()
   const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly')
   const [pending, startTransition] = useTransition()
@@ -753,6 +830,24 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
 
   return (
     <div className="space-y-6">
+      {/* CPF/CNPJ gate */}
+      {!cpfCnpj && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
+          <p className="text-sm font-semibold text-amber-900">
+            Para contratar um plano é necessário informar CPF ou CNPJ nos dados da empresa.
+          </p>
+          <p className="mt-1 text-xs text-amber-700">
+            Preencha o CPF ou CNPJ na aba Loja antes de assinar.
+          </p>
+          <a
+            href="/settings?tab=store"
+            className="mt-3 inline-block rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-700 transition-colors"
+          >
+            Preencher agora
+          </a>
+        </div>
+      )}
+
       {/* Trial banner */}
       {isTrialing && (
         <div className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4">
@@ -859,7 +954,8 @@ function PlanTab({ initialSubscription }: { initialSubscription: SubscriptionDat
               ) : (
                 <button
                   onClick={() => handleSubscribe(plan.name)}
-                  disabled={pending || pendingPlan === plan.name}
+                  disabled={pending || pendingPlan === plan.name || !cpfCnpj}
+                  title={!cpfCnpj ? 'Preencha CPF ou CNPJ nos Dados da Loja' : undefined}
                   className="w-full rounded-lg bg-primary py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-60 transition-colors"
                 >
                   {pendingPlan === plan.name ? 'Aguarde…' : isCurrentPlan ? 'Renovar' : 'Assinar'}

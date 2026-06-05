@@ -55,6 +55,7 @@ export default async function SettingsPage({ searchParams }: Props) {
           name:            tenant.name,
           email:           tenant.email,
           phone_whatsapp:  tenant.phone_whatsapp,
+          cpf_cnpj:        tenant.cpf_cnpj ?? null,
           description:     tenant.description ?? null,
           seo_title:       tenant.seo_title ?? null,
           seo_description: tenant.seo_description ?? null,

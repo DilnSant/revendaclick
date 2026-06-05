@@ -10,6 +10,7 @@ export type Tenant = {
   name: string
   email: string
   phone_whatsapp: string
+  cpf_cnpj: string | null
   logo_url: string | null
   description: string | null
   address: Record<string, unknown> | null
