@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 05/06/2026 (sessão 41 cont. — FC037: CPF/CNPJ billing Asaas + migration 035)
+> Atualizado em: 05/06/2026 (sessão 41 enc. — sidebar logo +70% + suporte card + FC037 completo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,14 +23,16 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 41 — 05/06/2026)
+## Estado Atual do Projeto (sessão 41 enc. — 05/06/2026)
 
 | Componente | Status |
 |---|---|
-| Migration 035 | ✓ aplicada — `cpf_cnpj VARCHAR(18)` em tenants (FC037) |
-| Billing CPF/CNPJ | ✓ FC037 — campo no settings, gate no billing, backend lê do DB |
+| Migration 035 | ✓ aplicada — `cpf_cnpj VARCHAR(18)` em tenants |
+| database.types.ts | ✓ atualizado — `cpf_cnpj` presente |
+| FC037 — Billing CPF/CNPJ | ✓ COMPLETO — campo com máscara, gate no billing, backend lê do DB, FC037.md criado |
+| Sidebar logo | ✓ +70% — sidebar 64px→110px; topbar mobile 40px→56px — commit `e74d51c` |
+| Suporte RevendaClick | ✓ Card em Settings ao final da página — commit `d193574` |
 | Auditoria ativação | ✓ ATIVAÇÃO APROVADA — 5 correções UX (commits d6307b2 + 403c4db) |
-| SMTP email confirmation | ⚠ AÇÃO MANUAL PENDENTE — 535 Invalid username no Brevo (ver abaixo) |
 
 ---
 
@@ -230,8 +232,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **36 falhas documentadas (FC001–FC036)**.
-Próximo número disponível: **FC037**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **37 falhas documentadas (FC001–FC037)**.
+Próximo número disponível: **FC038**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

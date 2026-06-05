@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 04/06/2026 (sessão 40 — nav dark theme + auditoria completa fluxo Landing→Lead)
+> Atualizado em: 05/06/2026 (sessão 41 enc. — FC037 CPF/CNPJ billing + sidebar logo + suporte card)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---

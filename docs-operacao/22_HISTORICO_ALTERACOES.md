@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 05/06/2026 (sessão 41 cont. — FC037: CPF/CNPJ billing Asaas + migration 035)
+> Última atualização: 05/06/2026 (sessão 41 enc. — sidebar logo +70% + suporte card em Settings)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -10,7 +10,7 @@
 |---|---|---|
 | **Auth / Onboarding** | ✓ Produção | Hybrid session+service role; checklist v2; triggers automáticos; email confirmation ON; password "No requirements" min 8; forgot-password appUrl fix FC035 (sessão 38); focus ring onboarding → `border-primary` (sessão 40) |
 | **Dashboard** | ✓ Produção | KPIs + OnboardingChecklist widget; `bg-primary/10` step highlight (sessão 40) |
-| **Sidebar** | ✓ Dark theme (sessão 40) | `bg-gray-900`; logo com frame `border-primary/30`; Starter/Pro/Premium por feature flag — ver D28 + SIDEBAR_SNAPSHOT |
+| **Sidebar** | ✓ Logo +70% (sessão 41 enc.) | `bg-gray-900`; logo sidebar 64px→110px (+72%); mobile topbar 40px→56px (+40%); frame `border-primary/30`; Starter/Pro/Premium por feature flag — ver D28 + SIDEBAR_SNAPSHOT |
 | **Veículos** | ✓ Produção | CRUD + vitrine pública SEO + filtros |
 | **Leads / CRM / Kanban** | ✓ Produção | Lista, kanban, atividades, follow-ups |
 | **Clientes** | ✓ Produção (Starter+) | Movido para base na sessão 23 |
@@ -21,14 +21,14 @@
 | **Analytics** | ✓ Produção (Pro+, `has_analytics`) | — |
 | **Assinatura** | ✓ Produção + sub-nav | Tabs: Assinatura / Add-ons / Cobranças / Planos |
 | **Add-ons** | ✓ Produção | user_extra / whatsapp_automation / ia_recovery; acessível via sub-nav Billing |
-| **Configurações** | ✓ Produção + WhatsApp tab | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp |
 | **Central de Atendimento** | ✓ Produção (`has_central_atendimento`) | Acessível via Configurações → WhatsApp; devecar desconectado |
 | **Automações** | ✓ Placeholder produção (`has_automation`) | Gated; CTA WhatsApp add-on condicional — BUG-02 corrigido sessão 29 |
 | **Campanhas** | ✓ Placeholder produção (`has_campaigns`) | Gated; "Em breve" com links Analytics/CRM — BUG-02 corrigido sessão 29 |
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
 | **Sandbox tenant** | ✓ `sandbox-revendaclick` (sessão 26) | Pro active, `tenant_id = e72eb104-98b7-4a71-946d-15e680496fc3`, substitui devecar |
 | **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
-| **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035) |
+| **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035) — gate no frontend, lê do DB, valida antes de Asaas |
+| **Configurações** | ✓ Produção + Suporte card | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp; card "Suporte RevendaClick" ao final com email + botão mailto |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
 | **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open; devecar desconectado |
 | **OpenRouter AI** | ✓ Produção | classify-lead, suggest-reply |
@@ -61,6 +61,42 @@
 | **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto; logo tipográfico Revenda/Click; copy atualizado |
 | **Auditoria ativação lojista (sessão 41)** | ✓ ATIVAÇÃO APROVADA | 5 correções UX: checklist step 4 com CTA; step 3 copy; Termos href; leads empty state; CopyStoreLink — commit `d6307b2` |
 | **FC037 — Asaas HTTP 400 CPF/CNPJ ausente (sessão 41 cont.)** | ✓ **Corrigido** | Migration 035 + cpf_cnpj no tenant; backend lê do DB; gate no frontend; campo com máscara — commit `e075945` |
+| **Sidebar logo +70% (sessão 41 enc.)** | ✓ **Implementado** | Desktop: 64px→110px (+72%); mobile topbar: 40px→56px (+40%); maxWidth sidebar 200px — commit `e74d51c` |
+| **Suporte RevendaClick card (sessão 41 enc.)** | ✓ **Implementado** | Card ao final de Settings com email + botão "Enviar Email" (mailto) — commit `d193574` |
+
+---
+
+## 2026-06-05 (sessão 41 enc.) — Sidebar logo +70% + card Suporte RevendaClick
+
+**Alterações visuais sem impacto em arquitetura ou billing.**
+
+### Sidebar logo +70%
+
+**Arquivo:** `frontend/components/layout/DashboardShell.tsx`
+
+| Elemento | Antes | Depois |
+|---|---|---|
+| Container sidebar (logo area) | `h-24` (96px) | `h-36` (144px) |
+| Logo altura sidebar | `64px` | `110px` (+72%) |
+| Logo maxWidth sidebar | `160px` | `200px` |
+| Container topbar mobile | `h-16` (64px) | `h-20` (80px) |
+| Logo altura topbar mobile | `40px` | `56px` (+40%) |
+| Logo maxWidth topbar mobile | `120px` | `160px` |
+
+**Commit:** `e74d51c`
+
+### Suporte RevendaClick
+
+**Arquivo:** `frontend/app/(dashboard)/settings/page.tsx`
+
+Card adicionado ao final da página Settings (abaixo de `<SettingsTabs>`):
+- Título: "Suporte RevendaClick"
+- Descrição: "Precisa de ajuda? Entre em contato com nossa equipe."
+- Email visível: `contato@revendaclick.com.br` (link mailto)
+- Botão "Enviar Email" (bg-primary, mailto)
+- Sem backend, sem tickets, sem chat
+
+**Commit:** `d193574`
 
 ---
 

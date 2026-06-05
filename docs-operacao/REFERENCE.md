@@ -64,7 +64,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 035 |
+| Migrations aplicadas | 001 → 035 (035 = cpf_cnpj em tenants) |
 | Próxima migration | `036_...` |
 | Tenants no banco | santos-car (Pro/active), sandbox-revendaclick (Pro/active), devecar (is_active=false) |
 | Pasta de migrations | `database/migrations/` |
@@ -77,6 +77,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
 | Total documentadas | 37 (FC001–FC037) |
 | Próxima FC | **FC038** |
+| FC037 | FC037_ASAAS_CPF_CNPJ_AUSENTE.md — HTTP 400 cpf_cnpj ausente no billing |
 
 ## Landing Page — CONGELADA (sessão 31)
 

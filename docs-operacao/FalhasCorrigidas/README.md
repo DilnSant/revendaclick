@@ -55,6 +55,7 @@
 | [FC034](FC034_ASAAS_INVALID_ACTION_DELETED_SUBSCRIPTION.md) | Asaas `invalid_action` em upgrade/downgrade — assinatura deletada não pode ser atualizada via PUT | Billing / Asaas | ALTA | 02/06/2026 |
 | [FC035](FC035_FORGOT_PASSWORD_APPURL_LOCALHOST.md) | forgot-password: appUrl fallback `localhost:3000` — links de recovery apontavam para localhost em produção | Auth / Frontend | ALTA | 03/06/2026 |
 | [FC036](FC036_VEHICLE_DETAIL_SEM_PRIMARY_VAR.md) | Página de detalhe do veículo sem `--primary` CSS var — CTA usava cor da plataforma em vez da cor do tenant | Frontend / Branding | ALTA | 04/06/2026 |
+| [FC037](FC037_ASAAS_CPF_CNPJ_AUSENTE.md) | Asaas HTTP 400 `invalid_object` — CPF/CNPJ ausente ao contratar plano (coluna inexistente, frontend nunca enviava) | Billing / Asaas | CRÍTICO | 05/06/2026 |
 
 ---
 
@@ -75,6 +76,7 @@
 - FC031 — ActivateByAsaasSubID não limpava canceled_at
 - FC032 — Add-ons sem cobrança Asaas (gap documentado — Etapa 5, corrigido)
 - FC033 — CancelSubscription não cancela add-ons (gap — aguarda decisão de negócio)
+- FC037 — CPF/CNPJ ausente: coluna inexistente em tenants; Subscribe() lia do body HTTP nunca enviado
 
 ### WhatsApp / Evolution API
 - FC002 — QR Code não gerava / sumia (5 bugs em cascata)
