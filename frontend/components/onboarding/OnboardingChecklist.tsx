@@ -36,15 +36,15 @@ const STEPS = [
   {
     key: 'published_store' as const,
     label: 'Publicar vitrine',
-    description: 'Configure o contato público e publique sua loja',
+    description: 'Adicione o WhatsApp e outros contatos para aparecer na vitrine',
     href: '/settings?tab=contact',
     alwaysDone: false,
   },
   {
     key: 'received_first_lead' as const,
     label: 'Receber primeiro lead',
-    description: 'Compartilhe sua vitrine e aguarde o primeiro contato',
-    href: null,
+    description: 'Compartilhe o link da sua loja e acompanhe os contatos em Interessados',
+    href: '/leads',
     alwaysDone: false,
   },
 ] as const

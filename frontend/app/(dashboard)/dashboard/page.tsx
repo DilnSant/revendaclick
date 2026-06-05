@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
+import CopyStoreLink from '@/components/dashboard/CopyStoreLink'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabaseServer'
 import UsageBar from '@/components/ui/UsageBar'
@@ -190,17 +191,7 @@ export default async function DashboardPage() {
         )}
 
         {/* Store link */}
-        <div className="card p-6">
-          <p className="text-sm font-medium text-gray-900">Sua loja pública:</p>
-          <a
-            href={`/${tenant.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-1 block text-primary hover:underline text-sm"
-          >
-            revendaclick.com.br/{tenant.slug}
-          </a>
-        </div>
+        <CopyStoreLink slug={tenant.slug} />
       </div>
     </div>
   )

@@ -71,6 +71,25 @@ export default async function LeadsPage({ searchParams }: Props) {
         </div>
       </div>
 
+      {/* Empty state — no leads yet */}
+      {total === 0 && (
+        <div className="rounded-xl border border-blue-100 bg-blue-50 px-5 py-4">
+          <p className="text-sm font-semibold text-blue-900">Nenhum lead recebido ainda</p>
+          <p className="mt-1 text-xs text-blue-700">
+            Leads aparecem aqui quando clientes entram em contato pela sua vitrine pública.
+            Compartilhe o link da sua loja:{' '}
+            <a
+              href={`/${tenant.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium underline"
+            >
+              revendaclick.com.br/{tenant.slug}
+            </a>
+          </p>
+        </div>
+      )}
+
       {/* Content */}
       {view === 'kanban' ? (
         <LeadKanban leads={leads} sellers={sellers} />

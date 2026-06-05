@@ -211,7 +211,7 @@ export default function OnboardingPage() {
 
         <p className="text-center text-xs text-gray-400">
           Ao criar sua loja você concorda com os{' '}
-          <a href="#" className="underline hover:text-gray-600">Termos de Uso</a>.
+          <a href="/terms" className="underline hover:text-gray-600">Termos de Uso</a>.
         </p>
       </div>
     </div>
