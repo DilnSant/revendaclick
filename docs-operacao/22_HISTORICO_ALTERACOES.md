@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 05/06/2026 (sessão 41 — auditoria ativação lojista + 5 correções UX jornada primeiro acesso)
+> Última atualização: 05/06/2026 (sessão 41 cont. — FC037: CPF/CNPJ billing Asaas + migration 035)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -28,7 +28,7 @@
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
 | **Sandbox tenant** | ✓ `sandbox-revendaclick` (sessão 26) | Pro active, `tenant_id = e72eb104-98b7-4a71-946d-15e680496fc3`, substitui devecar |
 | **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
-| **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent |
+| **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035) |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
 | **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open; devecar desconectado |
 | **OpenRouter AI** | ✓ Produção | classify-lead, suggest-reply |
@@ -60,6 +60,46 @@
 | **Auth audit (sessão 38)** | ✓ AUTH APROVADO | 6 fluxos validados; email confirmation ON; password "No requirements"; forgot-password + login "Email not confirmed" corrigidos |
 | **Landing hero (sessão 38)** | ✓ Reformulado | Formulário → CTA direto; logo tipográfico Revenda/Click; copy atualizado |
 | **Auditoria ativação lojista (sessão 41)** | ✓ ATIVAÇÃO APROVADA | 5 correções UX: checklist step 4 com CTA; step 3 copy; Termos href; leads empty state; CopyStoreLink — commit `d6307b2` |
+| **FC037 — Asaas HTTP 400 CPF/CNPJ ausente (sessão 41 cont.)** | ✓ **Corrigido** | Migration 035 + cpf_cnpj no tenant; backend lê do DB; gate no frontend; campo com máscara — commit `e075945` |
+
+---
+
+## 2026-06-05 (sessão 41 cont.) — FC037: CPF/CNPJ obrigatório para billing Asaas
+
+**Problema:** Asaas retorna HTTP 400 `invalid_object: Para criar esta cobrança é necessário preencher o CPF ou CNPJ do cliente` ao contratar ou alterar plano em `/settings?tab=plan` e `/billing/plans`.
+
+**Causa raiz:** `service.go:Subscribe()` lia `req.CPFOrCNPJ` do body HTTP. O frontend nunca enviava esse campo. A coluna `cpf_cnpj` não existia na tabela `tenants`.
+
+**Migration aplicada:** `035_add_cpf_cnpj_to_tenants.sql` — `ALTER TABLE tenants ADD COLUMN IF NOT EXISTS cpf_cnpj VARCHAR(18)`
+
+**Arquivos alterados:**
+- `database/migrations/035_add_cpf_cnpj_to_tenants.sql` — **novo**
+- `backend/internal/tenant/model.go` — `CPFOrCNPJ *string` em `Tenant` + `UpdateRequest`
+- `backend/internal/tenant/repository.go` — cpf_cnpj em SELECT/UPDATE/RETURNING; `scanTenant` atualizado
+- `backend/internal/billing/repository.go` — `GetAsaasCustomerID` retorna 5 valores (+ cpfCnpj)
+- `backend/internal/billing/asaas.go` — `updateCustomer()` adicionado (PUT /customers/{id})
+- `backend/internal/billing/service.go` — `Subscribe()` lê cpfCnpj do DB; valida antes de chamar Asaas; atualiza customer existente; 3 call sites de `GetAsaasCustomerID` atualizados
+- `frontend/lib/tenant.ts` — `cpf_cnpj: string | null` no tipo `Tenant`
+- `frontend/app/(dashboard)/settings/actions.ts` — `cpf_cnpj` em `TenantUpdatePayload`
+- `frontend/app/(dashboard)/settings/page.tsx` — `cpf_cnpj` passado ao `SettingsTabs`
+- `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx` — campo CPF/CNPJ com máscara e validação; gate em `PlanTab`; botões desabilitados sem cpf_cnpj
+- `frontend/app/(dashboard)/billing/plans/page.tsx` — `getTenantById` para obter cpf_cnpj
+- `frontend/app/(dashboard)/billing/plans/_components/PlansGrid.tsx` — repassa cpfCnpj ao PlanCard
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx` — gate amigável + botão "Preencher agora"; campo CPF opcional removido
+
+**Fluxo implementado:**
+1. Lojista preenche CPF/CNPJ em Configurações → Loja (com máscara + validação)
+2. Ao contratar plano: se ausente → gate amigável + link "Preencher agora" → `/settings?tab=store`
+3. Backend: Subscribe() lê cpf_cnpj do banco; valida antes de chamar Asaas
+4. Se customer Asaas já existe: `updateCustomer()` sincroniza o CPF/CNPJ antes de criar subscription
+5. Se customer não existe: `createCustomer()` com cpf_cnpj do banco
+
+**Auditoria de validação:**
+- TypeScript: ✓ limpo (0 erros)
+- Build frontend: ✓ sucesso
+- Migration Supabase: ✓ aplicada
+
+**Commit:** `e075945`
 
 ---
 

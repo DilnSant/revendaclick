@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 05/06/2026 (sessão 41 — auditoria ativação lojista + 5 correções UX jornada primeiro acesso)
+> Atualizado em: 05/06/2026 (sessão 41 cont. — FC037: CPF/CNPJ billing Asaas + migration 035)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,18 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 36 — 02/06/2026)
+## Estado Atual do Projeto (sessão 41 — 05/06/2026)
+
+| Componente | Status |
+|---|---|
+| Migration 035 | ✓ aplicada — `cpf_cnpj VARCHAR(18)` em tenants (FC037) |
+| Billing CPF/CNPJ | ✓ FC037 — campo no settings, gate no billing, backend lê do DB |
+| Auditoria ativação | ✓ ATIVAÇÃO APROVADA — 5 correções UX (commits d6307b2 + 403c4db) |
+| SMTP email confirmation | ⚠ AÇÃO MANUAL PENDENTE — 535 Invalid username no Brevo (ver abaixo) |
+
+---
+
+## Estado Anterior (sessão 36 — 02/06/2026)
 
 | Componente | Status |
 |---|---|
