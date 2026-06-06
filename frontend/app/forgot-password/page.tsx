@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
 
       const supabase = createClient()
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${appUrl}/auth/callback?type=recovery`,
+        redirectTo: `${appUrl}/reset-password`,
       })
 
       if (error && error.status === 429) {
@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#040C21] px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">

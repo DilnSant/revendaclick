@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { getUserIdFromHeaders, getTenantForUser } from '@/lib/tenant'
 import { getSubscription } from '@/lib/billing'
 import { statusLabel, statusColor, formatCurrency, formatDate } from '@/lib/billing-utils'
@@ -137,6 +138,29 @@ export default async function BillingPage({ searchParams }: Props) {
           </div>
         </div>
       )}
+
+      <SupportCard />
+    </div>
+  )
+}
+
+function SupportCard() {
+  return (
+    <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="flex items-center justify-between gap-6">
+        <div>
+          <p className="text-sm font-semibold text-gray-900">Suporte RevendaClick</p>
+          <p className="mt-0.5 text-sm text-gray-500">
+            Precisa de ajuda?{' '}
+            <a href="mailto:contato@revendaclick.com.br" className="font-medium text-primary hover:underline">
+              contato@revendaclick.com.br
+            </a>
+          </p>
+        </div>
+        <div className="shrink-0">
+          <Image src="/logo.png" alt="RevendaClick" width={120} height={36} className="h-9 w-auto object-contain" />
+        </div>
+      </div>
     </div>
   )
 }

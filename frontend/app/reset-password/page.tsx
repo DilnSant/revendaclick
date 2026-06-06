@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useTransition, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabaseClient'
 
 function ResetForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -15,13 +14,22 @@ function ResetForm() {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Supabase appends the token as a hash fragment (#access_token=...).
-    // The client SDK handles it automatically on load — just confirm the session exists.
     const supabase = createClient()
+
+    // Handle PASSWORD_RECOVERY (hash-based OTP) and SIGNED_IN (PKCE code)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN')) {
+        setReady(true)
+      }
+    })
+
+    // Cover the case where the session is already set (e.g. page refresh)
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) setReady(true)
     })
-  }, [searchParams])
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -92,7 +100,7 @@ function ResetForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#040C21] px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">

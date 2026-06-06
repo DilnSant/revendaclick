@@ -317,7 +317,7 @@ export default function DashboardShell(props: Props) {
         {/* Main area */}
         <div className="lg:pl-64 flex flex-col min-h-screen">
           {/* Mobile topbar */}
-          <header className="sticky top-0 z-10 flex h-20 items-center gap-3 border-b border-white/10 bg-gray-900/90 backdrop-blur px-4 lg:hidden">
+          <header className="sticky top-0 z-10 flex h-20 items-center gap-3 border-b border-white/10 bg-gray-900 px-4 lg:hidden">
             <button
               onClick={() => setMobileOpen(true)}
               className="rounded-lg p-1.5 text-gray-300 hover:bg-white/10 transition-colors"
@@ -340,7 +340,7 @@ export default function DashboardShell(props: Props) {
           </header>
 
           {/* Desktop topbar */}
-          <header className="hidden lg:flex h-14 items-center justify-between border-b border-white/10 bg-gray-900/90 backdrop-blur px-6 sticky top-0 z-10">
+          <header className="hidden lg:flex h-14 items-center justify-between border-b border-white/10 bg-gray-900 px-6 sticky top-0 z-10">
             <Breadcrumbs pathname={pathname} />
             <div className="flex items-center gap-3">
               <a
