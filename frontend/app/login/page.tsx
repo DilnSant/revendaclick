@@ -135,7 +135,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#040C21] px-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#010F21] px-4">
       <Suspense fallback={<div className="w-full max-w-sm" />}>
         <LoginForm />
       </Suspense>

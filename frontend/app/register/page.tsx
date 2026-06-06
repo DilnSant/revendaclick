@@ -64,7 +64,7 @@ export default function RegisterPage() {
 
   if (done) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#040C21] px-4">
+      <div className="flex min-h-screen items-center justify-center bg-[#010F21] px-4">
         <div className="w-full max-w-md text-center space-y-4">
           <div className="flex justify-center mb-6">
             <Image src="/logo-dark.png" alt="RevendaClick" width={1536} height={1024}
@@ -99,7 +99,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-[#040C21] px-4 pt-10 pb-8">
+    <div className="flex min-h-screen items-start justify-center bg-[#010F21] px-4 pt-10 pb-8">
       <div className="w-full max-w-md space-y-6">
 
         <div className="text-center">
