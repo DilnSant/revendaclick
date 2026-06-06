@@ -251,11 +251,24 @@ export default function DashboardShell(props: Props) {
           <div className="border-b border-white/10 px-4 py-3">
             <p className="text-xs text-gray-400">Loja</p>
             <p className="truncate text-sm font-medium text-white">{tenantName}</p>
-            {planDisplay && (
-              <span className="mt-0.5 inline-block rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
-                {planDisplay}
-              </span>
-            )}
+            <div className="mt-1 flex items-center justify-between gap-2">
+              {planDisplay && (
+                <span className="inline-block rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
+                  {planDisplay}
+                </span>
+              )}
+              <a
+                href={`/${tenantSlug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-200 transition-colors ml-auto"
+              >
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Ver loja
+              </a>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -317,7 +330,7 @@ export default function DashboardShell(props: Props) {
         {/* Main area */}
         <div className="lg:pl-64 flex flex-col min-h-screen">
           {/* Mobile topbar */}
-          <header className="sticky top-0 z-10 flex h-20 items-center gap-3 border-b border-white/10 bg-gray-900 px-4 lg:hidden">
+          <header className="sticky top-0 z-10 flex h-14 items-center gap-3 border-b border-white/10 bg-gray-900 px-4 lg:hidden">
             <button
               onClick={() => setMobileOpen(true)}
               className="rounded-lg p-1.5 text-gray-300 hover:bg-white/10 transition-colors"
@@ -328,34 +341,15 @@ export default function DashboardShell(props: Props) {
             </button>
             {tenantLogoUrl ? (
               <div className="shrink-0 rounded-lg border border-primary/30 p-1 bg-white/[0.04]">
-                <Image src={tenantLogoUrl} alt={tenantName} width={200} height={56}
-                  style={{ height: '56px', width: 'auto', maxWidth: '160px' }} className="object-contain" />
+                <Image src={tenantLogoUrl} alt={tenantName} width={200} height={36}
+                  style={{ height: '36px', width: 'auto', maxWidth: '140px' }} className="object-contain" />
               </div>
             ) : (
               <div className="shrink-0 rounded-lg border border-primary/30 p-1 bg-white/[0.04]">
                 <Image src="/logo.png" alt="RevendaClick" width={870} height={592}
-                  style={{ height: '56px', width: 'auto' }} className="object-contain" />
+                  style={{ height: '36px', width: 'auto' }} className="object-contain" />
               </div>
             )}
-          </header>
-
-          {/* Desktop topbar */}
-          <header className="hidden lg:flex h-14 items-center justify-between border-b border-white/10 bg-gray-900 px-6 sticky top-0 z-10">
-            <Breadcrumbs pathname={pathname} />
-            <div className="flex items-center gap-3">
-              <a
-                href={`/${tenantSlug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white hover:bg-primary/90 transition-colors"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-                Ver loja
-              </a>
-              <span className="text-xs text-gray-400 hidden xl:block">{userEmail}</span>
-            </div>
           </header>
 
           {/* Page content */}
@@ -477,45 +471,3 @@ function UserFooter(props: { userEmail: string; tenantSlug: string }) {
   )
 }
 
-const ROUTE_LABELS: Record<string, string> = {
-  dashboard:   'Dashboard',
-  vehicles:    'Veículos',
-  leads:       'Interessados',
-  customers:   'Clientes',
-  vendors:     'Vendedores',
-  sales:       'Vendas',
-  analytics:   'Analytics',
-  crm:         'Atendimento',
-  financial:   'Financeiro',
-  commissions: 'Comissões',
-  whatsapp:    'WhatsApp',
-  automations: 'Automações',
-  campaigns:   'Campanhas',
-  billing:     'Assinatura',
-  plans:       'Planos',
-  addons:      'Add-ons',
-  history:     'Histórico',
-  settings:    'Configurações',
-}
-
-function Breadcrumbs({ pathname }: { pathname: string }) {
-  const parts = pathname.split('/').filter(Boolean)
-  if (parts.length === 0) return <span className="text-sm text-gray-500">Início</span>
-
-  return (
-    <nav className="flex items-center gap-1.5 text-sm">
-      {parts.map((part, i) => {
-        const isLast = i === parts.length - 1
-        const label = ROUTE_LABELS[part] ?? part
-        return (
-          <span key={i} className="flex items-center gap-1.5">
-            {i > 0 && <span className="text-gray-600">/</span>}
-            <span className={isLast ? 'font-medium text-white' : 'text-gray-400'}>
-              {label}
-            </span>
-          </span>
-        )
-      })}
-    </nav>
-  )
-}
