@@ -83,7 +83,7 @@ Isso insere na tabela `tenant_features` e fica disponível via 3-way UNION imedi
 
 | Limite | Starter | Pro | Premium | Scale |
 |---|---|---|---|---|
-| `max_vehicles` | 50 | 200 | 500 | -1 (ilimitado) |
+| `max_vehicles` | 15 | 50 | 120 | -1 (ilimitado) |
 | `max_users` | 2 | 5 | 15 | -1 |
 | `max_leads` | 100 | 500 | -1 | -1 |
 

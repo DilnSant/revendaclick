@@ -1,6 +1,6 @@
 # 06 — AUTENTICAÇÃO
 
-> Baseado em leitura de: `backend/internal/middleware/auth.go`, `backend/internal/middleware/tenant.go`, `frontend/middleware.ts`, `frontend/lib/supabaseServer.ts`, `frontend/app/auth/callback/route.ts`, `backend/internal/onboarding/onboarding.go`.
+> Baseado em leitura de: `backend/internal/middleware/auth.go`, `backend/internal/middleware/tenant.go`, `frontend/lib/proxy.ts`, `frontend/lib/supabaseServer.ts`, `frontend/app/auth/callback/route.ts`, `backend/internal/onboarding/onboarding.go`.
 
 ---
 
