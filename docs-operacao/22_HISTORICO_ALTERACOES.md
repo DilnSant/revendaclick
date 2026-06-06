@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 05/06/2026 (sessão 41 enc. — sidebar logo +70% + suporte card em Settings)
+> Última atualização: 05/06/2026 (sessão 42 — auditoria comercial E2E + migration 036 published_store trigger)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -63,6 +63,61 @@
 | **FC037 — Asaas HTTP 400 CPF/CNPJ ausente (sessão 41 cont.)** | ✓ **Corrigido** | Migration 035 + cpf_cnpj no tenant; backend lê do DB; gate no frontend; campo com máscara — commit `e075945` |
 | **Sidebar logo +70% (sessão 41 enc.)** | ✓ **Implementado** | Desktop: 64px→110px (+72%); mobile topbar: 40px→56px (+40%); maxWidth sidebar 200px — commit `e74d51c` |
 | **Suporte RevendaClick card (sessão 41 enc.)** | ✓ **Implementado** | Card ao final de Settings com email + botão "Enviar Email" (mailto) — commit `d193574` |
+| **Auditoria comercial E2E (sessão 42)** | ✓ **PRONTO PARA OPERAÇÃO COMERCIAL** | Fluxo completo validado: registro→email→login→onboarding→CPF gate→Asaas→veículo→vitrine→lead→CRM→checklist 4/4 — ver entrada sessão 42 abaixo |
+| **Migration 036 — published_store trigger (sessão 42)** | ✓ **Corrigido** | Trigger `trg_mark_store_published` em `tenant_public_contacts`; `published_store` agora seta automaticamente ao salvar contato público |
+
+---
+
+## 2026-06-05 (sessão 42) — Auditoria comercial E2E + Migration 036 published_store
+
+### Auditoria comercial E2E — PRONTO PARA OPERAÇÃO COMERCIAL
+
+Fluxo completo testado com tenant real (`auditoria-rc-s42`):
+
+1. **Registro** — `POST /api/onboarding/setup` criou tenant `45e09d8c-0546-45fa-b94d-4a32b08f0038`
+2. **Email confirmation** — `email_confirmed_at` setado via Supabase
+3. **Login** — JWT + claim `tenant_id` corretos
+4. **Onboarding** — checklist 4 passos iniciado
+5. **CPF gate** — `PUT /api/tenants/me` com `cpf_cnpj`; gate no frontend ok
+6. **Asaas subscribe** — `sub_nas6a1w4kxontf5n` criado (Pro, active)
+7. **Veículo cadastrado** — Toyota Corolla 2022, `cf6c2083-7d93-403d-85c2-0d34eb21d6a5`; `added_vehicle = true`
+8. **Vitrine pública** — `https://app.revendaclick.com.br/auditoria-rc-s42` HTTP 200, SEO correto
+9. **Lead gerado** — Pedro Comprador, `b295d01f-2ff1-465a-99ab-5324ece0b10a`; `received_first_lead = true`
+10. **CRM** — lead visível em `/crm`, kanban funcionando
+11. **Contato público** — salvo via `PUT /api/store-contact`; `published_store = true` (trigger 036)
+12. **Checklist 4/4 completo** — `completed_at` setado automaticamente
+
+### Migration 036 — Bug found & fixed
+
+**Problema:** `published_store` em `onboarding_checklists` nunca era setado `true`. Lojistas ficavam presos em 3/4 do checklist de onboarding para sempre.
+
+**Causa raiz:** `PUT /api/store-contact` salvava em `tenant_public_contacts` mas não havia trigger na tabela — ao contrário de `vehicles` (`trg_mark_vehicle_added`) e `leads` (`trg_mark_first_lead_received`).
+
+**Correção:** `database/migrations/036_mark_store_published_trigger.sql`
+
+```sql
+CREATE OR REPLACE FUNCTION public._mark_store_published()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  UPDATE public.onboarding_checklists
+  SET published_store = true, updated_at = NOW()
+  WHERE tenant_id = NEW.tenant_id AND published_store = false;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_mark_store_published
+AFTER INSERT OR UPDATE ON public.tenant_public_contacts
+FOR EACH ROW EXECUTE FUNCTION public._mark_store_published();
+```
+
+**Aplicado em produção** via MCP Supabase. **Verificado:** após `PUT /api/store-contact`, `published_store = true` e `completed_at` setado.
+
+### Divergências documentais corrigidas
+
+- `SIDEBAR_SNAPSHOT.md`: logo heights atualizados (64px→110px, 40px→56px)
+- `REFERENCE.md`: migration 035→036, próxima 037
+- `PRODUCT_ARCHITECTURE.md`: limites de veículos corrigidos (50/200/500 → 15/50/120, conforme DB real)
 
 ---
 

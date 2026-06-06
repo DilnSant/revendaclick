@@ -227,7 +227,7 @@ Flags disponíveis (nomes exatos):
 
 | Limite | Starter | Pro | Premium | Scale |
 |---|---|---|---|---|
-| Veículos | 50 | 200 | 500 | ilimitado |
+| Veículos | 15 | 50 | 120 | ilimitado |
 | Usuários | 2 | 5 | 15 | ilimitado |
 | Leads/mês | 100 | 500 | ilimitado | ilimitado |
 

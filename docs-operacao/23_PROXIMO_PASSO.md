@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 05/06/2026 (sessão 41 enc. — sidebar logo +70% + suporte card + FC037 completo)
+> Atualizado em: 05/06/2026 (sessão 42 — auditoria comercial E2E APROVADA + migration 036)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,13 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 41 enc. — 05/06/2026)
+## Estado Atual do Projeto (sessão 42 — 05/06/2026)
 
 | Componente | Status |
 |---|---|
+| **Auditoria comercial E2E** | ✓ **PRONTO PARA OPERAÇÃO COMERCIAL** — fluxo completo 12 etapas aprovadas |
+| Migration 036 | ✓ aplicada — trigger `trg_mark_store_published` em `tenant_public_contacts` |
+| published_store bug | ✓ corrigido — checklist agora completa 4/4 ao salvar contato público |
 | Migration 035 | ✓ aplicada — `cpf_cnpj VARCHAR(18)` em tenants |
 | database.types.ts | ✓ atualizado — `cpf_cnpj` presente |
 | FC037 — Billing CPF/CNPJ | ✓ COMPLETO — campo com máscara, gate no billing, backend lê do DB, FC037.md criado |
@@ -232,7 +235,7 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **37 falhas documentadas (FC001–FC037)**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **37 falhas documentadas (FC001–FC037)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
 Próximo número disponível: **FC038**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).

@@ -64,8 +64,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 035 (035 = cpf_cnpj em tenants) |
-| Próxima migration | `036_...` |
+| Migrations aplicadas | 001 → 036 (036 = trigger published_store em tenant_public_contacts) |
+| Próxima migration | `037_...` |
 | Tenants no banco | santos-car (Pro/active), sandbox-revendaclick (Pro/active), devecar (is_active=false) |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |

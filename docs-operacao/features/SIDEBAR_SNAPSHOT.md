@@ -1,6 +1,6 @@
 # Sidebar — Snapshot Atual
 
-> Última atualização: 2026-06-04 (sessão 40 — dark theme: bg-gray-900, topbars backdrop-blur, logo border)
+> Última atualização: 2026-06-05 (sessão 41 enc. — logo sidebar 64px→110px, mobile 40px→56px)
 > Implementado em: `frontend/components/layout/DashboardShell.tsx`
 > Decisão técnica: D28 em `21_DECISOES_TECNICAS.md`
 
@@ -93,8 +93,8 @@ Componente: `frontend/app/(dashboard)/settings/_components/SettingsTabs.tsx`
 | Desktop topbar | `bg-gray-900/90 backdrop-blur` | 90% + blur |
 | Logo container (sidebar) | `border border-primary/30 rounded-xl p-1.5 bg-white/[0.04]` | frame elegante |
 | Logo container (mobile) | `border border-primary/30 rounded-lg p-1 bg-white/[0.04]` | frame menor |
-| Logo height sidebar | `64px` | reduzido para caber no frame |
-| Logo height mobile | `40px` | reduzido para caber no frame |
+| Logo height sidebar | `110px` | +72% vs anterior 64px (sessão 41 enc.) |
+| Logo height mobile | `56px` | +40% vs anterior 40px (sessão 41 enc.) |
 | Nav item ativo | `bg-primary/20 text-primary` | cor da loja (via --primary) |
 | Nav item hover | `hover:bg-white/10 hover:text-white` | efeito discreto |
 | User footer border | `border-white/10` | separador sutil |

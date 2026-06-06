@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 05/06/2026 (sessão 41 enc. — FC037 CPF/CNPJ billing + sidebar logo + suporte card)
+> Atualizado em: 05/06/2026 (sessão 42 — auditoria comercial E2E + migration 036 published_store)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
