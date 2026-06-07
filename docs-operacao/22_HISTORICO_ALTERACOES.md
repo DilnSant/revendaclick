@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 05/06/2026 (sessão 42 — auditoria comercial E2E + migration 036 published_store trigger)
+> Última atualização: 06/06/2026 (sessão 44 — auditoria completa + correções visuais + fix santos-car billing)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -35,7 +35,7 @@
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
-| **Billing Asaas — santos-car** | ✓ **Operacional** (sessão 36) | `sub_b3y3xwo9s18g50xc` ativo; fallback recria assinatura quando deletada; upgrade/downgrade/ciclo funcionando |
+| **Billing Asaas — santos-car** | ✓ **Restaurado** (sessão 44) | Ficou `past_due`/`starter` durante testes E2E sessão 42; restaurado para `active`/`pro` via SQL (sessão 44). `sub_b3y3xwo9s18g50xc` no campo asaas_subscription_id |
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
 | **BUG-01/02/03 — Feature flags Premium** | ✓ **Corrigido** (sessão 29) | Sidebar Premium gateada por `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
@@ -65,6 +65,36 @@
 | **Suporte RevendaClick card (sessão 41 enc.)** | ✓ **Implementado** | Card ao final de Settings com email + botão "Enviar Email" (mailto) — commit `d193574` |
 | **Auditoria comercial E2E (sessão 42)** | ✓ **PRONTO PARA OPERAÇÃO COMERCIAL** | Fluxo completo validado: registro→email→login→onboarding→CPF gate→Asaas→veículo→vitrine→lead→CRM→checklist 4/4 — ver entrada sessão 42 abaixo |
 | **Migration 036 — published_store trigger (sessão 42)** | ✓ **Corrigido** | Trigger `trg_mark_store_published` em `tenant_public_contacts`; `published_store` agora seta automaticamente ao salvar contato público |
+
+| **Correções visuais homologação (sessão 43)** | ✓ **Concluídas** | C1: Suporte card single-row + logo; C2: topbar bg-gray-900 sólido; C3: bg-[#040C21] auth pages; C5: reset-password redirect via onAuthStateChange — commits `0ee15d9` `c664506` |
+| **Premium topbar redesign (sessão 43)** | ✓ **Implementado** | Desktop topbar removida (Linear pattern); mobile h-20→h-14; logo 56px→36px; "Ver loja" migrado para sidebar identity — commit `c664506` |
+| **Fix auth background exato (sessão 43 enc.)** | ✓ **Corrigido** | bg-[#040C21]→bg-[#010F21] (amostrado do logo-dark.png); C2 deployado via push 5 commits — commit `4c44b18` |
+| **Auditoria completa + fix billing (sessão 44)** | ✓ **Concluída** | santos-car restaurado para Pro/active (estava past_due/starter após testes E2E); novos tenants reais descobertos (finalcar, revenda-click); docs atualizadas; 08_API_ROTAS_REAIS completo |
+
+---
+
+## 2026-06-06 (sessão 44) — Auditoria autônoma completa
+
+### Achados críticos
+- santos-car ficou `past_due` + `starter` após sequência de eventos Asaas durante E2E sessão 42 (2026-06-03 SUBSCRIPTION_DELETED + 2026-06-05 PAYMENT_OVERDUE)
+- Restaurado via SQL: `plan_id = Pro`, `status = active`, `grace_until = NULL`
+- `get_tenant_usage()` confirmado: Pro + active + features corretas (crm, analytics, central_atendimento...)
+
+### Novos tenants em produção (não documentados antes)
+| Tenant | Email | Status |
+|---|---|---|
+| `finalcar` | metodolimpezas@gmail.com | Assinou Pro, cancelou (2026-06-05) |
+| `revenda-click` | app.revendaclick@gmail.com | Trial Starter ativo (2026-06-06) |
+| `auditoria-rc-s42` | auditoria.rc.s42@gmail.com | E2E test tenant sessão 42 |
+
+### Landing leads reais
+- "Joaõ" — São José/SC, phone 48998232010 — status `novo` (2026-06-04) — lead real não atendido ainda
+
+### Documentação atualizada
+- `REFERENCE.md`: tabela tenants completa, nota migration 033 obsoleta
+- `08_API_ROTAS_REAIS.md`: add-on routes, admin routes, landing-lead webhook, evolution gate
+- `22_HISTORICO_ALTERACOES.md`: sessões 43 + 44
+- `23_PROXIMO_PASSO.md`: estado atual + próximos passos
 
 ---
 

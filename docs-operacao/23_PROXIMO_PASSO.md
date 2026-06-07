@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 05/06/2026 (sessão 42 — auditoria comercial E2E APROVADA + migration 036)
+> Atualizado em: 06/06/2026 (sessão 44 — auditoria autônoma completa + fix santos-car billing + docs)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,19 +23,21 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 42 — 05/06/2026)
+## Estado Atual do Projeto (sessão 44 — 06/06/2026)
 
 | Componente | Status |
 |---|---|
 | **Auditoria comercial E2E** | ✓ **PRONTO PARA OPERAÇÃO COMERCIAL** — fluxo completo 12 etapas aprovadas |
-| Migration 036 | ✓ aplicada — trigger `trg_mark_store_published` em `tenant_public_contacts` |
-| published_store bug | ✓ corrigido — checklist agora completa 4/4 ao salvar contato público |
+| **santos-car billing** | ✓ **RESTAURADO** — estava `past_due`/`starter`; corrigido para `active`/`pro` via SQL (sessão 44) |
+| **Tenants reais em produção** | ⚠️ `finalcar` (canceled) + `revenda-click` (trialing) — usuários reais identificados |
+| **Landing lead real** | ⚠️ "Joaõ" — São José/SC, 48998232010 — status `novo` — não atendido |
+| Correções visuais s43 | ✓ CONCLUÍDAS — C1 suporte card, C2 topbar sólida, C3 auth bg #010F21, C5 reset-password |
+| Premium topbar redesign | ✓ IMPLEMENTADO — desktop topbar removida; mobile h-14; "Ver loja" na sidebar |
+| Migration 036 | ✓ aplicada — trigger `trg_mark_store_published` |
 | Migration 035 | ✓ aplicada — `cpf_cnpj VARCHAR(18)` em tenants |
-| database.types.ts | ✓ atualizado — `cpf_cnpj` presente |
-| FC037 — Billing CPF/CNPJ | ✓ COMPLETO — campo com máscara, gate no billing, backend lê do DB, FC037.md criado |
-| Sidebar logo | ✓ +70% — sidebar 64px→110px; topbar mobile 40px→56px — commit `e74d51c` |
-| Suporte RevendaClick | ✓ Card em Settings ao final da página — commit `d193574` |
-| Auditoria ativação | ✓ ATIVAÇÃO APROVADA — 5 correções UX (commits d6307b2 + 403c4db) |
+| database.types.ts | ✓ atualizado |
+| FC037 — Billing CPF/CNPJ | ✓ COMPLETO |
+| 08_API_ROTAS_REAIS.md | ✓ ATUALIZADO — add-on routes, admin routes, landing-lead webhook adicionados |
 
 ---
 
@@ -156,6 +158,13 @@ Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / 
 ---
 
 ## Próximos Passos (por prioridade)
+
+### 0. AÇÃO COMERCIAL IMEDIATA — Landing lead real não atendido
+
+Lead "Joaõ" (48998232010, São José/SC) em `landing_leads` com status `novo` desde 2026-06-04.
+Acessar `/admin/leads` e atualizar status para `contatado` após primeiro contato.
+
+---
 
 ### 1. ~~Verificar sidebar no browser em produção~~ (CONCLUÍDA — sessão 33)
 

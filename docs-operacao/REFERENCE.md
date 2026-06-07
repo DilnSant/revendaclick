@@ -64,11 +64,15 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001 → 036 (036 = trigger published_store em tenant_public_contacts) |
+| Migrations aplicadas | 001–036 (exceto 033 — ver nota abaixo) |
 | Próxima migration | `037_...` |
-| Tenants no banco | santos-car (Pro/active), sandbox-revendaclick (Pro/active), devecar (is_active=false) |
+| Tenants no banco | ver tabela completa abaixo |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
+
+> **Migration 033 (local `033_fix_santos_car_asaas_subscription_id.sql`):** Nunca aplicada via Supabase MCP.
+> Seu conteúdo (UPDATE asaas_subscription_id de `dev_test_...` para `sub_gqu4uiro0sisshxt`) foi
+> supersedido pela sessão 36, que criou a assinatura `sub_b3y3xwo9s18g50xc` diretamente. **Obsoleta — não aplicar.**
 
 ## Documentação de falhas
 
@@ -206,15 +210,18 @@ has_white_label          → Scale only
 
 > Nunca confundir: WhatsApp da Loja é configurado em Configurações → Contato Público. Central de Atendimento é contratada separadamente em Add-ons.
 
-## Tenants de referência
+## Tenants — estado completo (06/06/2026)
 
-| Tenant | Plano | tenant_id | Notas |
-|---|---|---|---|
-| `santos-car` | **Pro** (active) | `fd1172f6-11e7-4555-8fe3-082fd1849587` | Tenant do owner — homologação e testes Pro |
-| `sandbox-revendaclick` | **Pro** (active) | `e72eb104-98b7-4a71-946d-15e680496fc3` | Tenant de testes isolado — substitui devecar |
+| Tenant | Plano | Status | tenant_id | Notas |
+|---|---|---|---|---|
+| `santos-car` | **Pro** | active | `fd1172f6-11e7-4555-8fe3-082fd1849587` | Tenant do owner — homologação; restaurado para Pro/active (sessão 44) após ficar past_due/starter durante testes E2E |
+| `sandbox-revendaclick` | **Pro** | active | `e72eb104-98b7-4a71-946d-15e680496fc3` | Tenant de testes isolado — asaas_subscription_id=NULL (manual) |
+| `devecar` | Pro | is_active=false | — | Removido como tenant operacional (2026-05-30); não usar |
+| `auditoria-rc-s42` | Pro | active | — | Criado durante E2E sessão 42 — tenant de teste temporário |
+| `finalcar` | Pro | canceled | — | Usuário real (metodolimpezas@gmail.com) — assinou e cancelou (2026-06-05) |
+| `revenda-click` | Starter | trialing | — | Usuário real (app.revendaclick@gmail.com) — trial ativo (2026-06-06) |
 
-> **devecar** foi removido como tenant operacional de referência (2026-05-30). `is_active=false`.
-> **santos-car** está no plano Pro (atualizado em sessão 26 — DB confirma).
+> **Atenção:** `finalcar` e `revenda-click` são usuários reais da plataforma em produção — não são tenants de teste.
 
 ## super_admin
 

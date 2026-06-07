@@ -29,6 +29,7 @@
 | POST | `/api/public/:slug/leads` | Cria lead (formulário público) |
 | POST | `/api/webhooks/evolution` | Webhook Evolution API (WhatsApp) |
 | POST | `/api/webhooks/asaas` | Webhook Asaas (billing) |
+| POST | `/api/webhooks/landing-lead` | Webhook landing lead (Next.js API Route — salva em landing_leads) |
 
 ---
 
@@ -55,6 +56,10 @@
 | DELETE | `/api/billing/subscription` | owner, admin |
 | POST | `/api/billing/reactivate` | owner, admin |
 | GET | `/api/billing/invoices` | qualquer |
+| GET | `/api/billing/addons` | qualquer |
+| POST | `/api/billing/addons/:type` | owner, admin |
+| DELETE | `/api/billing/addons/:type` | owner, admin |
+| POST | `/api/billing/dev/activate` | owner, admin — **apenas fora de produção** |
 | GET | `/api/store-contact` | qualquer |
 | PUT | `/api/store-contact` | owner, admin |
 
@@ -164,16 +169,32 @@ Body de `/api/ai/suggest-reply`:
 
 ---
 
-## WhatsApp / Evolution (JWT + tenant + subscription ativa)
+## WhatsApp / Evolution (JWT + tenant + subscription ativa + `has_central_atendimento`)
 
 | Método | Rota | Roles |
 |---|---|---|
 | GET | `/api/evolution/health` | qualquer |
-| GET | `/api/evolution/status` | qualquer |
-| GET | `/api/evolution/qr` | qualquer |
-| POST | `/api/evolution/connect` | owner, admin |
-| DELETE | `/api/evolution/disconnect` | owner, admin |
-| POST | `/api/evolution/send` | qualquer |
+| GET | `/api/evolution/status` | qualquer — gate `caGate` |
+| GET | `/api/evolution/qr` | qualquer — gate `caGate` |
+| POST | `/api/evolution/connect` | owner, admin — gate `caGate` |
+| DELETE | `/api/evolution/disconnect` | owner, admin — gate `caGate` |
+| POST | `/api/evolution/send` | qualquer — gate `caGate` |
+
+---
+
+## Admin (JWT + super_admin)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/api/admin/tenants` | Lista todos os tenants |
+| POST | `/api/admin/tenants/:id/activate` | Ativa tenant |
+| POST | `/api/admin/tenants/:id/extend-trial` | Estende trial |
+| POST | `/api/admin/tenants/:id/block` | Bloqueia tenant |
+| POST | `/api/admin/tenants/:id/unblock` | Desbloqueia tenant |
+| GET | `/api/admin/tenants/:id/features` | Lista feature flags do tenant |
+| POST | `/api/admin/tenants/:id/features` | Concede feature flag ao tenant |
+| DELETE | `/api/admin/tenants/:id/features/:feature` | Revoga feature flag do tenant |
+| POST | `/api/admin/billing/simulate-event` | Injeta evento Asaas fake (sem Asaas real) |
 
 ---
 
