@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabaseClient'
@@ -211,7 +212,7 @@ export default function OnboardingPage() {
 
         <p className="text-center text-xs text-gray-400">
           Ao criar sua loja você concorda com os{' '}
-          <a href="/terms" className="underline hover:text-gray-600">Termos de Uso</a>.
+          <Link href="/terms" className="underline hover:text-gray-600">Termos de Uso</Link>.
         </p>
       </div>
     </div>

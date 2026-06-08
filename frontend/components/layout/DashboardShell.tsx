@@ -105,7 +105,7 @@ const NAV_BASE: NavItem[] = [
   },
 ]
 
-// Pro+ items — visible when has_crm = true (Pro, Performance, Scale)
+// Pro+ items — visible when has_crm = true (Pro, Premium, Scale)
 const NAV_PRO: NavItem[] = [
   {
     href: '/crm',

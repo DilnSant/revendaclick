@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const supabase = createServiceClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('check_email_registered', { p_email: email })
     if (error) {
       console.error('[check-email]', error.message)

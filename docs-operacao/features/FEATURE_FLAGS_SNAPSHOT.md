@@ -1,6 +1,6 @@
 # Feature Flags — Snapshot Atual
 
-> Última atualização: 2026-05-30 (sessão 25 — migration 026: performance → premium)
+> Última atualização: 2026-06-08 (sessão 46 — FC038: auditoria final, correções ESLint, comentário Performance→Premium)
 > Fonte de verdade: função `get_tenant_usage()` no Supabase (3-way UNION)
 
 ---

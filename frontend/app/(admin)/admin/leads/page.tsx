@@ -46,6 +46,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
   const supabase = createServiceClient()
 
   // Leads sem contato há mais de 4h para alerta
+  // eslint-disable-next-line react-hooks/purity
   const alertCutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString()
   const { count: alertCount } = await supabase
     .from('landing_leads')

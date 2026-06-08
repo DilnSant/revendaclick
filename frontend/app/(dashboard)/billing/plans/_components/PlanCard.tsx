@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { formatCurrency } from '@/lib/billing-utils'
 import type { Plan, Subscription } from '@/lib/billing-utils'
 
@@ -284,12 +285,12 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription, c
               <p className="text-xs font-semibold text-amber-900">
                 Para contratar um plano é necessário informar CPF ou CNPJ nos dados da empresa.
               </p>
-              <a
+              <Link
                 href="/settings?tab=store"
                 className="inline-block rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700 transition-colors"
               >
                 Preencher agora
-              </a>
+              </Link>
             </div>
           )}
 

@@ -371,7 +371,7 @@ export default function PrivacidadePage() {
               >
                 contato@revendaclick.com.br
               </a>{' '}
-              com o assunto <strong>"Exclusão de Dados"</strong>. Inclua o número de
+              com o assunto <strong>&quot;Exclusão de Dados&quot;</strong>. Inclua o número de
               telefone ou e-mail que você utilizou ao preencher nosso formulário para que
               possamos localizar e excluir seus dados corretamente.
             </p>

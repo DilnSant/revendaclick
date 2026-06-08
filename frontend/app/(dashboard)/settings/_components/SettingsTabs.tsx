@@ -705,7 +705,7 @@ function WhatsAppTab() {
           Disponível como recurso adicional em qualquer plano.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
-          <a
+          <Link
             href="/whatsapp"
             className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700 transition-colors"
           >
@@ -713,13 +713,13 @@ function WhatsAppTab() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
             Abrir Automação WhatsApp
-          </a>
-          <a
+          </Link>
+          <Link
             href="/billing/addons"
             className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
           >
             Ver recursos disponíveis →
-          </a>
+          </Link>
         </div>
       </div>
     </div>
@@ -839,12 +839,12 @@ function PlanTab({ initialSubscription, cpfCnpj }: { initialSubscription: Subscr
           <p className="mt-1 text-xs text-amber-700">
             Preencha o CPF ou CNPJ na aba Loja antes de assinar.
           </p>
-          <a
+          <Link
             href="/settings?tab=store"
             className="mt-3 inline-block rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-700 transition-colors"
           >
             Preencher agora
-          </a>
+          </Link>
         </div>
       )}
 
