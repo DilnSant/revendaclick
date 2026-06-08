@@ -70,6 +70,29 @@
 | **Premium topbar redesign (sessão 43)** | ✓ **Implementado** | Desktop topbar removida (Linear pattern); mobile h-20→h-14; logo 56px→36px; "Ver loja" migrado para sidebar identity — commit `c664506` |
 | **Fix auth background exato (sessão 43 enc.)** | ✓ **Corrigido** | bg-[#040C21]→bg-[#010F21] (amostrado do logo-dark.png); C2 deployado via push 5 commits — commit `4c44b18` |
 | **Auditoria completa + fix billing (sessão 44)** | ✓ **Concluída** | santos-car restaurado para Pro/active (estava past_due/starter após testes E2E); novos tenants reais descobertos (finalcar, revenda-click); docs atualizadas; 08_API_ROTAS_REAIS completo |
+| **Super Admin — 8 páginas implementadas (sessão 45)** | ✓ **Completo** | /admin/users, /admin/subscriptions, /admin/billing, /admin/features, /admin/whatsapps, /admin/analytics, /admin/logs, /admin/settings — todas funcionais com dados reais do Supabase — commit `ad87d37` |
+
+---
+
+## 2026-06-07 (sessão 45) — Super Admin: 8 páginas implementadas
+
+### Problema
+Menu do Super Admin exibia 8 rotas que retornavam 404 (users, subscriptions, billing, features, whatsapps, analytics, logs, settings).
+
+### Implementado
+- `/admin/users` — query `users` + `tenants` JOIN; cards role/status; tabela com último acesso
+- `/admin/subscriptions` — query `subscriptions` + `plans` + `subscription_addons`; MRR estimado
+- `/admin/billing` — query `billing_invoices` + `tenants`; receita recebida vs inadimplente
+- `/admin/features` — query `tenant_features` + `tenants`; agrupado por tenant + tabela completa
+- `/admin/whatsapps` — query `Instance` + `Session` + contagem `Message`; status de conexão Evolution
+- `/admin/analytics` — 8 tabelas via `Promise.all`; MRR, ARR, churn, conversão, planos, receita
+- `/admin/logs` — query `audit_logs` + lookup manual de `users` (sem FK direta); top entidades
+- `/admin/settings` — planos, add-ons, infraestrutura, variáveis de ambiente, links operacionais
+
+### Técnico
+- Todas Server Components, `createServiceClient()` (service role), zero mock data
+- TypeScript: 0 erros (1 fix: audit_logs sem FK para users → lookup manual)
+- Commit `ad87d37` → push main → Vercel auto-deploy
 
 ---
 

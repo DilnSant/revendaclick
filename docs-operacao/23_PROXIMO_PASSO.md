@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 06/06/2026 (sessão 44 — auditoria autônoma completa + fix santos-car billing + docs)
+> Atualizado em: 07/06/2026 (sessão 45 — Super Admin completo: 8 páginas implementadas)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 44 — 06/06/2026)
+## Estado Atual do Projeto (sessão 45 — 07/06/2026)
 
 | Componente | Status |
 |---|---|
@@ -31,6 +31,7 @@
 | **santos-car billing** | ✓ **RESTAURADO** — estava `past_due`/`starter`; corrigido para `active`/`pro` via SQL (sessão 44) |
 | **Tenants reais em produção** | ⚠️ `finalcar` (canceled) + `revenda-click` (trialing) — usuários reais identificados |
 | **Landing lead real** | ⚠️ "Joaõ" — São José/SC, 48998232010 — status `novo` — não atendido |
+| **Super Admin — 8 páginas (sessão 45)** | ✓ **COMPLETO** — /users /subscriptions /billing /features /whatsapps /analytics /logs /settings — dados reais — commit `ad87d37` |
 | Correções visuais s43 | ✓ CONCLUÍDAS — C1 suporte card, C2 topbar sólida, C3 auth bg #010F21, C5 reset-password |
 | Premium topbar redesign | ✓ IMPLEMENTADO — desktop topbar removida; mobile h-14; "Ver loja" na sidebar |
 | Migration 036 | ✓ aplicada — trigger `trg_mark_store_published` |
