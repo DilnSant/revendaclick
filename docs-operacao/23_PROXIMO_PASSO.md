@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 07/06/2026 (sessão 45 — Super Admin completo: 8 páginas implementadas)
+> Atualizado em: 08/06/2026 (sessão 46 — FC038: auditoria ESLint + comentário obsoleto + snapshot date)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -32,6 +32,7 @@
 | **Tenants reais em produção** | ⚠️ `finalcar` (canceled) + `revenda-click` (trialing) — usuários reais identificados |
 | **Landing lead real** | ⚠️ "Joaõ" — São José/SC, 48998232010 — status `novo` — não atendido |
 | **Super Admin — 8 páginas (sessão 45)** | ✓ **COMPLETO** — /users /subscriptions /billing /features /whatsapps /analytics /logs /settings — dados reais — commit `ad87d37` |
+| **FC038 — Auditoria ESLint (sessão 46)** | ✓ **CONCLUÍDA** — 13 erros → 0; 5x `<a>→<Link>`; entities; eslint-disable; comentário obsoleto — commit `4ff2d3e` |
 | Correções visuais s43 | ✓ CONCLUÍDAS — C1 suporte card, C2 topbar sólida, C3 auth bg #010F21, C5 reset-password |
 | Premium topbar redesign | ✓ IMPLEMENTADO — desktop topbar removida; mobile h-14; "Ver loja" na sidebar |
 | Migration 036 | ✓ aplicada — trigger `trg_mark_store_published` |
@@ -245,8 +246,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **37 falhas documentadas (FC001–FC037)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC038**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **38 falhas documentadas (FC001–FC038)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC039**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

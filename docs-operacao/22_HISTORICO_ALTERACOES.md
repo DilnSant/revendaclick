@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 06/06/2026 (sessão 44 — auditoria completa + correções visuais + fix santos-car billing)
+> Última atualização: 08/06/2026 (sessão 46 — FC038: auditoria ESLint + comentário obsoleto + snapshot date)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -71,6 +71,35 @@
 | **Fix auth background exato (sessão 43 enc.)** | ✓ **Corrigido** | bg-[#040C21]→bg-[#010F21] (amostrado do logo-dark.png); C2 deployado via push 5 commits — commit `4c44b18` |
 | **Auditoria completa + fix billing (sessão 44)** | ✓ **Concluída** | santos-car restaurado para Pro/active (estava past_due/starter após testes E2E); novos tenants reais descobertos (finalcar, revenda-click); docs atualizadas; 08_API_ROTAS_REAIS completo |
 | **Super Admin — 8 páginas implementadas (sessão 45)** | ✓ **Completo** | /admin/users, /admin/subscriptions, /admin/billing, /admin/features, /admin/whatsapps, /admin/analytics, /admin/logs, /admin/settings — todas funcionais com dados reais do Supabase — commit `ad87d37` |
+| **FC038 — Auditoria final ESLint (sessão 46)** | ✓ **Concluída** | 13 erros ESLint → 0; 5x `<a>→<Link>`; react-hooks/purity server component; unescaped entities; eslint-disable não utilizados; comentário "Performance"→"Premium"; FEATURE_FLAGS_SNAPSHOT date corrigida — commit `4ff2d3e` |
+
+---
+
+## 2026-06-08 (sessão 46) — FC038: Auditoria final — 13 erros ESLint corrigidos
+
+### Escopo
+Auditoria de regressões pós-commit `ad87d37` (Super Admin). Sem novas funcionalidades, sem alterações de negócio.
+
+### Erros corrigidos (ESLint)
+- `SettingsTabs.tsx` — 3x `<a>` → `<Link>` (`/whatsapp`, `/billing/addons`, `/settings?tab=store`)
+- `PlanCard.tsx` — 1x `<a>` → `<Link>` (`/settings?tab=store`); adicionado `import Link`
+- `onboarding/page.tsx` — 1x `<a>` → `<Link>` (`/terms`); adicionado `import Link`
+- `admin/leads/page.tsx` — suprimir `react-hooks/purity` (server component — `Date.now()` é correto)
+- `privacidade/page.tsx` — escapar `"` → `&quot;` (react/no-unescaped-entities)
+- `check-email/route.ts` — remover eslint-disable não utilizado
+- `marketing/events.ts` — remover eslint-disable de arquivo não utilizado
+
+### Comentário obsoleto corrigido
+- `DashboardShell.tsx` — comentário `"Pro, Performance, Scale"` → `"Pro, Premium, Scale"`
+
+### Snapshot atualizado
+- `FEATURE_FLAGS_SNAPSHOT.md` — data corrigida de 2026-05-30 para 2026-06-08
+
+### Resultado
+- TypeScript: 0 erros
+- ESLint: 0 erros, 2 warnings (setState in useEffect — padrão intencional para fechar sidebar mobile)
+- Build Next.js: limpo
+- Commit: `4ff2d3e`
 
 ---
 

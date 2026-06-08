@@ -79,9 +79,10 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 37 (FC001–FC037) |
-| Próxima FC | **FC038** |
+| Total documentadas | 38 (FC001–FC038) |
+| Próxima FC | **FC039** |
 | FC037 | FC037_ASAAS_CPF_CNPJ_AUSENTE.md — HTTP 400 cpf_cnpj ausente no billing |
+| FC038 | FC038 — ESLint 13 erros (a href interno, unescaped entities, react-hooks/purity em server component) — corrigido sessão 46 |
 
 ## Landing Page — CONGELADA (sessão 31)
 
