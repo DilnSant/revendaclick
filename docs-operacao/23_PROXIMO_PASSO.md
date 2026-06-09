@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 08/06/2026 (sessão 46 — FC038: auditoria ESLint + comentário obsoleto + snapshot date)
+> Atualizado em: 09/06/2026 (sessão 47 — FC039: hardening final — 4 code fixes + 2 Supabase security + deploy VPS)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 45 — 07/06/2026)
+## Estado Atual do Projeto (sessão 47 — 09/06/2026)
 
 | Componente | Status |
 |---|---|
@@ -33,6 +33,7 @@
 | **Landing lead real** | ⚠️ "Joaõ" — São José/SC, 48998232010 — status `novo` — não atendido |
 | **Super Admin — 8 páginas (sessão 45)** | ✓ **COMPLETO** — /users /subscriptions /billing /features /whatsapps /analytics /logs /settings — dados reais — commit `ad87d37` |
 | **FC038 — Auditoria ESLint (sessão 46)** | ✓ **CONCLUÍDA** — 13 erros → 0; 5x `<a>→<Link>`; entities; eslint-disable; comentário obsoleto — commit `4ff2d3e` |
+| **FC039 — Hardening Final (sessão 47)** | ✓ **CONCLUÍDA** — 500 ListTenants (enum cast), NavItem `<a>`→`<Link>`, proxy.ts /automations+/campaigns, sitemap /privacidade, REVOKE EXECUTE 6 funções, landing_leads RLS — commit `0be8b4e` |
 | Correções visuais s43 | ✓ CONCLUÍDAS — C1 suporte card, C2 topbar sólida, C3 auth bg #010F21, C5 reset-password |
 | Premium topbar redesign | ✓ IMPLEMENTADO — desktop topbar removida; mobile h-14; "Ver loja" na sidebar |
 | Migration 036 | ✓ aplicada — trigger `trg_mark_store_published` |

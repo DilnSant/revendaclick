@@ -56,6 +56,8 @@
 | [FC035](FC035_FORGOT_PASSWORD_APPURL_LOCALHOST.md) | forgot-password: appUrl fallback `localhost:3000` — links de recovery apontavam para localhost em produção | Auth / Frontend | ALTA | 03/06/2026 |
 | [FC036](FC036_VEHICLE_DETAIL_SEM_PRIMARY_VAR.md) | Página de detalhe do veículo sem `--primary` CSS var — CTA usava cor da plataforma em vez da cor do tenant | Frontend / Branding | ALTA | 04/06/2026 |
 | [FC037](FC037_ASAAS_CPF_CNPJ_AUSENTE.md) | Asaas HTTP 400 `invalid_object` — CPF/CNPJ ausente ao contratar plano (coluna inexistente, frontend nunca enviava) | Billing / Asaas | CRÍTICO | 05/06/2026 |
+| [FC038](FC038_ESLINT_13_ERROS_ACUMULADOS.md) | ESLint 13 erros acumulados — `<a>`→`<Link>`, react-hooks/purity, entities, eslint-disable, comentário obsoleto | Frontend / Code Quality | MÉDIA | 08/06/2026 |
+| [FC039](FC039_HARDENING_FINAL_AUDITORIA_OPERACIONAL.md) | Hardening final — 500 ListTenants (enum cast), NavItem `<a>`→`<Link>`, proxy.ts protection, sitemap, REVOKE trigger functions, landing_leads RLS | Full Stack | ALTA | 09/06/2026 |
 
 ---
 

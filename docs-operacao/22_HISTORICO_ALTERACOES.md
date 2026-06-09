@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 08/06/2026 (sessão 46 — FC038: auditoria ESLint + comentário obsoleto + snapshot date)
+> Última atualização: 09/06/2026 (sessão 47 — FC039: hardening final + 4 correções code + 2 Supabase security fixes)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -72,6 +72,40 @@
 | **Auditoria completa + fix billing (sessão 44)** | ✓ **Concluída** | santos-car restaurado para Pro/active (estava past_due/starter após testes E2E); novos tenants reais descobertos (finalcar, revenda-click); docs atualizadas; 08_API_ROTAS_REAIS completo |
 | **Super Admin — 8 páginas implementadas (sessão 45)** | ✓ **Completo** | /admin/users, /admin/subscriptions, /admin/billing, /admin/features, /admin/whatsapps, /admin/analytics, /admin/logs, /admin/settings — todas funcionais com dados reais do Supabase — commit `ad87d37` |
 | **FC038 — Auditoria final ESLint (sessão 46)** | ✓ **Concluída** | 13 erros ESLint → 0; 5x `<a>→<Link>`; react-hooks/purity server component; unescaped entities; eslint-disable não utilizados; comentário "Performance"→"Premium"; FEATURE_FLAGS_SNAPSHOT date corrigida — commit `4ff2d3e` |
+| **FC039 — Hardening Final e Auditoria Operacional (sessão 47)** | ✓ **Concluída** | 7 correções: (1) ListTenants 500 enum cast; (2) NavItem `<a>`→`<Link>`; (3) proxy.ts /automations+/campaigns; (4) sitemap /privacidade; (5) REVOKE EXECUTE 6 trigger functions; (6) landing_leads RLS WITH CHECK (false). Commit `0be8b4e` |
+
+---
+
+## 2026-06-09 (sessão 47) — FC039: Hardening Final e Auditoria Operacional
+
+### Escopo
+
+Auditoria completa do stack sem adição de funcionalidades. 7 inconsistências técnicas identificadas e corrigidas.
+
+### Correções aplicadas
+
+| # | Arquivo / Sistema | Problema | Fix |
+|---|---|---|---|
+| 1 | `backend/internal/admin/repository.go` | `COALESCE(s.status, 'none')` → ERROR 22P02 (enum cast) → 500 no painel admin | `COALESCE(s.status::text, 'none')` |
+| 2 | `frontend/components/layout/DashboardShell.tsx` | `NavItem` usava `<a href>` causando full page reload | Substituído por `<Link href>` |
+| 3 | `frontend/proxy.ts` | `/automations` e `/campaigns` ausentes de PROTECTED_PREFIXES | Adicionados os dois prefixos |
+| 4 | `frontend/app/sitemap.ts` | Sitemap apontava `/privacy` (não-canônica) | Corrigido para `/privacidade` |
+| 5 | Supabase — 6 trigger functions | EXECUTE grant para anon/authenticated exposto via REST API | `REVOKE EXECUTE ... FROM anon, authenticated` em todas as 6 funções |
+| 6 | Supabase — `landing_leads` policy | `WITH CHECK (true)` permitia insert lixo via REST API direta | Alterado para `WITH CHECK (false)` |
+
+### Auditoria operacional
+
+- **VPS:** todos os containers healthy — rc_backend, rc_evolution, rc_redis, rc_backup
+- **Backend:** `{"db":"ok","status":"ok"}` | `GET /health` → 200
+- **Evolution API:** Up 6 days, healthy, 163MiB/768MiB
+- **Nginx:** config válida, active
+- **Uptime monitor:** `[OK] all endpoints healthy` (últimas 5 verificações)
+- **npm audit:** 0 vulnerabilidades
+- **Build frontend:** ✓ 0 erros, 0 warnings
+
+### Commit
+
+`0be8b4e` — `fix(fc039): hardening final — 4 correções críticas` — deploy automático via CI/CD
 
 ---
 
