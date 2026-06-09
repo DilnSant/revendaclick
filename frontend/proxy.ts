@@ -12,6 +12,8 @@ const PROTECTED_PREFIXES = [
   '/financial',
   '/sales',
   '/analytics',
+  '/automations',
+  '/campaigns',
   '/settings',
   '/vendors',
   '/billing',

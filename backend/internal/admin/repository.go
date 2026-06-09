@@ -22,7 +22,7 @@ func (r *Repository) ListTenants(ctx context.Context) ([]*TenantSummary, error) 
 	rows, err := r.pool.Query(ctx, `
 		SELECT
 		  t.id::text, t.slug, t.name, t.email, t.is_active, t.created_at,
-		  COALESCE(s.status, 'none')            AS sub_status,
+		  COALESCE(s.status::text, 'none')       AS sub_status,
 		  COALESCE(p.name, '')                  AS plan_name,
 		  COALESCE(p.display_name, '')          AS plan_display,
 		  s.trial_ends_at,
