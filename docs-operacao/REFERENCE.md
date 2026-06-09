@@ -22,7 +22,7 @@
 | `rc_backend` | `ghcr.io/dilnsant/revendaclick-backend` | `8080` |
 | `rc_evolution` | `evoapicloud/evolution-api:v2.3.7` | `8080` |
 | `rc_redis` | `redis:7-alpine` | `6379` |
-| `rc_backup` | `alpine` | — |
+| `rc_backup` | `postgres:17-alpine` | — |
 
 ## URLs de produção
 
@@ -79,10 +79,10 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 38 (FC001–FC038) |
-| Próxima FC | **FC039** |
-| FC037 | FC037_ASAAS_CPF_CNPJ_AUSENTE.md — HTTP 400 cpf_cnpj ausente no billing |
-| FC038 | FC038 — ESLint 13 erros (a href interno, unescaped entities, react-hooks/purity em server component) — corrigido sessão 46 |
+| Total documentadas | 40 (FC001–FC040) |
+| Próxima FC | **FC041** |
+| FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
+| FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 
 ## Landing Page — CONGELADA (sessão 31)
 
@@ -103,7 +103,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | API Route | `POST /api/leads/landing` (Next.js, não backend Go) |
 | Admin list | `/admin/leads` — filtros, paginação 25/pág, alerta 4h |
 | Admin detalhe | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
-| RLS | INSERT: anon + authenticated \| SELECT: service_role only |
+| RLS | INSERT: policy existe para anon/authenticated mas `WITH CHECK (false)` — REST API direta bloqueada (FC039); inserts legítimos via service_role em `/api/leads/landing` \| SELECT: service_role only |
 | Campos qualificação | `vehicles_count`, `city`, `state` (migration 029) |
 | Campos pipeline | `status`, `notes`, `updated_at` (migration 030); `last_contact_at`, `next_action` (migration 031) |
 | Status válidos | `novo` → `contatado` → `em_negociacao` → `convertido` \| `perdido` |
