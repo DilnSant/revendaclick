@@ -58,6 +58,7 @@
 | [FC037](FC037_ASAAS_CPF_CNPJ_AUSENTE.md) | Asaas HTTP 400 `invalid_object` — CPF/CNPJ ausente ao contratar plano (coluna inexistente, frontend nunca enviava) | Billing / Asaas | CRÍTICO | 05/06/2026 |
 | [FC038](FC038_ESLINT_13_ERROS_ACUMULADOS.md) | ESLint 13 erros acumulados — `<a>`→`<Link>`, react-hooks/purity, entities, eslint-disable, comentário obsoleto | Frontend / Code Quality | MÉDIA | 08/06/2026 |
 | [FC039](FC039_HARDENING_FINAL_AUDITORIA_OPERACIONAL.md) | Hardening final — 500 ListTenants (enum cast), NavItem `<a>`→`<Link>`, proxy.ts protection, sitemap, REVOKE trigger functions, landing_leads RLS | Full Stack | ALTA | 09/06/2026 |
+| [FC040](FC040_SUPABASE_SEARCH_PATH_E_REVOKE_PUBLIC.md) | Supabase: `SET search_path = public` em 8 funções + `REVOKE FROM PUBLIC` em 6 trigger functions (herança PUBLIC não coberta por FC039) | Supabase / Segurança | WARN | 09/06/2026 |
 
 ---
 

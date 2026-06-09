@@ -73,6 +73,7 @@
 | **Super Admin — 8 páginas implementadas (sessão 45)** | ✓ **Completo** | /admin/users, /admin/subscriptions, /admin/billing, /admin/features, /admin/whatsapps, /admin/analytics, /admin/logs, /admin/settings — todas funcionais com dados reais do Supabase — commit `ad87d37` |
 | **FC038 — Auditoria final ESLint (sessão 46)** | ✓ **Concluída** | 13 erros ESLint → 0; 5x `<a>→<Link>`; react-hooks/purity server component; unescaped entities; eslint-disable não utilizados; comentário "Performance"→"Premium"; FEATURE_FLAGS_SNAPSHOT date corrigida — commit `4ff2d3e` |
 | **FC039 — Hardening Final e Auditoria Operacional (sessão 47)** | ✓ **Concluída** | 7 correções: (1) ListTenants 500 enum cast; (2) NavItem `<a>`→`<Link>`; (3) proxy.ts /automations+/campaigns; (4) sitemap /privacidade; (5) REVOKE EXECUTE 6 trigger functions; (6) landing_leads RLS WITH CHECK (false). Commit `0be8b4e` |
+| **FC040 — Supabase search_path + REVOKE FROM PUBLIC (sessão 47)** | ✓ **Concluída** | `SET search_path = public` em 8 funções via ALTER FUNCTION; REVOKE FROM PUBLIC em 6 trigger functions (herança PUBLIC — causa raiz que FC039 não cobriu). Advisor: 0 warnings de funções. |
 
 ---
 
