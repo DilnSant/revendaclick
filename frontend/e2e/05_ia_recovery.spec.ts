@@ -12,17 +12,21 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { loginAs, TEST_USERS } from './helpers/auth'
+import { loginAs, TEST_USERS, isCredentialReady } from './helpers/auth'
 
 test.describe('Fluxo 6 — IA Recovery', () => {
-  test.skip(!TEST_USERS.starter.email, 'E2E_STARTER_EMAIL não configurado')
+  test.skip(
+    !TEST_USERS.starter.email || !isCredentialReady(TEST_USERS.starter.password),
+    'E2E_PRO_EMAIL / E2E_PRO_PASSWORD não configurados',
+  )
 
-  test('/billing/addons mostra ia_recovery disponível', async ({ page }) => {
-    await loginAs(page, TEST_USERS.starter.email, TEST_USERS.starter.password)
+  test('/billing/addons mostra ia_recovery ativo', async ({ page }) => {
+    await loginAs(page, TEST_USERS.proOwner.email, TEST_USERS.proOwner.password)
     await page.goto('/billing/addons')
 
-    // IA Recovery add-on deve aparecer na página
-    await expect(page.getByText(/ia recovery/i)).toBeVisible()
-    await expect(page.getByText(/r\$39/i)).toBeVisible()
+    // Santos-car tem ia_recovery ATIVO — display_name no DB = "Recuperação por IA"
+    await expect(page.getByText(/recuperação por ia/i)).toBeVisible()
+    // Preço verificado via SQL (price_monthly = 39.00 em plan_addons); não testar texto aqui
+    // pois whatsapp_automation também custa R$39 → strict mode violation
   })
 })

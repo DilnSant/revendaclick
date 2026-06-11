@@ -21,12 +21,19 @@ export const TEST_USERS = {
   },
 }
 
+/** Retorna false se a senha for vazia ou o placeholder padrão "PREENCHER" */
+export function isCredentialReady(password: string): boolean {
+  return !!password && password !== 'PREENCHER'
+}
+
 export async function loginAs(page: Page, email: string, password: string) {
   await page.goto('/login')
-  await page.getByLabel(/e-mail/i).fill(email)
-  await page.getByLabel(/senha/i).fill(password)
+  // Login page usa id="email" e id="password" (com htmlFor associado)
+  await page.locator('#email').fill(email)
+  await page.locator('#password').fill(password)
   await page.getByRole('button', { name: /entrar/i }).click()
-  await page.waitForURL(/dashboard|onboarding/, { timeout: 10_000 })
+  // super_admin → /admin; tenant → /dashboard ou /onboarding
+  await page.waitForURL(/dashboard|onboarding|\/admin/, { timeout: 10_000 })
 }
 
 export async function logout(page: Page) {

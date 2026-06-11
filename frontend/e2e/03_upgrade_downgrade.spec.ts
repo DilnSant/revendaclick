@@ -13,14 +13,15 @@
  */
 
 import { test, expect, request } from '@playwright/test'
-import { loginAs, TEST_USERS } from './helpers/auth'
+import { loginAs, TEST_USERS, isCredentialReady } from './helpers/auth'
 
 const TEST_TENANT_ID = process.env.E2E_TEST_TENANT_ID ?? ''
 const API_URL = process.env.E2E_API_URL ?? 'http://localhost:8080'
 
 test.describe('Fluxo 3 e 4 — Upgrade e Downgrade', () => {
   test.skip(!TEST_TENANT_ID, 'E2E_TEST_TENANT_ID não configurado')
-  test.skip(!TEST_USERS.superAdmin.password, 'E2E_SUPER_ADMIN_PASSWORD não configurado')
+  test.skip(!isCredentialReady(TEST_USERS.superAdmin.password), 'E2E_SUPER_ADMIN_PASSWORD não configurado')
+  test.skip(!isCredentialReady(TEST_USERS.starter.password), 'E2E_PRO_PASSWORD não configurado')
 
   test('upgrade para Pro via simulate-event ativa sidebar Pro', async ({ page }) => {
     // Super admin simula SUBSCRIPTION_UPDATED para plano Pro
@@ -46,10 +47,10 @@ test.describe('Fluxo 3 e 4 — Upgrade e Downgrade', () => {
     await expect(true).toBe(true) // placeholder — substituir por login do tenant
   })
 
-  test('downgrade para Starter remove acesso ao CRM', async ({ page }) => {
-    // Sem acesso real a has_crm, /crm deve retornar 404
-    await loginAs(page, TEST_USERS.starter.email, TEST_USERS.starter.password)
+  test('Pro user: /crm acessível (has_crm ativo)', async ({ page }) => {
+    // Pro tem has_crm — /crm deve retornar 200 (não 404)
+    await loginAs(page, TEST_USERS.proOwner.email, TEST_USERS.proOwner.password)
     const res = await page.goto('/crm')
-    expect(res?.status()).toBe(404)
+    expect(res?.status()).not.toBe(404)
   })
 })

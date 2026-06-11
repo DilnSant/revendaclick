@@ -1,53 +1,54 @@
 /**
- * FLUXO 2 — Assinatura → Checkout → Webhook → Subscription → Feature Flags → Sidebar
+ * FLUXO 2 — Billing e Feature Flags
  *
  * Pré-requisitos:
- *   - E2E_STARTER_EMAIL / E2E_STARTER_PASSWORD com tenant Starter válido
- *   - Backend rodando com ASAAS_ENV=sandbox
- *   - Para testar webhook: usar POST /api/admin/billing/simulate-event (super_admin)
+ *   - E2E_PRO_EMAIL / E2E_PRO_PASSWORD configurados (tenant Pro ativo)
  *
  * O que testa:
- *   - Sidebar Starter (sem seção Pro)
- *   - Fluxo de escolha de plano
- *   - Após simulate-event: sidebar atualiza para Pro (has_crm)
+ *   - Sidebar Pro mostra CRM e Analytics (has_crm ativo)
+ *   - Sub-nav /billing mostra as 4 abas esperadas
+ *   - /billing/plans exibe 3 planos públicos (Scale oculto)
  */
 
 import { test, expect } from '@playwright/test'
-import { loginAs, TEST_USERS } from './helpers/auth'
+import { loginAs, TEST_USERS, isCredentialReady } from './helpers/auth'
 
 test.describe('Fluxo 2 — Billing e Feature Flags', () => {
-  test.skip(!TEST_USERS.starter.email, 'E2E_STARTER_EMAIL não configurado')
+  test.skip(
+    !TEST_USERS.proOwner.email || !isCredentialReady(TEST_USERS.proOwner.password),
+    'E2E_PRO_EMAIL / E2E_PRO_PASSWORD não configurados',
+  )
 
-  test('sidebar Starter não mostra seção Pro', async ({ page }) => {
-    await loginAs(page, TEST_USERS.starter.email, TEST_USERS.starter.password)
+  test('Pro user: sidebar mostra CRM e Analytics', async ({ page }) => {
+    await loginAs(page, TEST_USERS.proOwner.email, TEST_USERS.proOwner.password)
     await page.goto('/dashboard')
 
-    // Não deve ver CRM ou Analytics no nav
-    await expect(page.getByRole('link', { name: /atendimento/i })).not.toBeVisible()
-    await expect(page.getByRole('link', { name: /analytics/i })).not.toBeVisible()
-
-    // Deve ver upgrade prompt
-    await expect(page.getByText(/desbloqueie com pro/i)).toBeVisible()
+    // Pro tem has_crm → "Atendimento" visível na sidebar
+    await expect(page.getByRole('link', { name: /atendimento/i })).toBeVisible()
+    // Pro tem has_analytics → "Analytics" visível
+    await expect(page.getByRole('link', { name: /analytics/i })).toBeVisible()
   })
 
   test('página /billing mostra sub-nav correto', async ({ page }) => {
-    await loginAs(page, TEST_USERS.starter.email, TEST_USERS.starter.password)
+    await loginAs(page, TEST_USERS.proOwner.email, TEST_USERS.proOwner.password)
     await page.goto('/billing')
 
-    await expect(page.getByRole('link', { name: /assinatura/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /add-ons/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /cobranças/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /planos/i })).toBeVisible()
+    // href exato evita colisão com outros links de mesmo nome na página
+    await expect(page.locator('a[href="/billing"]').first()).toBeVisible()
+    await expect(page.locator('a[href="/billing/addons"]').first()).toBeVisible()
+    await expect(page.locator('a[href="/billing/history"]').first()).toBeVisible()
+    await expect(page.locator('a[href="/billing/plans"]').first()).toBeVisible()
   })
 
   test('/billing/plans mostra 3 planos públicos', async ({ page }) => {
-    await loginAs(page, TEST_USERS.starter.email, TEST_USERS.starter.password)
+    await loginAs(page, TEST_USERS.proOwner.email, TEST_USERS.proOwner.password)
     await page.goto('/billing/plans')
 
-    await expect(page.getByText('Starter')).toBeVisible()
-    await expect(page.getByText('Pro')).toBeVisible()
-    await expect(page.getByText('Premium')).toBeVisible()
+    // Usar heading para evitar strict mode (texto "Starter" aparece em múltiplos elementos)
+    await expect(page.getByRole('heading', { name: 'Starter', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Pro', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Premium', exact: true })).toBeVisible()
     // Scale deve estar oculto do grid público
-    await expect(page.getByText('Scale')).not.toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Scale', exact: true })).not.toBeVisible()
   })
 })

@@ -79,11 +79,12 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 41 (FC001–FC041) |
-| Próxima FC | **FC042** |
+| Total documentadas | 42 (FC001–FC042) |
+| Próxima FC | **FC043** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
+| FC042 | FC042 — E2E Playwright: seletores incorretos + skip guards insuficientes — 5 causas raiz; 7 arquivos corrigidos; 9/9 testes verdes contra produção — sessão 48 |
 
 ## Landing Page — CONGELADA (sessão 31)
 

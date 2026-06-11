@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 11/06/2026 (sessão 48 — FC041: saneamento documental final — 4 arquivos corrigidos)
+> Última atualização: 11/06/2026 (sessão 48 — FC042: E2E Playwright — 9/9 testes verdes contra produção)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -74,7 +74,36 @@
 | **FC038 — Auditoria final ESLint (sessão 46)** | ✓ **Concluída** | 13 erros ESLint → 0; 5x `<a>→<Link>`; react-hooks/purity server component; unescaped entities; eslint-disable não utilizados; comentário "Performance"→"Premium"; FEATURE_FLAGS_SNAPSHOT date corrigida — commit `4ff2d3e` |
 | **FC039 — Hardening Final e Auditoria Operacional (sessão 47)** | ✓ **Concluída** | 7 correções: (1) ListTenants 500 enum cast; (2) NavItem `<a>`→`<Link>`; (3) proxy.ts /automations+/campaigns; (4) sitemap /privacidade; (5) REVOKE EXECUTE 6 trigger functions; (6) landing_leads RLS WITH CHECK (false). Commit `0be8b4e` |
 | **FC040 — Supabase search_path + REVOKE FROM PUBLIC (sessão 47)** | ✓ **Concluída** | `SET search_path = public` em 8 funções via ALTER FUNCTION; REVOKE FROM PUBLIC em 6 trigger functions (herança PUBLIC — causa raiz que FC039 não cobriu). Advisor: 0 warnings de funções. |
+| **FC042 — E2E Playwright selectors + skip guards (sessão 48)** | ✓ **Concluída** | 7 arquivos corrigidos: `auth.ts` (`#email`/`#password`), `isCredentialReady()`, spec 01 skip guard, tabs `a[href]`, display_names reais, `href` exatos. Resultado: 9/9 aprovados, 1 skip (spec 01 requer email confirmation OFF). |
 | **FC041 — Saneamento documental final (sessão 48)** | ✓ **Concluída** | 4 arquivos corrigidos: `23_PROXIMO_PASSO.md`, `20_PENDENCIAS.md`, `FalhasCorrigidas/README.md`, `memory/project_status.md` — contagem FC atualizada (38→40; FC039→FC041); seções duplicadas e obsoletas removidas. |
+
+---
+
+## 2026-06-11 (sessão 48, cont.) — FC042: E2E Playwright — Seletores e Skip Guards
+
+### Escopo
+
+Correção da suíte Playwright E2E. Nenhuma alteração em código de produção (app, backend, migrations, banco).
+
+### Causas Raiz (5 bugs independentes)
+
+1. `auth.ts` `loginAs()`: `getByLabel(/e-mail/i)` não batia com `<label htmlFor="email">Email</label>` — sem hífen. Corrigido para `page.locator('#email')` e `#password`.
+2. `01_onboarding.spec.ts`: formulário de registro sem `htmlFor`/`id` → `getByLabel` falha; campos obrigatórios (nome, confirmar senha) não preenchidos; assume `email_confirmations=OFF` (produção tem ON).
+3. Specs 02–05: skip guard `!TEST_USERS.starter.email` não verificava senha — `"PREENCHER"` é truthy → testes rodavam e falhavam com timeout.
+4. Specs 02–05 contra UI real: assertions refletiam usuário Starter, mas `TEST_USERS.starter` = alias de `proOwner` (Pro); tabs Settings usam `<a>` não `role="tab"`; display_name `ia_recovery` é "Recuperação por IA" (não "IA Recovery").
+5. Strict mode violations: `getByText('Starter')` → 4 elementos; `getByRole('link', /cobranças/i)` → 2 elementos.
+
+### Resultado
+
+| Métrica | Antes | Depois |
+|---|---|---|
+| Testes aprovados | 0 | 9 |
+| Testes falhados | 10 | 0 |
+| Testes pulados | 0 | 1 (spec 01 — requer email confirmation OFF) |
+
+### Arquivos alterados
+
+`e2e/helpers/auth.ts`, `e2e/01_onboarding.spec.ts`, `e2e/02_billing_subscribe.spec.ts`, `e2e/03_upgrade_downgrade.spec.ts`, `e2e/04_whatsapp_addon.spec.ts`, `e2e/05_ia_recovery.spec.ts`, `.env.e2e`
 
 ---
 

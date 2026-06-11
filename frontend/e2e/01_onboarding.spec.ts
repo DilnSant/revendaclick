@@ -4,6 +4,7 @@
  * Pré-requisitos:
  *   - E2E_BASE_URL apontando para ambiente com banco limpo (ou sandbox)
  *   - Supabase Auth com confirmação de e-mail DESABILITADA (ambiente de teste)
+ *   - Definir E2E_EMAIL_CONFIRMATION_DISABLED=true no .env.e2e para habilitar este spec
  *
  * O que testa:
  *   - Registro de novo usuário
@@ -20,11 +21,18 @@ const testPassword = 'TestPass@123'
 const testSlug = `e2e-loja-${timestamp}`
 
 test.describe('Fluxo 1 — Cadastro e Onboarding', () => {
+  test.skip(
+    !process.env.E2E_EMAIL_CONFIRMATION_DISABLED,
+    'Requer E2E_EMAIL_CONFIRMATION_DISABLED=true e confirmação de e-mail desabilitada no Supabase',
+  )
+
   test('deve registrar usuário, criar tenant e chegar no dashboard', async ({ page }) => {
-    // Registro
+    // Registro — página não usa htmlFor/id, usar placeholder e type
     await page.goto('/register')
-    await page.getByLabel(/e-mail/i).fill(testEmail)
-    await page.getByLabel(/senha/i).fill(testPassword)
+    await page.getByPlaceholder(/João Silva/i).fill(`E2E User ${timestamp}`)
+    await page.locator('input[type="email"]').fill(testEmail)
+    await page.getByPlaceholder(/Mínimo 8 caracteres/i).fill(testPassword)
+    await page.getByPlaceholder(/Repita a senha/i).fill(testPassword)
     await page.getByRole('button', { name: /criar conta/i }).click()
 
     // Aguarda redirect para onboarding (sem confirmação de e-mail)
