@@ -176,10 +176,11 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | FLUTTERFLOW_MIGRATION.md | — | Guia completo de migração |
 | CONCLUÍDA | Runbook de incidentes | — | `24_RUNBOOK_INCIDENTES.md` — 10 cenários com diagnóstico e solução |
 | CONCLUÍDA | Sync docs ↔ código (sessão 5) | — | 11_DOCKER.md, 16_EVOLUTION.md, 19_RISCOS.md, 24_RUNBOOK atualizados para refletir commit d17025e (Redis + 768m + NODE_OPTIONS) |
-| CONCLUÍDA | FalhasCorrigidas/ — histórico permanente de bugs | — | 38 falhas documentadas em `docs-operacao/FalhasCorrigidas/` (FC001–FC038) com causa raiz, correção, commits e prevenção |
+| CONCLUÍDA | FalhasCorrigidas/ — histórico permanente de bugs | — | 41 falhas documentadas em `docs-operacao/FalhasCorrigidas/` (FC001–FC041) com causa raiz, correção, commits e prevenção |
 | CONCLUÍDA | FC038 — ESLint 13 erros acumulados (sessão 46) | — | 5x `<a>→<Link>`, react-hooks/purity server component, unescaped entities, eslint-disable não utilizados, comentário "Performance"→"Premium" — commit `4ff2d3e` |
 | CONCLUÍDA | FC039 — Hardening Final e Auditoria Operacional (sessão 47) | — | 500 ListTenants enum cast; NavItem `<a>`→`<Link>`; proxy.ts +/automations +/campaigns; sitemap /privacidade; REVOKE EXECUTE 6 trigger functions; landing_leads RLS WITH CHECK (false) — commit `0be8b4e` |
 | CONCLUÍDA | FC040 — Supabase search_path + REVOKE FROM PUBLIC (sessão 47) | — | `SET search_path = public` em 8 funções; REVOKE FROM PUBLIC em 6 trigger functions (herança PUBLIC não coberta por FC039); advisor limpo de todos warnings de funções |
+| CONCLUÍDA | FC041 — Saneamento documental final (sessão 48) | — | 4 arquivos corrigidos: count FC 38→40 (e depois 41), próximo FC039→FC042, seção duplicada em memory removida — exclusivamente documental |
 | CONCLUÍDA | FC033 — CancelSubscription cancela subscription_addons em cascata | — | Opção A implementada (sessão 30): cancelTenantAddons + ListActiveAddonIDs + CancelAllAddonsByTenantID — commit `529efb2` |
 | CONCLUÍDA | Saneamento documental (sessão 26) | — | 4 divergências corrigidas; Coolify→Vercel em 03_FRONTEND + 06_AUTH + 10_INFRA + 02_MAPA; middleware.ts→proxy.ts; docs-operacao/prompts/ removido; MEMORY/PRODUCT_ARCH plan.name corrigidos |
 | CONCLUÍDA | Tenant sandbox-revendaclick | — | Criado via SQL: slug `sandbox-revendaclick`, plano Pro active, period_end 2026-06-30. tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |

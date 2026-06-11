@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 09/06/2026 (sessão 47 — FC039: hardening final + 4 correções code + 2 Supabase security fixes)
+> Última atualização: 11/06/2026 (sessão 48 — FC041: saneamento documental final — 4 arquivos corrigidos)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -74,6 +74,35 @@
 | **FC038 — Auditoria final ESLint (sessão 46)** | ✓ **Concluída** | 13 erros ESLint → 0; 5x `<a>→<Link>`; react-hooks/purity server component; unescaped entities; eslint-disable não utilizados; comentário "Performance"→"Premium"; FEATURE_FLAGS_SNAPSHOT date corrigida — commit `4ff2d3e` |
 | **FC039 — Hardening Final e Auditoria Operacional (sessão 47)** | ✓ **Concluída** | 7 correções: (1) ListTenants 500 enum cast; (2) NavItem `<a>`→`<Link>`; (3) proxy.ts /automations+/campaigns; (4) sitemap /privacidade; (5) REVOKE EXECUTE 6 trigger functions; (6) landing_leads RLS WITH CHECK (false). Commit `0be8b4e` |
 | **FC040 — Supabase search_path + REVOKE FROM PUBLIC (sessão 47)** | ✓ **Concluída** | `SET search_path = public` em 8 funções via ALTER FUNCTION; REVOKE FROM PUBLIC em 6 trigger functions (herança PUBLIC — causa raiz que FC039 não cobriu). Advisor: 0 warnings de funções. |
+| **FC041 — Saneamento documental final (sessão 48)** | ✓ **Concluída** | 4 arquivos corrigidos: `23_PROXIMO_PASSO.md`, `20_PENDENCIAS.md`, `FalhasCorrigidas/README.md`, `memory/project_status.md` — contagem FC atualizada (38→40; FC039→FC041); seções duplicadas e obsoletas removidas. |
+
+---
+
+## 2026-06-11 (sessão 48) — FC041: Saneamento Documental Final
+
+### Escopo
+
+Correção exclusivamente documental — sem alterações de código, banco, migrations, frontend ou backend.
+
+### Divergência original identificada (diagnóstico sessão 48)
+
+`23_PROXIMO_PASSO.md` seção "Documentação de Falhas" ficou desatualizada após sessão 47: count dizia "38 falhas (FC001–FC038)" e "Próximo: FC039" quando FC039 e FC040 já haviam sido concluídas nessa mesma sessão.
+
+### Auditoria complementar — divergências encontradas em 4 arquivos
+
+| Arquivo | Divergência | Correção |
+|---|---|---|
+| `docs-operacao/23_PROXIMO_PASSO.md` | "38 falhas (FC001–FC038)" / "Próximo: FC039" | "40 falhas (FC001–FC040)" / "Próximo: FC041" |
+| `docs-operacao/20_PENDENCIAS.md` | Linha da entrada FalhasCorrigidas: "38 falhas (FC001–FC038)" | "40 falhas (FC001–FC040)" |
+| `docs-operacao/FalhasCorrigidas/README.md` | Regra 3 + template: "próximo número é FC030" / "FC030_DESCRICAO_CURTA.md" | "próximo número é FC041" / "FC041_DESCRICAO_CURTA.md" |
+| `memory/project_status.md` | Seção duplicada ao final: "35 falhas (FC001–FC035). Próxima: FC036" + "Pendentes Reais (após sessão 38)" | Removidas — conteúdo correto já presente nas linhas 80–82 do mesmo arquivo |
+
+### Resultado
+
+- `REFERENCE.md`: já estava correto (40 FCs / FC041) — nenhuma alteração necessária
+- `docs-operacao/MEMORY.md`: sem referências de count — nenhuma alteração necessária
+- `docs-operacao/22_HISTORICO_ALTERACOES.md`: atualizado (esta entrada)
+- Nenhum conflito documental remanescente
 
 ---
 

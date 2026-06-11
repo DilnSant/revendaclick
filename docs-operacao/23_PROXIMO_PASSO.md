@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 09/06/2026 (sessão 47 — FC039: hardening final — 4 code fixes + 2 Supabase security + deploy VPS)
+> Atualizado em: 11/06/2026 (sessão 48 — FC041: saneamento documental final — 4 arquivos corrigidos)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,11 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 47 — 09/06/2026)
+## Estado Atual do Projeto (sessão 48 — 11/06/2026)
 
 | Componente | Status |
 |---|---|
+| **FC041 — Saneamento documental final (sessão 48)** | ✓ **CONCLUÍDA** — 4 arquivos corrigidos; count FC 38→40; próximo FC039→FC041; seções obsoletas removidas |
 | **Auditoria comercial E2E** | ✓ **PRONTO PARA OPERAÇÃO COMERCIAL** — fluxo completo 12 etapas aprovadas |
 | **santos-car billing** | ✓ **RESTAURADO** — estava `past_due`/`starter`; corrigido para `active`/`pro` via SQL (sessão 44) |
 | **Tenants reais em produção** | ⚠️ `finalcar` (canceled) + `revenda-click` (trialing) — usuários reais identificados |
@@ -248,8 +249,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **38 falhas documentadas (FC001–FC038)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC039**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **41 falhas documentadas (FC001–FC041)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC042**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
