@@ -79,12 +79,13 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 42 (FC001–FC042) |
-| Próxima FC | **FC043** |
+| Total documentadas | 43 (FC001–FC043) |
+| Próxima FC | **FC044** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
 | FC042 | FC042 — E2E Playwright: seletores incorretos + skip guards insuficientes — 5 causas raiz; 7 arquivos corrigidos; 9/9 testes verdes contra produção — sessão 48 |
+| FC043 | FC043 — Backup S3: aws-cli no startup, path YYYY/MM, verificação pós-upload, lifecycle 30d, restore-from-s3.sh — sessão 49 |
 
 ## Landing Page — CONGELADA (sessão 31)
 
@@ -126,6 +127,40 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | `lib/marketing/events.ts` | Client-side: GA4 + Meta Pixel + TikTok Pixel |
 | `lib/marketing/meta-conversions.ts` | Server-side: Meta CAPI com hashData SHA-256 (opcional) |
 | `lib/marketing/google-conversions.ts` | Server-side: stub Google Ads API (opcional) |
+
+## Backup S3 (FC043 — sessão 49)
+
+| Item | Valor |
+|---|---|
+| Container | `rc_backup` (`postgres:17-alpine`) |
+| Script | `/opt/revendaclick/backup.sh` montado como `/scripts/backup.sh:ro` |
+| Schedule | Diário às 03:00 UTC |
+| Local | `/opt/revendaclick/backups/` — retenção 7 dias |
+| S3 prefix | `revendaclick/YYYY/MM/backup-TIMESTAMP.sql.gz` |
+| S3 retenção | 30 dias via lifecycle policy |
+| Vars necessárias | `BACKUP_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` |
+
+```bash
+# Backup manual imediato
+ssh root@2.24.67.84 "docker exec rc_backup bash /scripts/backup.sh"
+
+# Ver logs do backup
+ssh root@2.24.67.84 "docker logs rc_backup --tail 50"
+
+# Listar backups locais
+ssh root@2.24.67.84 "ls -lh /opt/revendaclick/backups/"
+
+# Listar backups no S3
+ssh root@2.24.67.84 "docker exec rc_backup aws s3 ls s3://\$BACKUP_S3_BUCKET/revendaclick/ --recursive"
+
+# Validar restauração (mais recente)
+ssh root@2.24.67.84 "/opt/revendaclick/scripts/restore-from-s3.sh"
+
+# Configurar lifecycle S3 (executar UMA vez após criar o bucket)
+ssh root@2.24.67.84 "/opt/revendaclick/scripts/configure-s3-lifecycle.sh"
+```
+
+---
 
 ## Comandos frequentes
 

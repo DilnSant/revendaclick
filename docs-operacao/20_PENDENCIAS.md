@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 09/06/2026 (sessão 47 — FC039: hardening final operacional)
+> Atualizado em: 13/06/2026 (sessão 49 — FC043: Backup S3 Automatizado)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -25,7 +25,7 @@
 | CONCLUÍDA | Fix nginx webhook location | — | `^/api/v1/webhooks/` → `^/api/webhooks/` — rate limit estava sendo ignorado (commit 39b5a38) |
 | CONCLUÍDA | Self-hosted runner | — | Runner ativo no VPS |
 | CONCLUÍDA | Evolution OOM fix | — | NODE_OPTIONS heap + 768m + Redis cache (commit d17025e) |
-| PENDENTE | Backup S3 | Média | `BACKUP_S3_BUCKET` opcional — configurar bucket S3 e credenciais |
+| CONCLUÍDA | Backup S3 | — | FC043: aws-cli no startup, path YYYY/MM, verify pós-upload, lifecycle 30d, restore-from-s3.sh (sessão 49) |
 
 ---
 

@@ -61,6 +61,7 @@
 | [FC040](FC040_SUPABASE_SEARCH_PATH_E_REVOKE_PUBLIC.md) | Supabase: `SET search_path = public` em 8 funções + `REVOKE FROM PUBLIC` em 6 trigger functions (herança PUBLIC não coberta por FC039) | Supabase / Segurança | WARN | 09/06/2026 |
 | [FC041](FC041_SANEAMENTO_DOCUMENTAL_FINAL.md) | Saneamento documental: count FC desatualizado (38→40) em 4 arquivos; seção duplicada em memory/project_status.md removida | Documentação | BAIXA | 11/06/2026 |
 | [FC042](FC042_E2E_PLAYWRIGHT_SELECTORS_SKIPS.md) | E2E Playwright: `getByLabel(/e-mail/i)` não batia; skip guards sem verificação de senha; tabs `<a>` vs `role="tab"`; display_names dinâmicos incorretos | Frontend / E2E | MÉDIA | 11/06/2026 |
+| [FC043](FC043_BACKUP_S3.md) | Backup S3: aws-cli instalado por backup (lento/frágil); sem AWS_REGION; path sem YYYY/MM; sem verify pós-upload; sem lifecycle S3 | Infra / Backup | MÉDIA | 13/06/2026 |
 
 ---
 
@@ -124,7 +125,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC043.
+3. **Numeração sequencial:** próximo número disponível é FC044.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -136,8 +137,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC043
-# Nome do arquivo: FC043_DESCRICAO_CURTA.md
+# Próximo número: FC044
+# Nome do arquivo: FC044_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 

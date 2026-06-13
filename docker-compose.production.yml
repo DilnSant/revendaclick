@@ -136,8 +136,10 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
+        apk add --no-cache aws-cli > /dev/null 2>&1 \
+          && echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: aws-cli ready" \
+          || echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: WARN — aws-cli install failed"
         while true; do
-          NOW=$$(date -u +%s)
           H=$$(date -u +%H | sed 's/^0//'); M=$$(date -u +%M | sed 's/^0//'); S=$$(date -u +%S | sed 's/^0//')
           H=$${H:-0}; M=$${M:-0}; S=$${S:-0}
           ELAPSED=$$(( H*3600 + M*60 + S ))
@@ -147,16 +149,19 @@ services:
           else
             WAIT=$$(( 86400 - ELAPSED + TARGET_SEC ))
           fi
-          echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: next run in $${WAIT}s"
+          echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: next run in $${WAIT}s (03:00 UTC)"
           sleep "$$WAIT"
-          bash /scripts/backup.sh || echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: ERROR — check logs"
+          bash /scripts/backup.sh \
+            && echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: run completed OK" \
+            || echo "[$$(date -u +%Y-%m-%dT%H:%M:%SZ)] backup: run completed with errors"
         done
     environment:
       DATABASE_URL:            "${DATABASE_URL}"
       BACKUP_S3_BUCKET:        "${BACKUP_S3_BUCKET:-}"
       AWS_ACCESS_KEY_ID:       "${AWS_ACCESS_KEY_ID:-}"
       AWS_SECRET_ACCESS_KEY:   "${AWS_SECRET_ACCESS_KEY:-}"
-      AWS_DEFAULT_REGION:      "${AWS_DEFAULT_REGION:-sa-east-1}"
+      AWS_REGION:              "${AWS_REGION:-sa-east-1}"
+      AWS_DEFAULT_REGION:      "${AWS_REGION:-sa-east-1}"
     volumes:
       - /opt/revendaclick/backups:/opt/revendaclick/backups
       - /opt/revendaclick/backup.sh:/scripts/backup.sh:ro

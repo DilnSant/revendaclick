@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 11/06/2026 (sessão 48 — FC042: E2E Playwright — 9/9 testes verdes contra produção)
+> Última atualização: 13/06/2026 (sessão 49 — FC043: Backup S3 Automatizado)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -76,6 +76,50 @@
 | **FC040 — Supabase search_path + REVOKE FROM PUBLIC (sessão 47)** | ✓ **Concluída** | `SET search_path = public` em 8 funções via ALTER FUNCTION; REVOKE FROM PUBLIC em 6 trigger functions (herança PUBLIC — causa raiz que FC039 não cobriu). Advisor: 0 warnings de funções. |
 | **FC042 — E2E Playwright selectors + skip guards (sessão 48)** | ✓ **Concluída** | 7 arquivos corrigidos: `auth.ts` (`#email`/`#password`), `isCredentialReady()`, spec 01 skip guard, tabs `a[href]`, display_names reais, `href` exatos. Resultado: 9/9 aprovados, 1 skip (spec 01 requer email confirmation OFF). |
 | **FC041 — Saneamento documental final (sessão 48)** | ✓ **Concluída** | 4 arquivos corrigidos: `23_PROXIMO_PASSO.md`, `20_PENDENCIAS.md`, `FalhasCorrigidas/README.md`, `memory/project_status.md` — contagem FC atualizada (38→40; FC039→FC041); seções duplicadas e obsoletas removidas. |
+| **FC043 — Backup S3 Automatizado (sessão 49)** | ✓ **Concluída** | `backup.sh` refatorado (aws-cli no startup; path YYYY/MM; verify S3); compose: `AWS_REGION` + install startup; `restore-from-s3.sh` criado; `configure-s3-lifecycle.sh` criado (30d) |
+
+---
+
+## 2026-06-13 (sessão 49) — FC043: Backup S3 Automatizado
+
+### Escopo
+
+Implementação de redundância externa dos backups gerados pelo container `rc_backup`. Sem alterações em frontend, backend, billing ou Supabase.
+
+### Problemas identificados
+
+| # | Problema |
+|---|---|
+| 1 | `backup.sh` instalava `aws-cli` via `apk add` a cada execução de backup — lento, exige rede no momento do dump |
+| 2 | `AWS_REGION` não passada ao container (`docker-compose.production.yml` passava apenas `AWS_DEFAULT_REGION`) |
+| 3 | Path S3: `backups/NOME` sem hierarquia de data — dificulta lifecycle e auditoria |
+| 4 | Sem verificação do objeto S3 após upload (falha silenciosa possível) |
+| 5 | Sem política de lifecycle S3 configurada (retenção indefinida no bucket) |
+| 6 | Sem script de validação de restauração |
+
+### Correções
+
+| Arquivo | Ação | Mudança |
+|---|---|---|
+| `backup.sh` | Modificado | aws-cli removido do corpo; path `revendaclick/YYYY/MM/`; verify S3; flags `S3_CONFIGURED`/`S3_OK`; `AWS_REGION` com fallback |
+| `docker-compose.production.yml` | Modificado | Startup instala aws-cli uma vez; `AWS_REGION` adicionado ao environment; `AWS_DEFAULT_REGION` mantido como alias |
+| `scripts/restore-from-s3.sh` | Criado | Valida backup mais recente ou específico do S3; gzip -t + header SQL; via docker exec rc_backup; cleanup automático |
+| `scripts/configure-s3-lifecycle.sh` | Criado | Configura lifecycle 30 dias em `revendaclick/`; via docker exec rc_backup; verifica configuração |
+
+### Retenção
+
+| Camada | Política |
+|---|---|
+| VPS local | 7 dias (backup.sh — RETAIN_DAYS=7) |
+| S3 | 30 dias (lifecycle via configure-s3-lifecycle.sh) |
+
+### Ativação (passo a passo para o owner)
+
+1. Configurar vars no VPS `.env`: `BACKUP_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+2. Push para `main` → CI/CD recria `rc_backup` com aws-cli no startup
+3. `./scripts/configure-s3-lifecycle.sh` — configurar lifecycle (uma vez)
+4. `docker exec rc_backup bash /scripts/backup.sh` — backup manual de validação
+5. `./scripts/restore-from-s3.sh` — validar restauração
 
 ---
 

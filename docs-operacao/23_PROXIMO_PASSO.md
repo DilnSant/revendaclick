@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 11/06/2026 (sessão 48 — FC042: E2E Playwright — 9/9 testes verdes contra produção)
+> Atualizado em: 13/06/2026 (sessão 49 — FC043: Backup S3 Automatizado)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -27,6 +27,7 @@
 
 | Componente | Status |
 |---|---|
+| **FC043 — Backup S3 Automatizado (sessão 49)** | ✓ **CONCLUÍDA** — `backup.sh` refatorado; compose atualizado; `restore-from-s3.sh` + `configure-s3-lifecycle.sh` criados |
 | **FC042 — E2E Playwright selectors + skip guards (sessão 48)** | ✓ **CONCLUÍDA** — 7 arquivos corrigidos; `getByLabel` → `locator('#email')`; `isCredentialReady()`; spec 01 skip guard; tabs `a[href]`; display_names reais do DB; 9/9 aprovados em produção |
 | **FC041 — Saneamento documental final (sessão 48)** | ✓ **CONCLUÍDA** — 4 arquivos corrigidos; count FC 38→40; próximo FC039→FC041; seções obsoletas removidas |
 | **Auditoria comercial E2E** | ✓ **PRONTO PARA OPERAÇÃO COMERCIAL** — fluxo completo 12 etapas aprovadas |
@@ -238,7 +239,7 @@ Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar container
 
 ### 4. Etapas comerciais (próximas sessões)
 
-- **FC036** — Próxima falha a registrar (se identificada)
+- **FC044** — Próxima falha a registrar (se identificada)
 - **Etapa 5 follow-up** — `AdminSimulateEvent` suportar `addon_type` param para simular webhooks de add-on direto pelo painel admin
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
@@ -250,8 +251,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **42 falhas documentadas (FC001–FC042)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC043**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **43 falhas documentadas (FC001–FC043)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC044**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
