@@ -63,6 +63,7 @@
 | [FC042](FC042_E2E_PLAYWRIGHT_SELECTORS_SKIPS.md) | E2E Playwright: `getByLabel(/e-mail/i)` não batia; skip guards sem verificação de senha; tabs `<a>` vs `role="tab"`; display_names dinâmicos incorretos | Frontend / E2E | MÉDIA | 11/06/2026 |
 | [FC043](FC043_BACKUP_S3.md) | Backup S3: aws-cli instalado por backup (lento/frágil); sem AWS_REGION; path sem YYYY/MM; sem verify pós-upload; sem lifecycle S3 | Infra / Backup | MÉDIA | 13/06/2026 |
 | [FC044](FC044_RECLASSIFICACAO_PENDENCIAS_INFRA.md) | Reclassificação documental: Backup S3 config + BetterStack Alerts + Leaked Password Protection → Backlog de Infraestrutura | Documentação | BAIXA | 13/06/2026 |
+| [FC045](FC045_CONTAGEM_DOCUMENTAL_FC_DESATUALIZADA.md) | Contagem documental de FCs desatualizada: 23_PROXIMO_PASSO + README (count 43→44, próximo FC044→FC045, FC044 ausente do índice) | Documentação | BAIXA | 14/06/2026 |
 
 ---
 
@@ -123,6 +124,7 @@
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
 - FC044 — Reclassificação de pendências não prioritárias → Backlog de Infraestrutura
+- FC045 — Contagem documental de FCs desatualizada: count 43→44, próximo FC044→FC045, FC044 ausente do índice
 
 ---
 
@@ -130,7 +132,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC045.
+3. **Numeração sequencial:** próximo número disponível é FC046.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -142,8 +144,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC045
-# Nome do arquivo: FC045_DESCRICAO_CURTA.md
+# Próximo número: FC046
+# Nome do arquivo: FC046_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
