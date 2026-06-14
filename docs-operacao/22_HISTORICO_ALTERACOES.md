@@ -78,6 +78,39 @@
 | **FC041 — Saneamento documental final (sessão 48)** | ✓ **Concluída** | 4 arquivos corrigidos: `23_PROXIMO_PASSO.md`, `20_PENDENCIAS.md`, `FalhasCorrigidas/README.md`, `memory/project_status.md` — contagem FC atualizada (38→40; FC039→FC041); seções duplicadas e obsoletas removidas. |
 | **FC043 — Backup S3 Automatizado (sessão 49)** | ✓ **Concluída** | `backup.sh` refatorado (aws-cli no startup; path YYYY/MM; verify S3); compose: `AWS_REGION` + install startup; `restore-from-s3.sh` criado; `configure-s3-lifecycle.sh` criado (30d) |
 | **FC044 — Reclassificação pendências infra (sessão 50)** | ✓ **Concluída** | Backup S3 config + BetterStack Alerts + Leaked Password Protection → Backlog de Infraestrutura. Decisão de negócio: foco em comercialização. Apenas documentação — sem alteração de código, banco ou infra. |
+| **FC045 — Contagem documental de FCs desatualizada (sessão 51)** | ✓ **Concluída** | `23_PROXIMO_PASSO.md` (count 43→44, próximo FC044→FC045) + `FalhasCorrigidas/README.md` (FC044 adicionado ao índice; seção "Documentação" criada; próximo FC044→FC045 em Regras e Template). Apenas documentação. |
+
+---
+
+## 2026-06-14 (sessão 51) — FC045: Contagem Documental de FCs Desatualizada
+
+### Escopo
+
+Correção exclusivamente documental. Nenhuma alteração de código, banco, migrations, infra ou deploy.
+
+### Divergência corrigida
+
+| Arquivo | Campo | Antes | Depois |
+|---|---|---|---|
+| `23_PROXIMO_PASSO.md` | Seção "Documentação de Falhas" | "43 FCs (FC001–FC043)" + "Próximo: FC044" | "44 FCs (FC001–FC044)" + "Próximo: FC045" |
+| `FalhasCorrigidas/README.md` | Índice | FC044 ausente | FC044 adicionado |
+| `FalhasCorrigidas/README.md` | Seção "Por área" | Sem seção Documentação | Seção "Documentação" criada (FC041 + FC044) |
+| `FalhasCorrigidas/README.md` | Regras | "próximo é FC044" | "próximo é FC045" |
+| `FalhasCorrigidas/README.md` | Template | "FC044" | "FC045" |
+
+### Causa raiz
+
+Sessão 50 criou FC044 mas não atualizou os ponteiros em `23_PROXIMO_PASSO.md` e `FalhasCorrigidas/README.md`. Padrão recorrente — ver FC041 e FC045 para mitigação.
+
+### Arquivos alterados
+
+- `docs-operacao/23_PROXIMO_PASSO.md`
+- `docs-operacao/FalhasCorrigidas/README.md`
+- `docs-operacao/FalhasCorrigidas/FC045_CONTAGEM_DOCUMENTAL_FC_DESATUALIZADA.md` (criado)
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` (este)
+- `docs-operacao/20_PENDENCIAS.md`
+- `docs-operacao/REFERENCE.md`
+- `memory/project_status.md`
 
 ---
 

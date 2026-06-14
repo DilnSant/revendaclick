@@ -188,6 +188,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | E2E .env.e2e template | — | `frontend/.env.e2e` criado com variáveis para santos-car, sandbox e super_admin; `.env.e2e` adicionado ao .gitignore |
 | CONCLUÍDA | METRICS_TOKEN confirmado | — | Token presente no VPS .env e no container; /metrics retorna 200 via localhost com Bearer token; nginx bloqueia acesso externo (correto) |
 | CONCLUÍDA | FC044 — Reclassificação de pendências não prioritárias (sessão 50) | — | Backup S3 config, BetterStack Alerts, Leaked Password Protection movidos para Backlog de Infraestrutura — decisão de negócio: foco em comercialização |
+| CONCLUÍDA | FC045 — Contagem documental de FCs desatualizada (sessão 51) | — | `23_PROXIMO_PASSO.md` (count 43→44, próximo FC044→FC045) + `FalhasCorrigidas/README.md` (FC044 no índice; seção Documentação; próximo FC045) — exclusivamente documental |
 
 ---
 
