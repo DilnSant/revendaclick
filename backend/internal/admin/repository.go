@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -162,4 +163,258 @@ func (r *Repository) ListGrantedFeatures(ctx context.Context, tenantID string) (
 		list = append(list, g)
 	}
 	return list, rows.Err()
+}
+
+// ── Tenant edit ────────────────────────────────────────────────────────────────
+
+func (r *Repository) UpdateTenantAdmin(ctx context.Context, id string, req *UpdateTenantAdminRequest) error {
+	if req.Name == nil && req.Email == nil && req.Slug == nil {
+		return errors.New("nothing to update")
+	}
+	_, err := r.pool.Exec(ctx, `
+		UPDATE tenants SET
+			name  = COALESCE($2, name),
+			email = COALESCE($3, email),
+			slug  = COALESCE($4, slug),
+			updated_at = NOW()
+		WHERE id = $1`,
+		id, req.Name, req.Email, req.Slug,
+	)
+	return err
+}
+
+// ── Subscriptions ─────────────────────────────────────────────────────────────
+
+func (r *Repository) ListSubscriptions(ctx context.Context) ([]*SubscriptionAdmin, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT
+		  s.id::text, s.tenant_id::text, t.slug, t.name,
+		  s.plan_id::text, p.name, COALESCE(p.display_name,''),
+		  s.status::text, COALESCE(s.billing_cycle,'monthly'),
+		  s.trial_ends_at, s.current_period_start, s.current_period_end,
+		  s.grace_until, s.canceled_at,
+		  COALESCE(s.asaas_subscription_id,''), s.created_at
+		FROM subscriptions s
+		JOIN tenants t ON t.id = s.tenant_id
+		LEFT JOIN plans p ON p.id = s.plan_id
+		ORDER BY s.created_at DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var list []*SubscriptionAdmin
+	for rows.Next() {
+		sub := &SubscriptionAdmin{}
+		if err := rows.Scan(
+			&sub.ID, &sub.TenantID, &sub.TenantSlug, &sub.TenantName,
+			&sub.PlanID, &sub.PlanName, &sub.PlanDisplay,
+			&sub.Status, &sub.BillingCycle,
+			&sub.TrialEndsAt, &sub.CurrentPeriodStart, &sub.CurrentPeriodEnd,
+			&sub.GraceUntil, &sub.CanceledAt,
+			&sub.AsaasSubscriptionID, &sub.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		list = append(list, sub)
+	}
+	return list, rows.Err()
+}
+
+func (r *Repository) UpdateSubscription(ctx context.Context, tenantID string, req *UpdateSubscriptionRequest) error {
+	var planID *string
+	if req.PlanName != nil {
+		id, err := r.GetPlanByName(ctx, *req.PlanName)
+		if err != nil {
+			return fmt.Errorf("plan not found: %s", *req.PlanName)
+		}
+		planID = &id
+	}
+
+	trialEnd := req.TrialEndsAt
+	if req.ClearTrialEnd {
+		trialEnd = nil
+	}
+	graceUntil := req.GraceUntil
+	if req.ClearGraceUntil {
+		graceUntil = nil
+	}
+	canceledAt := req.CanceledAt
+	if req.ClearCanceledAt {
+		canceledAt = nil
+	}
+
+	result, err := r.pool.Exec(ctx, `
+		UPDATE subscriptions SET
+			plan_id            = COALESCE($2, plan_id),
+			status             = COALESCE($3::subscription_status, status),
+			trial_ends_at      = CASE WHEN $7 THEN NULL WHEN $4 IS NOT NULL THEN $4 ELSE trial_ends_at END,
+			current_period_end = COALESCE($5, current_period_end),
+			grace_until        = CASE WHEN $8 THEN NULL WHEN $6 IS NOT NULL THEN $6 ELSE grace_until END,
+			canceled_at        = CASE WHEN $9 THEN NULL WHEN $10 IS NOT NULL THEN $10 ELSE canceled_at END
+		WHERE tenant_id = $1`,
+		tenantID, planID, req.Status,
+		trialEnd, req.CurrentPeriodEnd, graceUntil,
+		req.ClearTrialEnd, req.ClearGraceUntil, req.ClearCanceledAt, canceledAt,
+	)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("subscription not found")
+	}
+	return nil
+}
+
+// ── Users (admin global) ──────────────────────────────────────────────────────
+
+func (r *Repository) ListUsersAdmin(ctx context.Context) ([]*UserAdmin, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT
+		  u.id::text, u.tenant_id::text, t.slug, t.name,
+		  u.role, u.name, u.email, u.is_active,
+		  u.last_seen_at, u.created_at
+		FROM users u
+		LEFT JOIN tenants t ON t.id = u.tenant_id
+		ORDER BY u.created_at DESC`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var list []*UserAdmin
+	for rows.Next() {
+		u := &UserAdmin{}
+		if err := rows.Scan(
+			&u.ID, &u.TenantID, &u.TenantSlug, &u.TenantName,
+			&u.Role, &u.Name, &u.Email, &u.IsActive,
+			&u.LastSeenAt, &u.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		list = append(list, u)
+	}
+	return list, rows.Err()
+}
+
+func (r *Repository) UpdateUserAdmin(ctx context.Context, id string, req *UpdateUserAdminRequest) (*UserAdmin, error) {
+	if req.Name == nil && req.Role == nil && req.IsActive == nil {
+		return nil, errors.New("nothing to update")
+	}
+	u := &UserAdmin{}
+	err := r.pool.QueryRow(ctx, `
+		UPDATE users SET
+			name      = COALESCE($2, name),
+			role      = COALESCE($3, role),
+			is_active = COALESCE($4, is_active),
+			updated_at = NOW()
+		WHERE id = $1
+		RETURNING id::text, tenant_id::text, role, name, email, is_active, last_seen_at, created_at`,
+		id, req.Name, req.Role, req.IsActive,
+	).Scan(&u.ID, &u.TenantID, &u.Role, &u.Name, &u.Email, &u.IsActive, &u.LastSeenAt, &u.CreatedAt)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, errors.New("user not found")
+	}
+	return u, err
+}
+
+// ── Plans (admin) ─────────────────────────────────────────────────────────────
+
+func (r *Repository) ListPlansAdmin(ctx context.Context) ([]*PlanAdmin, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT id::text, name, COALESCE(display_name,''), COALESCE(tagline,''),
+		  max_vehicles, max_users, COALESCE(max_leads,-1),
+		  price_monthly, price_yearly, features, is_active
+		FROM plans ORDER BY price_monthly`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var list []*PlanAdmin
+	for rows.Next() {
+		p := &PlanAdmin{}
+		var featJSON []byte
+		if err := rows.Scan(
+			&p.ID, &p.Name, &p.DisplayName, &p.Tagline,
+			&p.MaxVehicles, &p.MaxUsers, &p.MaxLeads,
+			&p.PriceMonthly, &p.PriceYearly, &featJSON, &p.IsActive,
+		); err != nil {
+			return nil, err
+		}
+		_ = json.Unmarshal(featJSON, &p.Features)
+		list = append(list, p)
+	}
+	return list, rows.Err()
+}
+
+func (r *Repository) UpdatePlan(ctx context.Context, id string, req *UpdatePlanRequest) (*PlanAdmin, error) {
+	var featStr *string
+	if req.Features != nil {
+		b, _ := json.Marshal(req.Features)
+		s := string(b)
+		featStr = &s
+	}
+	p := &PlanAdmin{}
+	var featRaw []byte
+	err := r.pool.QueryRow(ctx, `
+		UPDATE plans SET
+			display_name  = COALESCE($2, display_name),
+			tagline       = COALESCE($3, tagline),
+			max_vehicles  = COALESCE($4, max_vehicles),
+			max_users     = COALESCE($5, max_users),
+			max_leads     = COALESCE($6, max_leads),
+			price_monthly = COALESCE($7, price_monthly),
+			price_yearly  = COALESCE($8, price_yearly),
+			features      = COALESCE($9::jsonb, features),
+			is_active     = COALESCE($10, is_active)
+		WHERE id = $1
+		RETURNING id::text, name, COALESCE(display_name,''), COALESCE(tagline,''),
+		  max_vehicles, max_users, COALESCE(max_leads,-1),
+		  price_monthly, price_yearly, features, is_active`,
+		id, req.DisplayName, req.Tagline,
+		req.MaxVehicles, req.MaxUsers, req.MaxLeads,
+		req.PriceMonthly, req.PriceYearly, featStr, req.IsActive,
+	).Scan(
+		&p.ID, &p.Name, &p.DisplayName, &p.Tagline,
+		&p.MaxVehicles, &p.MaxUsers, &p.MaxLeads,
+		&p.PriceMonthly, &p.PriceYearly, &featRaw, &p.IsActive,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, errors.New("plan not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+	_ = json.Unmarshal(featRaw, &p.Features)
+	return p, nil
+}
+
+// ── Audit log (admin — tenant_id may be NULL for cross-tenant ops) ────────────
+
+func (r *Repository) WriteAdminAudit(ctx context.Context, actorID, tenantID, action, entityType, entityID string, oldData, newData map[string]any, ip string) {
+	oldJSON, _ := json.Marshal(oldData)
+	newJSON, _ := json.Marshal(newData)
+	var tid, eid, actor any
+	if tenantID != "" {
+		tid = tenantID
+	}
+	if entityID != "" {
+		eid = entityID
+	}
+	if actorID != "" {
+		actor = actorID
+	}
+	_, _ = r.pool.Exec(ctx, `
+		INSERT INTO audit_logs (tenant_id, user_id, action, entity_type, entity_id, old_data, new_data, ip_address)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8::inet)`,
+		tid, actor, action, entityType, eid, oldJSON, newJSON, nilOrIP(ip),
+	)
+}
+
+func nilOrIP(ip string) any {
+	if ip == "" {
+		return nil
+	}
+	return ip
 }

@@ -1,10 +1,12 @@
 import { createServiceClient } from '@/lib/supabaseServer'
+import { WhatsAppActions } from './_components/WhatsAppActions'
 
 export const metadata = { title: 'WhatsApps — Admin RevendaClick' }
+export const revalidate = 0
 
 const CONN_COLOR: Record<string, string> = {
-  open:  'bg-green-900/40 text-green-400 border-green-800',
-  close: 'bg-red-900/40 text-red-400 border-red-800',
+  open:       'bg-green-900/40 text-green-400 border-green-800',
+  close:      'bg-red-900/40 text-red-400 border-red-800',
   connecting: 'bg-yellow-900/40 text-yellow-400 border-yellow-800',
 }
 
@@ -20,7 +22,6 @@ export default async function AdminWhatsappsPage() {
     .from('Session')
     .select('id, sessionId, createdAt')
 
-  // Contagem de mensagens por instância
   const { data: msgCounts } = await db
     .from('Message')
     .select('instanceId')
@@ -45,10 +46,10 @@ export default async function AdminWhatsappsPage() {
   }>
 
   const stats = {
-    total:      rows.length,
-    connected:  rows.filter(i => i.connectionStatus === 'open').length,
+    total:        rows.length,
+    connected:    rows.filter(i => i.connectionStatus === 'open').length,
     disconnected: rows.filter(i => i.connectionStatus === 'close').length,
-    sessions:   (sessions ?? []).length,
+    sessions:     (sessions ?? []).length,
   }
 
   return (
@@ -59,10 +60,10 @@ export default async function AdminWhatsappsPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatCard label="Instâncias" value={stats.total} />
-        <StatCard label="Conectadas" value={stats.connected} color="text-green-400" />
+        <StatCard label="Instâncias"    value={stats.total} />
+        <StatCard label="Conectadas"    value={stats.connected}    color="text-green-400" />
         <StatCard label="Desconectadas" value={stats.disconnected} color="text-red-400" />
-        <StatCard label="Sessions" value={stats.sessions} color="text-blue-400" />
+        <StatCard label="Sessions"      value={stats.sessions}     color="text-blue-400" />
       </div>
 
       <div className="rounded-xl border border-gray-800 overflow-hidden">
@@ -73,7 +74,7 @@ export default async function AdminWhatsappsPage() {
           <table className="min-w-full text-sm">
             <thead>
               <tr className="border-b border-gray-800 bg-gray-900/80 text-left">
-                {['Instância', 'Status', 'Número', 'Profile', 'Mensagens', 'Última atualização', 'Desconectado em'].map(h => (
+                {['Instância', 'Status', 'Número', 'Profile', 'Mensagens', 'Última atualização', 'Ações'].map(h => (
                   <th key={h} className="px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-gray-600 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -89,6 +90,11 @@ export default async function AdminWhatsappsPage() {
                     <span className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap ${CONN_COLOR[inst.connectionStatus] ?? 'bg-gray-800 text-gray-500 border-gray-700'}`}>
                       {inst.connectionStatus}
                     </span>
+                    {inst.disconnectionAt && (
+                      <p className="text-[10px] text-red-500 mt-0.5">
+                        desconectado em {new Date(inst.disconnectionAt).toLocaleString('pt-BR')}
+                      </p>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                     {inst.number ?? inst.ownerJid?.split('@')[0] ?? '—'}
@@ -102,10 +108,8 @@ export default async function AdminWhatsappsPage() {
                   <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">
                     {inst.updatedAt ? new Date(inst.updatedAt).toLocaleString('pt-BR') : '—'}
                   </td>
-                  <td className="px-4 py-3 text-xs whitespace-nowrap">
-                    {inst.disconnectionAt
-                      ? <span className="text-red-500">{new Date(inst.disconnectionAt).toLocaleString('pt-BR')}</span>
-                      : <span className="text-gray-700">—</span>}
+                  <td className="px-4 py-3">
+                    <WhatsAppActions name={inst.name} connectionStatus={inst.connectionStatus} />
                   </td>
                 </tr>
               ))}
@@ -117,7 +121,6 @@ export default async function AdminWhatsappsPage() {
         </div>
       </div>
 
-      {/* Sessions */}
       {(sessions ?? []).length > 0 && (
         <div className="rounded-xl border border-gray-800 bg-gray-900 px-5 py-4">
           <h2 className="text-sm font-semibold text-gray-400 mb-3">Sessions ativas ({(sessions ?? []).length})</h2>

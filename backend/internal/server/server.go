@@ -71,13 +71,14 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	financialH  := financial.NewHandler(financial.NewService(financial.NewRepository(pool)))
 	onboardingH := onboarding.NewHandler(pool, cfg.SupabaseURL, cfg.SupabaseServiceKey, logger)
 	evolutionH  := evolution.NewHandler(
-		evolution.NewService(pool, logger, cfg.EvolutionAPIURL, cfg.EvolutionAPIKey),
+		evoSvcInst,
 		cfg.EvolutionAPIKey,
 		logger,
 	)
 	analyticsH := analytics.NewHandler(analytics.NewService(analytics.NewRepository(pool)))
 	auditH     := audit.NewHandler(audit.NewRepository(pool))
-	adminH     := admin.NewHandler(admin.NewRepository(pool))
+	evoSvcInst := evolution.NewService(pool, logger, cfg.EvolutionAPIURL, cfg.EvolutionAPIKey)
+	adminH     := admin.NewHandler(admin.NewRepository(pool), &evolutionWAAdapter{svc: evoSvcInst})
 	aiH        := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
 	billingH   := billing.NewHandler(
 		billing.NewService(billing.NewRepository(pool), cfg.AsaasAPIKey, cfg.AsaasEnv),
@@ -186,7 +187,9 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	adminGroup := r.Group("/api/admin")
 	adminGroup.Use(jwtAuth, superAdmin)
 	{
+		// Tenants
 		adminGroup.GET("/tenants",                              adminH.ListTenants)
+		adminGroup.PUT("/tenants/:id",                         adminH.UpdateTenant)
 		adminGroup.POST("/tenants/:id/activate",               adminH.ActivateTenant)
 		adminGroup.POST("/tenants/:id/extend-trial",           adminH.ExtendTrial)
 		adminGroup.POST("/tenants/:id/block",                  adminH.BlockTenant)
@@ -194,6 +197,23 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 		adminGroup.GET("/tenants/:id/features",                adminH.ListFeatures)
 		adminGroup.POST("/tenants/:id/features",               adminH.GrantFeature)
 		adminGroup.DELETE("/tenants/:id/features/:feature",    adminH.RevokeFeature)
+
+		// Subscriptions
+		adminGroup.GET("/subscriptions",                       adminH.ListSubscriptions)
+		adminGroup.PUT("/subscriptions/:tenantId",             adminH.UpdateSubscription)
+
+		// Users
+		adminGroup.GET("/users",                               adminH.ListUsersAdmin)
+		adminGroup.PUT("/users/:id",                           adminH.UpdateUserAdmin)
+
+		// Plans
+		adminGroup.GET("/plans",                               adminH.ListPlansAdmin)
+		adminGroup.PUT("/plans/:id",                           adminH.UpdatePlan)
+
+		// WhatsApp instances
+		adminGroup.POST("/whatsapp/:name/disconnect",          adminH.WADisconnect)
+		adminGroup.POST("/whatsapp/:name/restart",             adminH.WARestart)
+		adminGroup.GET("/whatsapp/:name/qr",                   adminH.WAGetQR)
 
 		// Billing homologation tools — simulate Asaas events without real charges
 		adminGroup.POST("/billing/simulate-event", billingH.AdminSimulateEvent)
@@ -273,4 +293,26 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	}
 
 	return r
+}
+
+// ─── Evolution adapter (satisfies admin.whatsappSvc) ──────────────────────────
+
+type evolutionWAAdapter struct {
+	svc *evolution.Service
+}
+
+func (a *evolutionWAAdapter) GetQRCode(ctx context.Context, slug string) (string, string, int, error) {
+	qr, err := a.svc.GetQRCode(ctx, slug)
+	if err != nil {
+		return "", "", 0, err
+	}
+	return qr.Base64, qr.Code, qr.Count, nil
+}
+
+func (a *evolutionWAAdapter) DisconnectInstance(ctx context.Context, slug string) error {
+	return a.svc.DisconnectInstance(ctx, slug)
+}
+
+func (a *evolutionWAAdapter) CreateInstance(ctx context.Context, slug string) (bool, error) {
+	return a.svc.CreateInstance(ctx, slug)
 }
