@@ -64,6 +64,7 @@
 | [FC043](FC043_BACKUP_S3.md) | Backup S3: aws-cli instalado por backup (lento/frágil); sem AWS_REGION; path sem YYYY/MM; sem verify pós-upload; sem lifecycle S3 | Infra / Backup | MÉDIA | 13/06/2026 |
 | [FC044](FC044_RECLASSIFICACAO_PENDENCIAS_INFRA.md) | Reclassificação documental: Backup S3 config + BetterStack Alerts + Leaked Password Protection → Backlog de Infraestrutura | Documentação | BAIXA | 13/06/2026 |
 | [FC045](FC045_CONTAGEM_DOCUMENTAL_FC_DESATUALIZADA.md) | Contagem documental de FCs desatualizada: 23_PROXIMO_PASSO + README (count 43→44, próximo FC044→FC045, FC044 ausente do índice) | Documentação | BAIXA | 14/06/2026 |
+| [FC046](FC046_SUPER_ADMIN_CRUD_COMPLETO.md) | Super Admin read-only → CRUD completo: assinaturas, tenants, usuários, planos, whatsapp; 10 novos endpoints backend + 5 novos componentes frontend + audit logging | Admin / Full Stack | FEATURE | 14/06/2026 |
 
 ---
 
@@ -121,6 +122,9 @@
 ### Deploy / CI-CD
 - FC029 — Vercel build freeze: database.types.ts desatualizado (8 deploys falhando)
 
+### Admin / Full Stack
+- FC046 — Super Admin CRUD completo: assinaturas, tenants, usuários, planos, whatsapp
+
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
 - FC044 — Reclassificação de pendências não prioritárias → Backlog de Infraestrutura
@@ -132,7 +136,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC046.
+3. **Numeração sequencial:** próximo número disponível é FC047.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -144,8 +148,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC046
-# Nome do arquivo: FC046_DESCRICAO_CURTA.md
+# Próximo número: FC047
+# Nome do arquivo: FC047_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
