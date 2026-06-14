@@ -79,8 +79,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 46 (FC001–FC046) |
-| Próxima FC | **FC047** |
+| Total documentadas | 47 (FC001–FC047) |
+| Próxima FC | **FC048** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -89,6 +89,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC044 | FC044 — Reclassificação de pendências não prioritárias: Backup S3 config + BetterStack Alerts + Leaked Password Protection → Backlog de Infraestrutura — sessão 50 |
 | FC045 | FC045 — Contagem documental de FCs desatualizada: 23_PROXIMO_PASSO + FalhasCorrigidas/README (count 43→44, próximo FC044→FC045, FC044 ausente do índice) — sessão 51 |
 | FC046 | FC046 — Super Admin CRUD completo: assinaturas, tenants, usuários, planos, whatsapp; 10 novos endpoints backend + 5 novos componentes frontend + audit logging — sessão 52 |
+| FC047 | FC047 — Pós-deploy FC046: evoSvcInst compile error (server.go); audit_logs.tenant_id NOT NULL; entity_id não-UUID em WhatsApp audit — sessão 52 |
 
 ## Landing Page — CONGELADA (sessão 31)
 

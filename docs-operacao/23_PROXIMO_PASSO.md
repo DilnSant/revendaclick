@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 14/06/2026 (sessão 52 — FC046: Super Admin CRUD completo)
+> Atualizado em: 14/06/2026 (sessão 52 — FC047: validação pós-deploy Super Admin)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -27,7 +27,8 @@
 
 | Componente | Status |
 |---|---|
-| **FC046 — Super Admin CRUD Completo (sessão 52)** | ✓ **CONCLUÍDA** — 10 novos endpoints backend (PUT tenants, GET/PUT subscriptions, GET/PUT users, GET/PUT plans, GET qr / POST disconnect / POST restart whatsapp); 5 novos componentes frontend; audit logging em todas mutações; TypeScript limpo; commit `1b9599c` + push → CI/CD em execução. |
+| **FC047 — Validação pós-deploy Super Admin (sessão 52)** | ✓ **CONCLUÍDA** — 3 bugs corrigidos: (1) `evoSvcInst` use-before-declaration compile error [commit `4b27afb`]; (2) `audit_logs.tenant_id NOT NULL` — `ALTER COLUMN DROP NOT NULL` aplicado no Supabase; (3) `entity_id` não-UUID em WhatsApp audit [commit `e094b85`]. Backend em produção com imagem `e094b85`. |
+| **FC046 — Super Admin CRUD Completo (sessão 52)** | ✓ **CONCLUÍDA** — 10 novos endpoints backend + 5 componentes frontend + audit logging. Em produção após fix FC047. |
 | **FC045 — Contagem documental de FCs desatualizada (sessão 51)** | ✓ **CONCLUÍDA** — `23_PROXIMO_PASSO.md` + `FalhasCorrigidas/README.md` atualizados; FC044 adicionado ao índice; seção Documentação criada; contadores sincronizados. Apenas documentação. |
 | **FC043 — Backup S3 Automatizado (sessão 49)** | ✓ **CONCLUÍDA** — `backup.sh` refatorado; compose atualizado; `restore-from-s3.sh` + `configure-s3-lifecycle.sh` criados |
 | **FC042 — E2E Playwright selectors + skip guards (sessão 48)** | ✓ **CONCLUÍDA** — 7 arquivos corrigidos; `getByLabel` → `locator('#email')`; `isCredentialReady()`; spec 01 skip guard; tabs `a[href]`; display_names reais do DB; 9/9 aprovados em produção |
@@ -220,7 +221,7 @@ Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar container
 
 ### 4. Etapas comerciais (próximas sessões)
 
-- **FC047** — Próxima falha a registrar (se identificada)
+- **FC048** — Próxima falha a registrar (se identificada)
 - **Etapa 5 follow-up** — `AdminSimulateEvent` suportar `addon_type` param para simular webhooks de add-on direto pelo painel admin
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
 
@@ -244,8 +245,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **46 falhas documentadas (FC001–FC046)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC047**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **47 falhas documentadas (FC001–FC047)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC048**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
