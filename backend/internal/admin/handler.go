@@ -305,7 +305,7 @@ func (h *Handler) WADisconnect(c *gin.Context) {
 		return
 	}
 	h.repo.WriteAdminAudit(c.Request.Context(),
-		middleware.UserIDFromGin(c), "", "disconnect", "whatsapp_instance", name,
+		middleware.UserIDFromGin(c), "", "disconnect", "whatsapp_instance", "",
 		map[string]any{"name": name}, nil,
 		c.ClientIP(),
 	)
@@ -326,7 +326,7 @@ func (h *Handler) WARestart(c *gin.Context) {
 		return
 	}
 	h.repo.WriteAdminAudit(c.Request.Context(),
-		middleware.UserIDFromGin(c), "", "restart", "whatsapp_instance", name,
+		middleware.UserIDFromGin(c), "", "restart", "whatsapp_instance", "",
 		nil, map[string]any{"name": name},
 		c.ClientIP(),
 	)
