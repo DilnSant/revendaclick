@@ -243,8 +243,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **44 falhas documentadas (FC001–FC044)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC045**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **45 falhas documentadas (FC001–FC045)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC046**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
