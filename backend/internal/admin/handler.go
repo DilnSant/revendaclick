@@ -108,6 +108,87 @@ func (h *Handler) ExtendTrial(c *gin.Context) {
 	response.JSON(c, http.StatusOK, gin.H{"extended": true, "days": req.Days})
 }
 
+// POST /api/admin/tenants/:id/quarantine
+func (h *Handler) QuarantineTenant(c *gin.Context) {
+	tenantID := c.Param("id")
+	var req QuarantineTenantRequest
+	if err := c.ShouldBindJSON(&req); err != nil || strings.TrimSpace(req.Reason) == "" {
+		response.BadRequest(c, "reason is required")
+		return
+	}
+	if err := h.repo.QuarantineTenant(c.Request.Context(), tenantID, req.Reason); err != nil {
+		response.InternalError(c)
+		return
+	}
+	h.repo.WriteAdminAudit(c.Request.Context(),
+		middleware.UserIDFromGin(c), tenantID, "quarantine", "tenant", tenantID,
+		map[string]any{"is_active": true}, map[string]any{"is_active": false, "quarantine_reason": req.Reason},
+		c.ClientIP(),
+	)
+	response.JSON(c, http.StatusOK, gin.H{"quarantined": true})
+}
+
+// POST /api/admin/tenants/:id/unquarantine
+func (h *Handler) UnquarantineTenant(c *gin.Context) {
+	tenantID := c.Param("id")
+	if err := h.repo.UnquarantineTenant(c.Request.Context(), tenantID); err != nil {
+		response.InternalError(c)
+		return
+	}
+	h.repo.WriteAdminAudit(c.Request.Context(),
+		middleware.UserIDFromGin(c), tenantID, "unquarantine", "tenant", tenantID,
+		map[string]any{"quarantined": true}, map[string]any{"is_active": true, "quarantined": false},
+		c.ClientIP(),
+	)
+	response.JSON(c, http.StatusOK, gin.H{"unquarantined": true})
+}
+
+// GET /api/admin/tenants/:id/delete-summary
+func (h *Handler) GetDeleteSummary(c *gin.Context) {
+	tenantID := c.Param("id")
+	summary, err := h.repo.GetTenantDeleteSummary(c.Request.Context(), tenantID)
+	if err != nil {
+		response.InternalError(c)
+		return
+	}
+	response.JSON(c, http.StatusOK, summary)
+}
+
+// DELETE /api/admin/tenants/:id — soft delete (default) or hard delete (?hard=true)
+func (h *Handler) DeleteTenant(c *gin.Context) {
+	tenantID := c.Param("id")
+	hard := c.Query("hard") == "true"
+	var req DeleteTenantRequest
+	_ = c.ShouldBindJSON(&req)
+
+	if hard {
+		// Capture summary before deletion for audit
+		summary, _ := h.repo.GetTenantDeleteSummary(c.Request.Context(), tenantID)
+		if err := h.repo.HardDeleteTenant(c.Request.Context(), tenantID); err != nil {
+			response.BadRequest(c, err.Error())
+			return
+		}
+		h.repo.WriteAdminAudit(c.Request.Context(),
+			middleware.UserIDFromGin(c), tenantID, "hard_delete", "tenant", tenantID,
+			summary, map[string]any{"deleted": true, "mode": "hard", "reason": req.Reason},
+			c.ClientIP(),
+		)
+		response.JSON(c, http.StatusOK, gin.H{"deleted": true, "mode": "hard"})
+		return
+	}
+
+	if err := h.repo.SoftDeleteTenant(c.Request.Context(), tenantID, req.Reason); err != nil {
+		response.BadRequest(c, err.Error())
+		return
+	}
+	h.repo.WriteAdminAudit(c.Request.Context(),
+		middleware.UserIDFromGin(c), tenantID, "soft_delete", "tenant", tenantID,
+		map[string]any{"deleted_at": nil}, map[string]any{"deleted": true, "mode": "soft", "reason": req.Reason},
+		c.ClientIP(),
+	)
+	response.JSON(c, http.StatusOK, gin.H{"deleted": true, "mode": "soft"})
+}
+
 // POST /api/admin/tenants/:id/block
 func (h *Handler) BlockTenant(c *gin.Context) {
 	tenantID := c.Param("id")

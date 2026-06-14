@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 14/06/2026 (sessão 52 — FC047: validação pós-deploy Super Admin)
+> Atualizado em: 14/06/2026 (sessão 53 — FC049: quarentena e exclusão controlada de tenants)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,12 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 52 — 14/06/2026)
+## Estado Atual do Projeto (sessão 53 — 14/06/2026)
 
 | Componente | Status |
 |---|---|
+| **FC049 — Tenants: quarentena e exclusão controlada (sessão 53)** | ✓ **IMPLEMENTADO** — Migration 037 aplicada (+quarantined_at/reason/deleted_at/reason em tenants). 5 novos endpoints backend. 4 novos handlers. Middleware atualizado (deleted_at IS NULL). Frontend: tooltips CSS puro, modal quarentena (motivo obrigatório), modal exclusão (resumo + modo lógico/físico + confirmação dupla). TypeScript limpo. Aguarda CI/CD. |
+| **FC048 — Validação propagação global de planos (sessão 53)** | ✓ **CONCLUÍDA** — 9/9 critérios validados. Nenhum bug encontrado. Propagação imediata confirmada (GetUsage() sem cache). Billing inalterado. RLS intacta. audit_logs com tenant_id=NULL funcional. Valores restaurados. |
 | **FC047 — Validação pós-deploy Super Admin (sessão 52)** | ✓ **CONCLUÍDA** — 3 bugs corrigidos: (1) `evoSvcInst` use-before-declaration compile error [commit `4b27afb`]; (2) `audit_logs.tenant_id NOT NULL` — `ALTER COLUMN DROP NOT NULL` aplicado no Supabase; (3) `entity_id` não-UUID em WhatsApp audit [commit `e094b85`]. Backend em produção com imagem `e094b85`. |
 | **FC046 — Super Admin CRUD Completo (sessão 52)** | ✓ **CONCLUÍDA** — 10 novos endpoints backend + 5 componentes frontend + audit logging. Em produção após fix FC047. |
 | **FC045 — Contagem documental de FCs desatualizada (sessão 51)** | ✓ **CONCLUÍDA** — `23_PROXIMO_PASSO.md` + `FalhasCorrigidas/README.md` atualizados; FC044 adicionado ao índice; seção Documentação criada; contadores sincronizados. Apenas documentação. |

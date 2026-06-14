@@ -23,9 +23,10 @@ func (r *Repository) ListTenants(ctx context.Context) ([]*TenantSummary, error) 
 	rows, err := r.pool.Query(ctx, `
 		SELECT
 		  t.id::text, t.slug, t.name, t.email, t.is_active, t.created_at,
-		  COALESCE(s.status::text, 'none')       AS sub_status,
-		  COALESCE(p.name, '')                  AS plan_name,
-		  COALESCE(p.display_name, '')          AS plan_display,
+		  t.quarantined_at, COALESCE(t.quarantine_reason, ''),
+		  COALESCE(s.status::text, 'none')  AS sub_status,
+		  COALESCE(p.name, '')              AS plan_name,
+		  COALESCE(p.display_name, '')      AS plan_display,
 		  s.trial_ends_at,
 		  s.current_period_end,
 		  (SELECT COUNT(*) FROM vehicles v WHERE v.tenant_id = t.id)::int,
@@ -34,6 +35,7 @@ func (r *Repository) ListTenants(ctx context.Context) ([]*TenantSummary, error) 
 		FROM tenants t
 		LEFT JOIN subscriptions s ON s.tenant_id = t.id
 		LEFT JOIN plans p         ON p.id = s.plan_id
+		WHERE t.deleted_at IS NULL
 		ORDER BY t.created_at DESC`,
 	)
 	if err != nil {
@@ -46,6 +48,7 @@ func (r *Repository) ListTenants(ctx context.Context) ([]*TenantSummary, error) 
 		ts := &TenantSummary{}
 		if err := rows.Scan(
 			&ts.ID, &ts.Slug, &ts.Name, &ts.Email, &ts.IsActive, &ts.CreatedAt,
+			&ts.QuarantinedAt, &ts.QuarantineReason,
 			&ts.SubStatus, &ts.PlanName, &ts.PlanDisplay,
 			&ts.TrialEndsAt, &ts.PeriodEnd,
 			&ts.VehicleCount, &ts.UserCount, &ts.LeadCount,
@@ -119,6 +122,83 @@ func (r *Repository) UnblockTenant(ctx context.Context, tenantID string) error {
 	_, err := r.pool.Exec(ctx,
 		`UPDATE tenants SET is_active = true WHERE id = $1`, tenantID)
 	return err
+}
+
+func (r *Repository) QuarantineTenant(ctx context.Context, tenantID, reason string) error {
+	_, err := r.pool.Exec(ctx,
+		`UPDATE tenants SET is_active = false, quarantined_at = NOW(), quarantine_reason = $2
+		 WHERE id = $1 AND deleted_at IS NULL`,
+		tenantID, reason)
+	return err
+}
+
+func (r *Repository) UnquarantineTenant(ctx context.Context, tenantID string) error {
+	_, err := r.pool.Exec(ctx,
+		`UPDATE tenants SET is_active = true, quarantined_at = NULL, quarantine_reason = NULL
+		 WHERE id = $1`,
+		tenantID)
+	return err
+}
+
+func (r *Repository) SoftDeleteTenant(ctx context.Context, tenantID, reason string) error {
+	result, err := r.pool.Exec(ctx,
+		`UPDATE tenants SET deleted_at = NOW(), deleted_reason = $2, is_active = false
+		 WHERE id = $1 AND deleted_at IS NULL`,
+		tenantID, reason)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("tenant not found or already deleted")
+	}
+	return nil
+}
+
+func (r *Repository) HardDeleteTenant(ctx context.Context, tenantID string) error {
+	// All child FKs are ON DELETE CASCADE — single DELETE is sufficient.
+	result, err := r.pool.Exec(ctx,
+		`DELETE FROM tenants WHERE id = $1`, tenantID)
+	if err != nil {
+		return err
+	}
+	if result.RowsAffected() == 0 {
+		return errors.New("tenant not found")
+	}
+	return nil
+}
+
+func (r *Repository) GetTenantDeleteSummary(ctx context.Context, tenantID string) (map[string]any, error) {
+	row := r.pool.QueryRow(ctx, `
+		SELECT
+		  t.name, t.slug, t.email,
+		  COALESCE(p.display_name, 'Nenhum') AS plan_display,
+		  COALESCE(s.status::text, 'none')   AS sub_status,
+		  (SELECT COUNT(*) FROM users     u WHERE u.tenant_id = t.id)::int,
+		  (SELECT COUNT(*) FROM vehicles  v WHERE v.tenant_id = t.id)::int,
+		  (SELECT COUNT(*) FROM leads     l WHERE l.tenant_id = t.id)::int,
+		  (SELECT COUNT(*) FROM customers c WHERE c.tenant_id = t.id)::int
+		FROM tenants t
+		LEFT JOIN subscriptions s ON s.tenant_id = t.id
+		LEFT JOIN plans p ON p.id = s.plan_id
+		WHERE t.id = $1`, tenantID)
+
+	var name, slug, email, planDisplay, subStatus string
+	var userCount, vehicleCount, leadCount, customerCount int
+	if err := row.Scan(&name, &slug, &email, &planDisplay, &subStatus,
+		&userCount, &vehicleCount, &leadCount, &customerCount); err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"name":           name,
+		"slug":           slug,
+		"email":          email,
+		"plan_display":   planDisplay,
+		"sub_status":     subStatus,
+		"user_count":     userCount,
+		"vehicle_count":  vehicleCount,
+		"lead_count":     leadCount,
+		"customer_count": customerCount,
+	}, nil
 }
 
 func (r *Repository) GrantFeature(ctx context.Context, tenantID, feature, note string, expiresAt *time.Time) (*TenantFeatureGrant, error) {

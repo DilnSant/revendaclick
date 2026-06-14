@@ -64,8 +64,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001–036 (exceto 033 — ver nota abaixo) |
-| Próxima migration | `037_...` |
+| Migrations aplicadas | 001–037 (exceto 033 — ver nota abaixo) |
+| Próxima migration | `038_...` |
 | Tenants no banco | ver tabela completa abaixo |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
@@ -79,8 +79,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 47 (FC001–FC047) |
-| Próxima FC | **FC048** |
+| Total documentadas | 49 (FC001–FC049) |
+| Próxima FC | **FC050** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -90,6 +90,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC045 | FC045 — Contagem documental de FCs desatualizada: 23_PROXIMO_PASSO + FalhasCorrigidas/README (count 43→44, próximo FC044→FC045, FC044 ausente do índice) — sessão 51 |
 | FC046 | FC046 — Super Admin CRUD completo: assinaturas, tenants, usuários, planos, whatsapp; 10 novos endpoints backend + 5 novos componentes frontend + audit logging — sessão 52 |
 | FC047 | FC047 — Pós-deploy FC046: evoSvcInst compile error (server.go); audit_logs.tenant_id NOT NULL; entity_id não-UUID em WhatsApp audit — sessão 52 |
+| FC048 | FC048 — Validação propagação global de planos: GetUsage() sem cache, billing inalterado, RLS intacta, audit_logs tenant_id=NULL — nenhum bug — sessão 53 |
+| FC049 | FC049 — Tenants: tooltips em todas as ações + quarentena (motivo, badge, retirar) + exclusão controlada lógica/física com modal e confirmação dupla — sessão 53 |
 
 ## Landing Page — CONGELADA (sessão 31)
 

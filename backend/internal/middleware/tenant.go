@@ -16,7 +16,7 @@ func TenantResolver(pool *pgxpool.Pool) gin.HandlerFunc {
 		if c.GetString(CtxTenantID) != "" && c.GetString(CtxUserRole) != "" {
 			var slug string
 			err := pool.QueryRow(c.Request.Context(),
-				`SELECT slug FROM tenants WHERE id = $1 AND is_active = TRUE`,
+				`SELECT slug FROM tenants WHERE id = $1 AND is_active = TRUE AND deleted_at IS NULL`,
 				c.GetString(CtxTenantID),
 			).Scan(&slug)
 			if err != nil {
@@ -41,7 +41,7 @@ func TenantResolver(pool *pgxpool.Pool) gin.HandlerFunc {
 			`SELECT u.tenant_id::text, u.role::text, t.slug
 			 FROM users u
 			 JOIN tenants t ON t.id = u.tenant_id
-			 WHERE u.id = $1 AND u.is_active = TRUE`,
+			 WHERE u.id = $1 AND u.is_active = TRUE AND t.is_active = TRUE AND t.deleted_at IS NULL`,
 			userID,
 		).Scan(&tenantID, &role, &slug)
 		if err != nil {
@@ -69,7 +69,7 @@ func SlugTenantResolver(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		var tenantID string
 		err := pool.QueryRow(c.Request.Context(),
-			`SELECT id::text FROM tenants WHERE slug = $1 AND is_active = TRUE`,
+			`SELECT id::text FROM tenants WHERE slug = $1 AND is_active = TRUE AND deleted_at IS NULL`,
 			slug,
 		).Scan(&tenantID)
 		if err != nil {

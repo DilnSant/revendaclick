@@ -66,6 +66,8 @@
 | [FC045](FC045_CONTAGEM_DOCUMENTAL_FC_DESATUALIZADA.md) | Contagem documental de FCs desatualizada: 23_PROXIMO_PASSO + README (count 43→44, próximo FC044→FC045, FC044 ausente do índice) | Documentação | BAIXA | 14/06/2026 |
 | [FC046](FC046_SUPER_ADMIN_CRUD_COMPLETO.md) | Super Admin read-only → CRUD completo: assinaturas, tenants, usuários, planos, whatsapp; 10 novos endpoints backend + 5 novos componentes frontend + audit logging | Admin / Full Stack | FEATURE | 14/06/2026 |
 | [FC047](FC047_VALIDACAO_POS_DEPLOY_SUPER_ADMIN.md) | Pós-deploy FC046: evoSvcInst use-before-declaration (compile error); audit_logs.tenant_id NOT NULL bloqueava ops globais; entity_id não-UUID em WhatsApp audit | Admin / Backend / Banco | CRÍTICA+MÉDIA | 14/06/2026 |
+| [FC048](FC048_VALIDACAO_PROPAGACAO_PLANOS.md) | Validação de propagação global de planos: GetUsage() sem cache, billing inalterado, RLS intacta, audit_logs funcional com tenant_id=NULL — nenhum bug encontrado | Backend / Banco / Billing | VALIDAÇÃO | 14/06/2026 |
+| [FC049](FC049_TENANTS_QUARENTENA_EXCLUSAO_CONTROLADA.md) | Tenants admin: tooltips em todas as ações + quarentena (motivo, badge âmbar, retirar) + exclusão controlada lógica/física com modal, resumo e confirmação dupla | Admin / Full Stack | FEATURE | 14/06/2026 |
 
 ---
 
@@ -127,6 +129,12 @@
 - FC046 — Super Admin CRUD completo: assinaturas, tenants, usuários, planos, whatsapp
 - FC047 — Validação pós-deploy FC046: compile error server.go + audit_logs NOT NULL + entity_id UUID
 
+### Backend / Banco / Billing
+- FC048 — Validação de propagação global de planos: sem cache, billing inalterado, RLS intacta
+
+### Admin / Full Stack
+- FC049 — Tenants: tooltips + quarentena (motivo, badge, retirar) + exclusão controlada lógica/física
+
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
 - FC044 — Reclassificação de pendências não prioritárias → Backlog de Infraestrutura
@@ -138,7 +146,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC048.
+3. **Numeração sequencial:** próximo número disponível é FC050.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -150,8 +158,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC048
-# Nome do arquivo: FC048_DESCRICAO_CURTA.md
+# Próximo número: FC050
+# Nome do arquivo: FC050_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 

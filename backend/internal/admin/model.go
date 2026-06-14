@@ -5,20 +5,22 @@ import "time"
 // ── Tenants ───────────────────────────────────────────────────────────────────
 
 type TenantSummary struct {
-	ID           string     `json:"id"`
-	Slug         string     `json:"slug"`
-	Name         string     `json:"name"`
-	Email        string     `json:"email"`
-	IsActive     bool       `json:"is_active"`
-	CreatedAt    time.Time  `json:"created_at"`
-	SubStatus    string     `json:"sub_status"`
-	PlanName     string     `json:"plan_name"`
-	PlanDisplay  string     `json:"plan_display"`
-	TrialEndsAt  *time.Time `json:"trial_ends_at,omitempty"`
-	PeriodEnd    *time.Time `json:"period_end,omitempty"`
-	VehicleCount int        `json:"vehicle_count"`
-	UserCount    int        `json:"user_count"`
-	LeadCount    int        `json:"lead_count"`
+	ID               string     `json:"id"`
+	Slug             string     `json:"slug"`
+	Name             string     `json:"name"`
+	Email            string     `json:"email"`
+	IsActive         bool       `json:"is_active"`
+	CreatedAt        time.Time  `json:"created_at"`
+	QuarantinedAt    *time.Time `json:"quarantined_at,omitempty"`
+	QuarantineReason string     `json:"quarantine_reason,omitempty"`
+	SubStatus        string     `json:"sub_status"`
+	PlanName         string     `json:"plan_name"`
+	PlanDisplay      string     `json:"plan_display"`
+	TrialEndsAt      *time.Time `json:"trial_ends_at,omitempty"`
+	PeriodEnd        *time.Time `json:"period_end,omitempty"`
+	VehicleCount     int        `json:"vehicle_count"`
+	UserCount        int        `json:"user_count"`
+	LeadCount        int        `json:"lead_count"`
 }
 
 type UpdateTenantAdminRequest struct {
@@ -43,6 +45,15 @@ type ActivateRequest struct {
 
 type ExtendTrialRequest struct {
 	Days int `json:"days"`
+}
+
+type QuarantineTenantRequest struct {
+	Reason string `json:"reason"`
+}
+
+type DeleteTenantRequest struct {
+	Reason string `json:"reason"`
+	Hard   bool   `json:"hard"`
 }
 
 type GrantFeatureRequest struct {
