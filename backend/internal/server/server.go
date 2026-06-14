@@ -70,15 +70,11 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	planH       := plans.NewHandler(plans.NewService(plans.NewRepository(pool)))
 	financialH  := financial.NewHandler(financial.NewService(financial.NewRepository(pool)))
 	onboardingH := onboarding.NewHandler(pool, cfg.SupabaseURL, cfg.SupabaseServiceKey, logger)
-	evolutionH  := evolution.NewHandler(
-		evoSvcInst,
-		cfg.EvolutionAPIKey,
-		logger,
-	)
-	analyticsH := analytics.NewHandler(analytics.NewService(analytics.NewRepository(pool)))
-	auditH     := audit.NewHandler(audit.NewRepository(pool))
-	evoSvcInst := evolution.NewService(pool, logger, cfg.EvolutionAPIURL, cfg.EvolutionAPIKey)
-	adminH     := admin.NewHandler(admin.NewRepository(pool), &evolutionWAAdapter{svc: evoSvcInst})
+	evoSvcInst  := evolution.NewService(pool, logger, cfg.EvolutionAPIURL, cfg.EvolutionAPIKey)
+	evolutionH  := evolution.NewHandler(evoSvcInst, cfg.EvolutionAPIKey, logger)
+	analyticsH  := analytics.NewHandler(analytics.NewService(analytics.NewRepository(pool)))
+	auditH      := audit.NewHandler(audit.NewRepository(pool))
+	adminH      := admin.NewHandler(admin.NewRepository(pool), &evolutionWAAdapter{svc: evoSvcInst})
 	aiH        := ai.NewHandler(ai.NewService(cfg.OpenRouterAPIKey, cfg.OpenRouterModel))
 	billingH   := billing.NewHandler(
 		billing.NewService(billing.NewRepository(pool), cfg.AsaasAPIKey, cfg.AsaasEnv),
