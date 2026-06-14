@@ -79,13 +79,14 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 43 (FC001–FC043) |
-| Próxima FC | **FC044** |
+| Total documentadas | 44 (FC001–FC044) |
+| Próxima FC | **FC045** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
 | FC042 | FC042 — E2E Playwright: seletores incorretos + skip guards insuficientes — 5 causas raiz; 7 arquivos corrigidos; 9/9 testes verdes contra produção — sessão 48 |
 | FC043 | FC043 — Backup S3: aws-cli no startup, path YYYY/MM, verificação pós-upload, lifecycle 30d, restore-from-s3.sh — sessão 49 |
+| FC044 | FC044 — Reclassificação de pendências não prioritárias: Backup S3 config + BetterStack Alerts + Leaked Password Protection → Backlog de Infraestrutura — sessão 50 |
 
 ## Landing Page — CONGELADA (sessão 31)
 
@@ -129,6 +130,9 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | `lib/marketing/google-conversions.ts` | Server-side: stub Google Ads API (opcional) |
 
 ## Backup S3 (FC043 — sessão 49)
+
+> **Status (FC044 — 13/06/2026):** Configuração S3 adiada para Backlog de Infraestrutura por decisão de negócio.
+> Container, scripts e código prontos. Ativar configurando as vars abaixo no `.env` do VPS quando necessário.
 
 | Item | Valor |
 |---|---|

@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 13/06/2026 (sessão 49 — FC043: Backup S3 Automatizado)
+> Atualizado em: 13/06/2026 (sessão 50 — FC044: Reclassificação de pendências não prioritárias)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -150,7 +150,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Prometheus metrics | — | endpoint /metrics |
 | CONCLUÍDA | BetterStack logs | — | Tee zap |
 | CONCLUÍDA | Uptime monitoring | — | Cron job `/opt/revendaclick/scripts/health-check.sh` rodando a cada 5 min no VPS; checa api+evolution+frontend; falhas logadas em `/var/log/rc_health.log` e enviadas ao BetterStack via HTTP Bearer (sessão 37) |
-| PENDENTE | Alertas automáticos | Baixa | BetterStack: criar alerta para status >= 500 nos logs do backend |
+| BACKLOG | Alertas automáticos | — | FC044: reclassificado — não bloqueia operação comercial. BetterStack: alerta para status >= 500. Retomar quando definido. |
 
 ---
 
@@ -163,7 +163,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Métricas protegidas | — | Bearer token + IP restriction |
 | CONCLUÍDA | Input validation | — | MaxBodySize + slug/email regex |
 | CONCLUÍDA | Supabase advisor warnings (WARN) | — | Todos 3 advisors: migration 011 (RLS), 012 (functions), 013 (leads insert + storage) |
-| BLOQUEADA | Leaked password protection | — | **Bloqueada por limitação do plano Supabase Free.** Supabase exige plano Pro para integração com HaveIBeenPwned.org. Não é pendência técnica do RevendaClick — sem erro de implementação, sem correção necessária. Depende exclusivamente de upgrade para Supabase Pro. |
+| BACKLOG | Leaked password protection | — | FC044: reclassificado — não bloqueia operação. Requer Supabase Pro (HaveIBeenPwned.org). Retomar quando upgrade Supabase for justificado comercialmente. |
 | PENDENTE | Rotação de secrets | Baixa | Política semestral: ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN — atualizar no .env do VPS + no Asaas Dashboard + reiniciar containers |
 
 ---
@@ -187,3 +187,18 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Tenant sandbox-revendaclick | — | Criado via SQL: slug `sandbox-revendaclick`, plano Pro active, period_end 2026-06-30. tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |
 | CONCLUÍDA | E2E .env.e2e template | — | `frontend/.env.e2e` criado com variáveis para santos-car, sandbox e super_admin; `.env.e2e` adicionado ao .gitignore |
 | CONCLUÍDA | METRICS_TOKEN confirmado | — | Token presente no VPS .env e no container; /metrics retorna 200 via localhost com Bearer token; nginx bloqueia acesso externo (correto) |
+| CONCLUÍDA | FC044 — Reclassificação de pendências não prioritárias (sessão 50) | — | Backup S3 config, BetterStack Alerts, Leaked Password Protection movidos para Backlog de Infraestrutura — decisão de negócio: foco em comercialização |
+
+---
+
+## Backlog de Infraestrutura
+
+> Itens abaixo foram avaliados e deliberadamente adiados (FC044 — 13/06/2026).
+> Decisão de negócio: não bloqueiam operação comercial, vendas, onboarding, billing, CRM ou estabilidade do produto.
+> Retomar quando fizer sentido comercial ou técnico — sem data definida.
+
+| Item | O que é | Quando retomar |
+|---|---|---|
+| **Backup S3** | Configurar vars `BACKUP_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` no `/opt/revendaclick/.env`. Container `rc_backup` e scripts já existem e estão prontos. | Quando crescimento de dados justificar redundância offsite |
+| **BetterStack Alerts HTTP 500** | Criar alerta no BetterStack para logs backend com status >= 500 | Quando volume de usuários reais justificar monitoramento ativo |
+| **Leaked Password Protection** | Supabase Dashboard → Authentication → Settings → Security → ON. Requer upgrade para Supabase Pro (HaveIBeenPwned.org) | Quando upgrade Supabase Pro for justificado por outros motivos (ex.: volume, SLA, compliance) |

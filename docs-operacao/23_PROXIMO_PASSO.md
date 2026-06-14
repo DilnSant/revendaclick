@@ -210,28 +210,7 @@ Ver `frontend/e2e/README.md`.
 
 ### 3. Itens que exigem ação manual (Baixa)
 
-**3a. Leaked Password Protection:**
-```
-Supabase Dashboard → Authentication → Settings → Security → "Leaked Password Protection" → ON
-```
-
-**3b. Uptime Monitoring:**
-```
-UptimeRobot ou BetterStack Uptime
-URL: https://api.revendaclick.com.br/health
-Alerta por email
-```
-
-**3c. Backup S3 (opcional — rc_backup container já existe):**
-```bash
-# No VPS /opt/revendaclick/.env:
-BACKUP_S3_BUCKET=meu-bucket-s3
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-AWS_DEFAULT_REGION=sa-east-1
-```
-
-**3d. Rotação de Secrets (política semestral):**
+**3a. Rotação de Secrets (política semestral):**
 ```
 ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN
 Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar containers
@@ -239,9 +218,21 @@ Atualizar: /opt/revendaclick/.env no VPS + Asaas Dashboard + reiniciar container
 
 ### 4. Etapas comerciais (próximas sessões)
 
-- **FC044** — Próxima falha a registrar (se identificada)
+- **FC045** — Próxima falha a registrar (se identificada)
 - **Etapa 5 follow-up** — `AdminSimulateEvent` suportar `addon_type` param para simular webhooks de add-on direto pelo painel admin
 - **Etapa 10** — Auditoria final (RLS, tenant isolation, TypeScript strict, Go vet)
+
+### Backlog de Infraestrutura (adiado — FC044 — 13/06/2026)
+
+> Itens abaixo foram deliberadamente adiados por decisão de negócio.
+> Não bloqueiam operação, comercialização, onboarding ou estabilidade.
+> Retomar quando houver justificativa comercial ou técnica.
+
+| Item | Estado | Quando retomar |
+|---|---|---|
+| **Backup S3** | Container `rc_backup` pronto; scripts existem. Falta: vars no `.env` do VPS | Quando crescimento de dados justificar offsite |
+| **BetterStack Alerts HTTP 500** | BetterStack ativo (logs); falta criar alerta de status >= 500 | Quando volume de usuários reais justificar monitoramento ativo |
+| **Leaked Password Protection** | Requer Supabase Pro (HaveIBeenPwned.org) | Quando upgrade Supabase Pro for decidido por outros motivos |
 
 ### 5. Evolution schema isolado (Baixa — D19)
 

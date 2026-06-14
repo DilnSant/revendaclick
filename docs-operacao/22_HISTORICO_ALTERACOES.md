@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 13/06/2026 (sessão 50 — Diagnóstico de abertura; nenhuma alteração realizada)
+> Última atualização: 13/06/2026 (sessão 50 — FC044: Reclassificação de pendências não prioritárias → Backlog de Infraestrutura)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -77,33 +77,56 @@
 | **FC042 — E2E Playwright selectors + skip guards (sessão 48)** | ✓ **Concluída** | 7 arquivos corrigidos: `auth.ts` (`#email`/`#password`), `isCredentialReady()`, spec 01 skip guard, tabs `a[href]`, display_names reais, `href` exatos. Resultado: 9/9 aprovados, 1 skip (spec 01 requer email confirmation OFF). |
 | **FC041 — Saneamento documental final (sessão 48)** | ✓ **Concluída** | 4 arquivos corrigidos: `23_PROXIMO_PASSO.md`, `20_PENDENCIAS.md`, `FalhasCorrigidas/README.md`, `memory/project_status.md` — contagem FC atualizada (38→40; FC039→FC041); seções duplicadas e obsoletas removidas. |
 | **FC043 — Backup S3 Automatizado (sessão 49)** | ✓ **Concluída** | `backup.sh` refatorado (aws-cli no startup; path YYYY/MM; verify S3); compose: `AWS_REGION` + install startup; `restore-from-s3.sh` criado; `configure-s3-lifecycle.sh` criado (30d) |
+| **FC044 — Reclassificação pendências infra (sessão 50)** | ✓ **Concluída** | Backup S3 config + BetterStack Alerts + Leaked Password Protection → Backlog de Infraestrutura. Decisão de negócio: foco em comercialização. Apenas documentação — sem alteração de código, banco ou infra. |
 
 ---
 
-## 2026-06-13 (sessão 50) — Diagnóstico de abertura
+## 2026-06-13 (sessão 50) — FC044: Reclassificação de Pendências Não Prioritárias
 
 ### Escopo
 
-Sessão exclusivamente de leitura e diagnóstico. Nenhuma alteração realizada em código, banco, migrations, documentação ou deploy.
+Atualização exclusivamente documental por decisão de negócio. Nenhuma alteração de código, banco, migrations, infra ou deploy.
 
-### O que foi feito
+### Decisão de negócio
 
-- Leitura integral de toda a documentação obrigatória (`00_LEIA_PRIMEIRO.md`, `REFERENCE.md`, `MEMORY.md`, `PRODUCT_ARCHITECTURE.md`, `DEPENDENCIES.md`, `ENVIRONMENTS.md`, `20_PENDENCIAS.md`, `21_DECISOES_TECNICAS.md`, `22_HISTORICO_ALTERACOES.md`, `23_PROXIMO_PASSO.md`, snapshots `features/`)
+O projeto está em operação comercial. As iniciativas abaixo não serão executadas no momento pois não bloqueiam operação, vendas, onboarding, billing, CRM ou estabilidade:
+
+- Configuração de variáveis S3 (Backup offsite)
+- BetterStack Alerts HTTP 500
+- Leaked Password Protection (Supabase Pro)
+
+Prioridade atual: comercialização → captação de lojistas → conversão de trials → onboarding → evolução de produto.
+
+### Itens reclassificados
+
+| Item | Status anterior | Status atual |
+|---|---|---|
+| Backup S3 (configuração de vars) | Próximo Passo 3c (ação manual) | Backlog de Infraestrutura |
+| BetterStack Alerts HTTP 500 | PENDENTE (Baixa) | BACKLOG |
+| Leaked Password Protection | BLOQUEADA (Supabase Free) | BACKLOG |
+
+### Arquivos alterados
+
+| Arquivo | Mudança |
+|---|---|
+| `docs-operacao/20_PENDENCIAS.md` | Status BetterStack Alerts: PENDENTE → BACKLOG; Status Leaked Password: BLOQUEADA → BACKLOG; nova seção "Backlog de Infraestrutura"; FC044 adicionado à seção Documentação |
+| `docs-operacao/23_PROXIMO_PASSO.md` | Itens 3a/3b/3c removidos de "Ação manual"; nova seção "Backlog de Infraestrutura"; FC044→FC045 em Etapas comerciais |
+| `docs-operacao/REFERENCE.md` | FC044 adicionado; Próxima FC: FC044→FC045; nota de backlog na seção Backup S3 |
+| `docs-operacao/22_HISTORICO_ALTERACOES.md` | FC044 no ESTADO ATUAL + entrada cronológica |
+| `memory/project_status.md` | Atualização de descrição e estado |
+
+### Pendências ativas após reclassificação
+
+1. Lead "Joaõ" (48998232010, São José/SC) — ação comercial imediata
+2. Acompanhamento de tenants reais (`revenda-click` trialing, `finalcar` canceled)
+3. Rotação semestral de secrets (ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN)
+
+### Diagnóstico de abertura (realizados antes do FC044)
+
+- Leitura integral de toda a documentação obrigatória
 - Diagnóstico completo apresentado: estado atual, arquitetura ativa, pendências, bloqueadores e riscos
-- Verificado: nenhuma divergência entre documentos — docs 100% consistentes
-- Verificado: nenhuma referência obsoleta (`Start`, `Performance`, `Compradores`, `Coolify`, `middleware.ts`, `devecar operacional`)
-- TypeScript: `npx tsc --noEmit` — 0 erros (Go build executado via CI/CD)
-
-### Alterações realizadas
-
-Nenhuma.
-
-### Pendências identificadas (transferidas para próxima sessão)
-
-- Lead "Joaõ" (São José/SC) sem atendimento — ação comercial imediata
-- Vars S3 no `.env` do VPS — backup offsite bloqueado sem configuração
-- Verificação visual sidebar no browser
-- E2E — preencher `.env.e2e` e executar
+- Verificado: nenhuma divergência entre documentos
+- TypeScript: `npx tsc --noEmit` — 0 erros
 
 ---
 
