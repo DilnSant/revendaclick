@@ -19,12 +19,13 @@ func (r *Repository) Write(ctx context.Context, tenantID string, req WriteReques
 	oldJSON, _ := json.Marshal(req.OldData)
 	newJSON, _ := json.Marshal(req.NewData)
 
-	// Fire-and-forget — audit failures must never break the main flow
+	// Fire-and-forget — audit failures must never break the main flow.
+	// string() forces text encoding so pgx SimpleProtocol doesn't send []byte as bytea hex.
 	_, _ = r.pool.Exec(ctx, `
 		INSERT INTO audit_logs (tenant_id, user_id, action, entity_type, entity_id, old_data, new_data, ip_address)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8::inet)`,
+		VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::inet)`,
 		tenantID, nilIfEmpty(req.UserID), req.Action, req.EntityType,
-		nilIfEmpty(req.EntityID), oldJSON, newJSON, nilIfEmpty(req.IPAddress),
+		nilIfEmpty(req.EntityID), string(oldJSON), string(newJSON), nilIfEmpty(req.IPAddress),
 	)
 }
 

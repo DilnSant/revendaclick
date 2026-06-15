@@ -485,10 +485,12 @@ func (r *Repository) WriteAdminAudit(ctx context.Context, actorID, tenantID, act
 	if actorID != "" {
 		actor = actorID
 	}
+	// pgx SimpleProtocol encodes []byte as bytea hex — not implicitly castable to
+	// jsonb. Passing string(bytes) forces text encoding, which PostgreSQL accepts.
 	_, _ = r.pool.Exec(ctx, `
 		INSERT INTO audit_logs (tenant_id, user_id, action, entity_type, entity_id, old_data, new_data, ip_address)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8::inet)`,
-		tid, actor, action, entityType, eid, oldJSON, newJSON, nilOrIP(ip),
+		VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8::inet)`,
+		tid, actor, action, entityType, eid, string(oldJSON), string(newJSON), nilOrIP(ip),
 	)
 }
 
