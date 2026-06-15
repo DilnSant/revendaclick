@@ -90,3 +90,13 @@ O CLAUDE.md já documentava: `"proxy.ts instead of middleware.ts"` — esta inst
 
 - `npx tsc --noEmit` → zero erros após remoção
 - Commit `ff00b46` pushed → Vercel deploy `dpl_9XuhFKQrkP7WahDqkdV1gs755wXZ` iniciado com state=BUILDING
+
+---
+
+## FC056 — Adendo: divergências relatadas após FC054/FC055
+
+Ver FC056 para o diagnóstico completo. Resumo dos dois achados:
+
+1. `/admin/logs` 404: confirmado pelo log de runtime Vercel (404 às 22:02:30 pré-ff00b46; 200 a partir de 22:03 pós-ff00b46). Estava corrigido pelo deploy FC055, mas os testes do usuário eram de antes do deploy.
+
+2. "Reativar" não visível: o botão foi implementado em `SubscriptionsTable.tsx` (`/admin/subscriptions`), mas o fluxo natural do admin é via `/admin/tenants`. Corrigido em FC056 — `AdminTenantsTable.tsx` agora exibe "Reativar" quando `sub_status === 'canceled'` e "Ativar Pro" nos demais casos.
