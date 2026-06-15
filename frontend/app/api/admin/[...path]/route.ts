@@ -11,7 +11,10 @@ async function proxyAdmin(request: Request, path: string[], method: string) {
     return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
   }
 
-  const role = session.user?.app_metadata?.user_role as string | undefined
+  // Use getUser() instead of session claims — always returns current app_metadata
+  // from Supabase Auth server, avoiding stale JWT claims after role changes.
+  const { data: { user } } = await supabase.auth.getUser()
+  const role = user?.app_metadata?.user_role as string | undefined
   if (role !== 'super_admin') {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }
@@ -21,7 +24,7 @@ async function proxyAdmin(request: Request, path: string[], method: string) {
   const queryString = url.search
 
   let body: string | undefined
-  if (method !== 'GET' && method !== 'DELETE') {
+  if (method !== 'GET') {
     try {
       body = await request.text()
     } catch {
