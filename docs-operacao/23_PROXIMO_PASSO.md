@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 15/06/2026 (sessão 53 — FC050: hardening status de tenant)
+> Atualizado em: 15/06/2026 (sessão 54 — FC051: validação de serviços externos por status do tenant)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,11 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 53 — 14/06/2026)
+## Estado Atual do Projeto (sessão 54 — 15/06/2026)
 
 | Componente | Status |
 |---|---|
+| **FC051 — Validação de serviços externos por status (sessão 54)** | ✓ **IMPLEMENTADO** — Auditoria completa: 2 divergências (WA connection persiste para QUARENTENA/EXCLUÍDO). Correção: `QuarantineTenant` e `DeleteTenant` (soft+hard) chamam `DisconnectInstance` após DB update. BLOQUEADO mantém conexão (correto). Billing webhook, IA, CRM: sem divergência. Aguarda CI/CD. |
 | **FC050 — Hardening status de tenant (sessão 53)** | ✓ **IMPLEMENTADO** — `getTenantStatusForUser` sem filtro is_active; dashboard layout redireciona para `/conta-suspensa` por status (bloqueado/quarentena/excluído); página `/conta-suspensa` autônoma com motivo, assinatura (BLOQUEADO), logout; rota `/api/auth/logout`; `database.types.ts` regenerado. TypeScript limpo. Aguarda CI/CD. |
 | **FC049 — Tenants: quarentena e exclusão controlada (sessão 53)** | ✓ **IMPLEMENTADO** — Migration 037 aplicada (+quarantined_at/reason/deleted_at/reason em tenants). 5 novos endpoints backend. 4 novos handlers. Middleware atualizado (deleted_at IS NULL). Frontend: tooltips CSS puro, modal quarentena (motivo obrigatório), modal exclusão (resumo + modo lógico/físico + confirmação dupla). TypeScript limpo. Aguarda CI/CD. |
 | **FC048 — Validação propagação global de planos (sessão 53)** | ✓ **CONCLUÍDA** — 9/9 critérios validados. Nenhum bug encontrado. Propagação imediata confirmada (GetUsage() sem cache). Billing inalterado. RLS intacta. audit_logs com tenant_id=NULL funcional. Valores restaurados. |

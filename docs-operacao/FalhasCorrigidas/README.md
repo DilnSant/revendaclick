@@ -69,6 +69,7 @@
 | [FC048](FC048_VALIDACAO_PROPAGACAO_PLANOS.md) | Validação de propagação global de planos: GetUsage() sem cache, billing inalterado, RLS intacta, audit_logs funcional com tenant_id=NULL — nenhum bug encontrado | Backend / Banco / Billing | VALIDAÇÃO | 14/06/2026 |
 | [FC049](FC049_TENANTS_QUARENTENA_EXCLUSAO_CONTROLADA.md) | Tenants admin: tooltips em todas as ações + quarentena (motivo, badge âmbar, retirar) + exclusão controlada lógica/física com modal, resumo e confirmação dupla | Admin / Full Stack | FEATURE | 14/06/2026 |
 | [FC050](FC050_HARDENING_STATUS_TENANT.md) | Hardening status de tenant: getTenantStatusForUser sem filtro is_active; dashboard layout → /conta-suspensa por status; página centralizada com motivo, assinatura e logout | Auth / Frontend | HARDENING | 15/06/2026 |
+| [FC051](FC051_VALIDACAO_SERVICOS_EXTERNOS_STATUS_TENANT.md) | Validação de serviços externos por status: WA connection persiste para QUARENTENA/EXCLUÍDO; QuarantineTenant + DeleteTenant passam a chamar DisconnectInstance | WhatsApp / Admin | HARDENING | 15/06/2026 |
 
 ---
 
@@ -138,6 +139,9 @@
 
 ### Auth / Frontend
 - FC050 — Hardening status de tenant: bloqueado/quarentena/excluído → `/conta-suspensa`; sem redirect espúrio para /onboarding
+
+### WhatsApp / Admin
+- FC051 — Serviços externos por status: QUARENTENA/EXCLUÍDO desconectam Evolution; BLOQUEADO mantém conexão
 
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos

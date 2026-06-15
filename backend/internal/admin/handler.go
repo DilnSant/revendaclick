@@ -116,9 +116,15 @@ func (h *Handler) QuarantineTenant(c *gin.Context) {
 		response.BadRequest(c, "reason is required")
 		return
 	}
+	// Fetch slug before quarantine to disconnect Evolution instance
+	summary, _ := h.repo.GetTenantDeleteSummary(c.Request.Context(), tenantID)
 	if err := h.repo.QuarantineTenant(c.Request.Context(), tenantID, req.Reason); err != nil {
 		response.InternalError(c)
 		return
+	}
+	// Disconnect WhatsApp — quarantined tenants must not stay connected
+	if slug, ok := summary["slug"].(string); ok && slug != "" {
+		_ = h.waSvc.DisconnectInstance(c.Request.Context(), slug)
 	}
 	h.repo.WriteAdminAudit(c.Request.Context(),
 		middleware.UserIDFromGin(c), tenantID, "quarantine", "tenant", tenantID,
@@ -161,12 +167,17 @@ func (h *Handler) DeleteTenant(c *gin.Context) {
 	var req DeleteTenantRequest
 	_ = c.ShouldBindJSON(&req)
 
+	// Fetch slug before deletion (hard delete removes the row)
+	summary, _ := h.repo.GetTenantDeleteSummary(c.Request.Context(), tenantID)
+	slug, _ := summary["slug"].(string)
+
 	if hard {
-		// Capture summary before deletion for audit
-		summary, _ := h.repo.GetTenantDeleteSummary(c.Request.Context(), tenantID)
 		if err := h.repo.HardDeleteTenant(c.Request.Context(), tenantID); err != nil {
 			response.BadRequest(c, err.Error())
 			return
+		}
+		if slug != "" {
+			_ = h.waSvc.DisconnectInstance(c.Request.Context(), slug)
 		}
 		h.repo.WriteAdminAudit(c.Request.Context(),
 			middleware.UserIDFromGin(c), tenantID, "hard_delete", "tenant", tenantID,
@@ -180,6 +191,9 @@ func (h *Handler) DeleteTenant(c *gin.Context) {
 	if err := h.repo.SoftDeleteTenant(c.Request.Context(), tenantID, req.Reason); err != nil {
 		response.BadRequest(c, err.Error())
 		return
+	}
+	if slug != "" {
+		_ = h.waSvc.DisconnectInstance(c.Request.Context(), slug)
 	}
 	h.repo.WriteAdminAudit(c.Request.Context(),
 		middleware.UserIDFromGin(c), tenantID, "soft_delete", "tenant", tenantID,
