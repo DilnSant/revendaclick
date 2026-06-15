@@ -72,6 +72,7 @@
 | [FC051](FC051_VALIDACAO_SERVICOS_EXTERNOS_STATUS_TENANT.md) | Validação de serviços externos por status: WA connection persiste para QUARENTENA/EXCLUÍDO; QuarantineTenant + DeleteTenant passam a chamar DisconnectInstance | WhatsApp / Admin | HARDENING | 15/06/2026 |
 | [FC052](FC052_TESTE_ACEITACAO_FLUXOS_ADMIN.md) | Teste de aceitação dos fluxos administrativos: 4 fluxos aprovados + hotfix audit_logs (pgx SimpleProtocol bytea→jsonb) — audit nunca havia gravado em produção | Admin / Backend | VALIDAÇÃO+HOTFIX | 15/06/2026 |
 | [FC053](FC053_SUPER_ADMIN_DELETE_TENANT_ACESSO_NEGADO.md) | Super Admin DELETE tenant: 3 causas raiz — proxy.ts não wired como middleware (sem refresh de sessão); getSession() em vez de getUser(); DELETE body nunca encaminhado | Admin / Frontend / Auth | CRÍTICA | 15/06/2026 |
+| [FC054](FC054_TRES_BUGS_PRODUCAO_ADMIN_CONTA_SUSPENSA.md) | 3 bugs produção: /admin/logs 404 (layout.tsx getSession stale); reativar assinatura cancelada (clear_canceled_at + botão Reativar); /conta-suspensa copiar email suporte | Admin / Frontend / UX | ALTA | 15/06/2026 |
 
 ---
 
@@ -150,6 +151,7 @@
 
 ### Admin / Frontend / Auth
 - FC053 — Super Admin DELETE tenant: proxy.ts não wired + getSession() stale + DELETE body missing
+- FC054 — /admin/logs 404 + reativar assinatura cancelada + copiar email suporte
 
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
@@ -174,8 +176,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC051
-# Nome do arquivo: FC051_DESCRICAO_CURTA.md
+# Próximo número: FC055
+# Nome do arquivo: FC055_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 

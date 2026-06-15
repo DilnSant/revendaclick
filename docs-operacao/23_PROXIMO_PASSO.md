@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 15/06/2026 (sessão 55 — FC053: super admin delete tenant "Acesso negado" corrigido)
+> Atualizado em: 15/06/2026 (sessão 56 — FC054: /admin/logs 404, reativar assinatura cancelada, copiar email suporte)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,11 +23,12 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 55 — 15/06/2026)
+## Estado Atual do Projeto (sessão 56 — 15/06/2026)
 
 | Componente | Status |
 |---|---|
-| **FC053 — Super Admin DELETE tenant "Acesso negado" (sessão 55)** | ✓ **CONCLUÍDA** — 3 causas raiz: (1) `proxy.ts` não wired como middleware Next.js → sem refresh de sessão por request; (2) `getSession()` usava JWT cacheado sem validar `app_metadata` no servidor; (3) DELETE body nunca encaminhado ao backend (`reason` sempre vazio). Fix: `middleware.ts` criado (wire proxy.ts), `getUser()` em route.ts, `if (method !== 'GET')`. Commit `cfc060f`. Deploy Vercel automático. Validação manual necessária. |
+| **FC054 — 3 bugs produção: /admin/logs 404, reativar assinatura, copiar email (sessão 56)** | ✓ **CONCLUÍDA** — (1) `layout.tsx` usava `getSession()` → JWT stale → super_admin redirecionado ao `/dashboard` → 404; fix: `getUser()`. (2) `SubscriptionsTable`: botão "Reativar" para rows canceled + `clear_canceled_at` automático no handleSave + `handleReactivate` (+30d). (3) `SupportContact` client component: email `app.revendaclick@gmail.com` + clipboard + feedback visual + fallback. Commit `4e22465`. Deploy Vercel automático. |
+| **FC053 — Super Admin DELETE tenant "Acesso negado" (sessão 55)** | ✓ **CONCLUÍDA** — 3 causas raiz: (1) `proxy.ts` não wired como middleware Next.js → sem refresh de sessão por request; (2) `getSession()` usava JWT cacheado sem validar `app_metadata` no servidor; (3) DELETE body nunca encaminhado ao backend (`reason` sempre vazio). Fix: `middleware.ts` criado (wire proxy.ts), `getUser()` em route.ts, `if (method !== 'GET')`. Commit `cfc060f`. Deploy Vercel automático. |
 | **FC052 — Teste de aceitação dos fluxos admin (sessão 54)** | ✓ **CONCLUÍDA** — 4/4 fluxos aprovados em produção. Hotfix crítico: `audit_logs` nunca gravava (pgx SimpleProtocol `[]byte` → bytea hex; fix: `string(json.Marshal())` + `::jsonb` cast em `admin/repository.go` + `audit/repository.go`). Audit validado: 5 entradas gravadas. Frontend `/conta-suspensa` requer validação manual com browser. |
 | **FC051 — Validação de serviços externos por status (sessão 54)** | ✓ **CONCLUÍDA** — Auditoria completa: 2 divergências (WA connection persiste para QUARENTENA/EXCLUÍDO). Correção: `QuarantineTenant` e `DeleteTenant` (soft+hard) chamam `DisconnectInstance` após DB update. BLOQUEADO mantém conexão (correto). Billing webhook, IA, CRM: sem divergência. |
 | **FC050 — Hardening status de tenant (sessão 53)** | ✓ **IMPLEMENTADO** — `getTenantStatusForUser` sem filtro is_active; dashboard layout redireciona para `/conta-suspensa` por status (bloqueado/quarentena/excluído); página `/conta-suspensa` autônoma com motivo, assinatura (BLOQUEADO), logout; rota `/api/auth/logout`; `database.types.ts` regenerado. TypeScript limpo. Aguarda CI/CD. |
