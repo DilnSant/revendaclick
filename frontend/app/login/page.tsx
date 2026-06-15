@@ -2,12 +2,11 @@
 
 import Link from 'next/link'
 import { Suspense, useState, useTransition } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabaseClient'
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirect = searchParams.get('redirect') ?? '/dashboard'
   const registered = searchParams.get('registered') === '1'
@@ -36,9 +35,12 @@ function LoginForm() {
       }
 
       const role = data.user?.app_metadata?.user_role as string | undefined
-      const destination = role === 'super_admin' ? '/admin' : redirect
-      router.push(destination)
-      router.refresh()
+      // Use `redirect` param when present (avoids client-side RSC cache issue with middleware).
+      // Fall back to /admin for super_admin, /dashboard for regular users.
+      const safeRedirect = redirect && redirect !== '/login' && redirect.startsWith('/') ? redirect : null
+      const destination = safeRedirect ?? (role === 'super_admin' ? '/admin' : '/dashboard')
+      // Full-page navigation ensures fresh cookies reach proxy.ts before render
+      window.location.href = destination
     })
   }
 
