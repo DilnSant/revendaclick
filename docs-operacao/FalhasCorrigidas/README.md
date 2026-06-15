@@ -73,6 +73,7 @@
 | [FC052](FC052_TESTE_ACEITACAO_FLUXOS_ADMIN.md) | Teste de aceitação dos fluxos administrativos: 4 fluxos aprovados + hotfix audit_logs (pgx SimpleProtocol bytea→jsonb) — audit nunca havia gravado em produção | Admin / Backend | VALIDAÇÃO+HOTFIX | 15/06/2026 |
 | [FC053](FC053_SUPER_ADMIN_DELETE_TENANT_ACESSO_NEGADO.md) | Super Admin DELETE tenant: 3 causas raiz — proxy.ts não wired como middleware (sem refresh de sessão); getSession() em vez de getUser(); DELETE body nunca encaminhado | Admin / Frontend / Auth | CRÍTICA | 15/06/2026 |
 | [FC054](FC054_TRES_BUGS_PRODUCAO_ADMIN_CONTA_SUSPENSA.md) | 3 bugs produção: /admin/logs 404 (layout.tsx getSession stale); reativar assinatura cancelada (clear_canceled_at + botão Reativar); /conta-suspensa copiar email suporte | Admin / Frontend / UX | ALTA | 15/06/2026 |
+| [FC055](FC055_MIDDLEWARE_TS_CONFLITO_PROXY_TS_DEPLOY_ERRO.md) | middleware.ts conflito com proxy.ts em Next.js 16.2.6 — 4 deploys consecutivos com ERROR; proxy.ts já é o middleware nativo, criar middleware.ts causou conflito fatal no build Vercel | Deploy / Frontend | CRÍTICA | 15/06/2026 |
 
 ---
 
@@ -150,8 +151,11 @@
 - FC052 — Teste de aceitação: 4 fluxos aprovados; audit_logs corrigido (pgx bytea→jsonb)
 
 ### Admin / Frontend / Auth
-- FC053 — Super Admin DELETE tenant: proxy.ts não wired + getSession() stale + DELETE body missing
+- FC053 — Super Admin DELETE tenant: getSession() stale + DELETE body missing (middleware.ts foi erro — ver FC055)
 - FC054 — /admin/logs 404 + reativar assinatura cancelada + copiar email suporte
+
+### Deploy / Frontend
+- FC055 — middleware.ts conflito com proxy.ts (Next.js 16.2.6): 4 deploys ERROR; proxy.ts já é o middleware nativo
 
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
@@ -176,8 +180,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC055
-# Nome do arquivo: FC055_DESCRICAO_CURTA.md
+# Próximo número: FC056
+# Nome do arquivo: FC056_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
