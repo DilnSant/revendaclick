@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 15/06/2026 (sessão 57 — FC055: middleware.ts removido, 4 deploys ERROR resolvidos, produção restaurada)
+> Atualizado em: 15/06/2026 (sessão 57 — FC057: /admin/logs DEFINITIVAMENTE corrigido — logs/ no .gitignore bloqueava a rota; página commitada pela primeira vez)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -27,6 +27,8 @@
 
 | Componente | Status |
 |---|---|
+| **FC057 — /admin/logs 404 definitivo — .gitignore bloqueava rota (sessão 57)** | ✓ **CONCLUÍDA** — CAUSA RAIZ: `.gitignore` linha 40 tinha `logs/` (recursivo) que impedia `frontend/app/(admin)/admin/logs/page.tsx` de ser rastreado pelo git. Página existia apenas localmente — NUNCA commitada/deployada. Fix: `logs/` → `/logs/` (root-anchored); página adicionada ao git pela 1ª vez + `dynamic='force-dynamic'`. Login: `router.push()` → `window.location.href` + `redirect` param respeitado. Commit `0e3538c` → Vercel `dpl_53YWmJSxofTVHqnWjjf4xbJS8hbW` → **READY**. |
+| **FC056 — Divergências pós-FC054/FC055 (sessão 57)** | ✓ **CONCLUÍDA** — (1) /admin/logs 404: 200 nos logs Vercel era de deploy antigo — rota de fato inexistente (corrigida em FC057). (2) Botão "Reativar" ausente em `/admin/tenants`: estava apenas em SubscriptionsTable; corrigido em `AdminTenantsTable` com label condicional por `sub_status === 'canceled'`. Commit `184bd09`. |
 | **FC055 — middleware.ts conflito proxy.ts — 4 deploys ERROR (sessão 57)** | ✓ **CONCLUÍDA** — `middleware.ts` criado no FC053 causou conflito fatal: `"Both middleware file ./middleware.ts and proxy file ./proxy.ts are detected."` Next.js 16.2.6 usa `proxy.ts` como middleware nativo — `middleware.ts` era desnecessário. Fix: `rm frontend/middleware.ts`. Deploy `ff00b46` → Vercel `dpl_9XuhFKQrkP7WahDqkdV1gs755wXZ` → **READY** em `app.revendaclick.com.br`. |
 | **FC054 — 3 bugs produção: /admin/logs 404, reativar assinatura, copiar email (sessão 56)** | ✓ **CONCLUÍDA** — (1) `layout.tsx` usava `getSession()` → JWT stale → super_admin redirecionado ao `/dashboard` → 404; fix: `getUser()`. (2) `SubscriptionsTable`: botão "Reativar" para rows canceled + `clear_canceled_at` automático no handleSave + `handleReactivate` (+30d). (3) `SupportContact` client component: email `app.revendaclick@gmail.com` + clipboard + feedback visual + fallback. Commit `4e22465`. Em produção após FC055. |
 | **FC053 — Super Admin DELETE tenant "Acesso negado" (sessão 55)** | ✓ **CONCLUÍDA** — 3 causas raiz: (1) `proxy.ts` não wired como middleware Next.js → sem refresh de sessão por request; (2) `getSession()` usava JWT cacheado sem validar `app_metadata` no servidor; (3) DELETE body nunca encaminhado ao backend (`reason` sempre vazio). Fix: `middleware.ts` criado (wire proxy.ts), `getUser()` em route.ts, `if (method !== 'GET')`. Commit `cfc060f`. Deploy Vercel automático. |
@@ -253,8 +255,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **47 falhas documentadas (FC001–FC047)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC048**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **57 falhas documentadas (FC001–FC057)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC058**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
