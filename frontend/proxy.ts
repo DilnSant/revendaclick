@@ -19,6 +19,7 @@ const PROTECTED_PREFIXES = [
   '/billing',
   '/whatsapp',
   '/onboarding',
+  '/conta-suspensa',
 ]
 
 function isProtected(pathname: string) {

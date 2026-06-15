@@ -57,7 +57,7 @@ export type Database = {
           ip_address: unknown
           new_data: Json | null
           old_data: Json | null
-          tenant_id: string
+          tenant_id: string | null
           user_id: string | null
         }
         Insert: {
@@ -69,7 +69,7 @@ export type Database = {
           ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
-          tenant_id: string
+          tenant_id?: string | null
           user_id?: string | null
         }
         Update: {
@@ -81,7 +81,7 @@ export type Database = {
           ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
-          tenant_id?: string
+          tenant_id?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -3374,8 +3374,11 @@ export type Database = {
         Row: {
           address: Json | null
           asaas_customer_id: string | null
+          cpf_cnpj: string | null
           created_at: string
           custom_domain: string | null
+          deleted_at: string | null
+          deleted_reason: string | null
           description: string | null
           email: string
           id: string
@@ -3383,6 +3386,8 @@ export type Database = {
           logo_url: string | null
           name: string
           phone_whatsapp: string
+          quarantine_reason: string | null
+          quarantined_at: string | null
           seo_description: string | null
           seo_title: string | null
           slug: string
@@ -3393,8 +3398,11 @@ export type Database = {
         Insert: {
           address?: Json | null
           asaas_customer_id?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           custom_domain?: string | null
+          deleted_at?: string | null
+          deleted_reason?: string | null
           description?: string | null
           email: string
           id?: string
@@ -3402,6 +3410,8 @@ export type Database = {
           logo_url?: string | null
           name: string
           phone_whatsapp: string
+          quarantine_reason?: string | null
+          quarantined_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           slug: string
@@ -3412,8 +3422,11 @@ export type Database = {
         Update: {
           address?: Json | null
           asaas_customer_id?: string | null
+          cpf_cnpj?: string | null
           created_at?: string
           custom_domain?: string | null
+          deleted_at?: string | null
+          deleted_reason?: string | null
           description?: string | null
           email?: string
           id?: string
@@ -3421,6 +3434,8 @@ export type Database = {
           logo_url?: string | null
           name?: string
           phone_whatsapp?: string
+          quarantine_reason?: string | null
+          quarantined_at?: string | null
           seo_description?: string | null
           seo_title?: string | null
           slug?: string
@@ -4014,6 +4029,7 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
       }
+      check_email_registered: { Args: { p_email: string }; Returns: boolean }
       get_tenant_invoices: {
         Args: { p_limit?: number; p_tenant_id: string }
         Returns: {

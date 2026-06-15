@@ -4,6 +4,17 @@ import { createClient, createServiceClient } from './supabaseServer'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type TenantStatusResult = {
+  id: string
+  slug: string
+  name: string
+  phone_whatsapp: string
+  is_active: boolean
+  quarantined_at: string | null
+  quarantine_reason: string | null
+  deleted_at: string | null
+}
+
 export type Tenant = {
   id: string
   slug: string
@@ -215,6 +226,45 @@ export const getTenantForUser = cache(async (userId: string): Promise<TenantCont
     slug: adminTenant.slug,
     name: adminTenant.name,
     phone_whatsapp: adminTenant.phone_whatsapp,
+  }
+})
+
+// ─── Tenant status (blocked / quarantined / deleted) — no is_active filter ───
+
+/**
+ * Fetches tenant state for the authenticated user WITHOUT filtering by is_active.
+ * Used by the dashboard layout to detect blocked/quarantined/deleted tenants
+ * and redirect them to the appropriate status page instead of /onboarding.
+ */
+export const getTenantStatusForUser = cache(async (userId: string): Promise<TenantStatusResult | null> => {
+  const admin = createServiceClient()
+
+  const { data: userRow } = await admin
+    .from('users')
+    .select('tenant_id')
+    .eq('id', userId)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (!userRow?.tenant_id) return null
+
+  const { data: tenant } = await admin
+    .from('tenants')
+    .select('id, slug, name, phone_whatsapp, is_active, quarantined_at, quarantine_reason, deleted_at')
+    .eq('id', userRow.tenant_id)
+    .maybeSingle()
+
+  if (!tenant) return null
+
+  return {
+    id: tenant.id,
+    slug: tenant.slug,
+    name: tenant.name,
+    phone_whatsapp: tenant.phone_whatsapp,
+    is_active: tenant.is_active,
+    quarantined_at: tenant.quarantined_at,
+    quarantine_reason: tenant.quarantine_reason,
+    deleted_at: tenant.deleted_at,
   }
 })
 

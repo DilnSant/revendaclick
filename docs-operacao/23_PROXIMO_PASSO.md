@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 14/06/2026 (sessão 53 — FC049: quarentena e exclusão controlada de tenants)
+> Atualizado em: 15/06/2026 (sessão 53 — FC050: hardening status de tenant)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -27,6 +27,7 @@
 
 | Componente | Status |
 |---|---|
+| **FC050 — Hardening status de tenant (sessão 53)** | ✓ **IMPLEMENTADO** — `getTenantStatusForUser` sem filtro is_active; dashboard layout redireciona para `/conta-suspensa` por status (bloqueado/quarentena/excluído); página `/conta-suspensa` autônoma com motivo, assinatura (BLOQUEADO), logout; rota `/api/auth/logout`; `database.types.ts` regenerado. TypeScript limpo. Aguarda CI/CD. |
 | **FC049 — Tenants: quarentena e exclusão controlada (sessão 53)** | ✓ **IMPLEMENTADO** — Migration 037 aplicada (+quarantined_at/reason/deleted_at/reason em tenants). 5 novos endpoints backend. 4 novos handlers. Middleware atualizado (deleted_at IS NULL). Frontend: tooltips CSS puro, modal quarentena (motivo obrigatório), modal exclusão (resumo + modo lógico/físico + confirmação dupla). TypeScript limpo. Aguarda CI/CD. |
 | **FC048 — Validação propagação global de planos (sessão 53)** | ✓ **CONCLUÍDA** — 9/9 critérios validados. Nenhum bug encontrado. Propagação imediata confirmada (GetUsage() sem cache). Billing inalterado. RLS intacta. audit_logs com tenant_id=NULL funcional. Valores restaurados. |
 | **FC047 — Validação pós-deploy Super Admin (sessão 52)** | ✓ **CONCLUÍDA** — 3 bugs corrigidos: (1) `evoSvcInst` use-before-declaration compile error [commit `4b27afb`]; (2) `audit_logs.tenant_id NOT NULL` — `ALTER COLUMN DROP NOT NULL` aplicado no Supabase; (3) `entity_id` não-UUID em WhatsApp audit [commit `e094b85`]. Backend em produção com imagem `e094b85`. |

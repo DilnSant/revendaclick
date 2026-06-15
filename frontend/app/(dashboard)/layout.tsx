@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { getUserIdFromHeaders, getTenantForUser, getTenantById, getUsageFromAPI } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantStatusForUser, getTenantById, getUsageFromAPI, type TenantContext } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import { getSubscription } from '@/lib/billing'
 import PlanAlertBanner from '@/components/ui/PlanAlertBanner'
@@ -24,8 +24,20 @@ export default async function DashboardLayout({ children }: Props) {
     uid = user.id
   }
 
-  const tenant = await getTenantForUser(uid)
-  if (!tenant) redirect('/onboarding')
+  const tenantStatus = await getTenantStatusForUser(uid)
+  if (!tenantStatus) redirect('/onboarding')
+
+  // Redirect inactive tenants to the appropriate status page
+  if (tenantStatus.deleted_at) redirect('/conta-suspensa?motivo=excluido')
+  if (tenantStatus.quarantined_at) redirect('/conta-suspensa?motivo=quarentena')
+  if (!tenantStatus.is_active) redirect('/conta-suspensa?motivo=bloqueado')
+
+  const tenant: TenantContext = {
+    id:              tenantStatus.id,
+    slug:            tenantStatus.slug,
+    name:            tenantStatus.name,
+    phone_whatsapp:  tenantStatus.phone_whatsapp,
+  }
 
   const fullTenant = await getTenantById(tenant.id)
 

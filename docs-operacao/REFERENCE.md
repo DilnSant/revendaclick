@@ -79,8 +79,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 49 (FC001–FC049) |
-| Próxima FC | **FC050** |
+| Total documentadas | 50 (FC001–FC050) |
+| Próxima FC | **FC051** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -92,6 +92,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC047 | FC047 — Pós-deploy FC046: evoSvcInst compile error (server.go); audit_logs.tenant_id NOT NULL; entity_id não-UUID em WhatsApp audit — sessão 52 |
 | FC048 | FC048 — Validação propagação global de planos: GetUsage() sem cache, billing inalterado, RLS intacta, audit_logs tenant_id=NULL — nenhum bug — sessão 53 |
 | FC049 | FC049 — Tenants: tooltips em todas as ações + quarentena (motivo, badge, retirar) + exclusão controlada lógica/física com modal e confirmação dupla — sessão 53 |
+| FC050 | FC050 — Hardening status de tenant: getTenantStatusForUser sem filtro is_active; /conta-suspensa com motivo/assinatura/logout; database.types.ts regenerado — sessão 53 |
 
 ## Landing Page — CONGELADA (sessão 31)
 

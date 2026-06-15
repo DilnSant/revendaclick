@@ -68,6 +68,7 @@
 | [FC047](FC047_VALIDACAO_POS_DEPLOY_SUPER_ADMIN.md) | Pós-deploy FC046: evoSvcInst use-before-declaration (compile error); audit_logs.tenant_id NOT NULL bloqueava ops globais; entity_id não-UUID em WhatsApp audit | Admin / Backend / Banco | CRÍTICA+MÉDIA | 14/06/2026 |
 | [FC048](FC048_VALIDACAO_PROPAGACAO_PLANOS.md) | Validação de propagação global de planos: GetUsage() sem cache, billing inalterado, RLS intacta, audit_logs funcional com tenant_id=NULL — nenhum bug encontrado | Backend / Banco / Billing | VALIDAÇÃO | 14/06/2026 |
 | [FC049](FC049_TENANTS_QUARENTENA_EXCLUSAO_CONTROLADA.md) | Tenants admin: tooltips em todas as ações + quarentena (motivo, badge âmbar, retirar) + exclusão controlada lógica/física com modal, resumo e confirmação dupla | Admin / Full Stack | FEATURE | 14/06/2026 |
+| [FC050](FC050_HARDENING_STATUS_TENANT.md) | Hardening status de tenant: getTenantStatusForUser sem filtro is_active; dashboard layout → /conta-suspensa por status; página centralizada com motivo, assinatura e logout | Auth / Frontend | HARDENING | 15/06/2026 |
 
 ---
 
@@ -135,6 +136,9 @@
 ### Admin / Full Stack
 - FC049 — Tenants: tooltips + quarentena (motivo, badge, retirar) + exclusão controlada lógica/física
 
+### Auth / Frontend
+- FC050 — Hardening status de tenant: bloqueado/quarentena/excluído → `/conta-suspensa`; sem redirect espúrio para /onboarding
+
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
 - FC044 — Reclassificação de pendências não prioritárias → Backlog de Infraestrutura
@@ -146,7 +150,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC050.
+3. **Numeração sequencial:** próximo número disponível é FC051.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -158,8 +162,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC050
-# Nome do arquivo: FC050_DESCRICAO_CURTA.md
+# Próximo número: FC051
+# Nome do arquivo: FC051_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
