@@ -4,14 +4,14 @@ import AdminShell from './_components/AdminShell'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!session) redirect('/login')
+  if (!user) redirect('/login')
 
-  const role = session.user?.app_metadata?.user_role as string | undefined
+  const role = user.app_metadata?.user_role as string | undefined
   if (role !== 'super_admin') redirect('/dashboard')
 
-  const userEmail = session.user?.email ?? ''
+  const userEmail = user.email ?? ''
 
   return (
     <AdminShell userEmail={userEmail}>

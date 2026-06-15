@@ -73,6 +73,9 @@ export function SubscriptionsTable({ rows }: { rows: SubRow[] }) {
         body.plan_name = form.plan_name
       if (form.status && form.status !== editing.status)
         body.status = form.status
+      // Reactivating a canceled subscription: clear canceled_at automatically
+      if (editing.status === 'canceled' && form.status && form.status !== 'canceled')
+        body.clear_canceled_at = true
       if (form.current_period_end)
         body.current_period_end = new Date(form.current_period_end).toISOString()
       if (form.clear_trial) {
@@ -119,6 +122,28 @@ export function SubscriptionsTable({ rows }: { rows: SubRow[] }) {
         setMsg({ id: row.tenant_id, ok: false, text: json.error ?? 'Erro' })
       } else {
         setMsg({ id: row.tenant_id, ok: true, text: 'Cancelada!' })
+        router.refresh()
+      }
+    })
+  }
+
+  function handleReactivate(row: SubRow) {
+    start(async () => {
+      const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      const res = await fetch(`/api/admin/subscriptions/${row.tenant_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'active',
+          clear_canceled_at: true,
+          current_period_end: periodEnd,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) {
+        setMsg({ id: row.tenant_id, ok: false, text: json.error ?? 'Erro ao reativar' })
+      } else {
+        setMsg({ id: row.tenant_id, ok: true, text: 'Reativada com sucesso!' })
         router.refresh()
       }
     })
@@ -182,6 +207,15 @@ export function SubscriptionsTable({ rows }: { rows: SubRow[] }) {
                             className="rounded-md bg-red-900/30 border border-red-800/60 px-2.5 py-1 text-xs font-medium text-red-400 hover:bg-red-900/50 transition-colors disabled:opacity-40 whitespace-nowrap"
                           >
                             Cancelar
+                          </button>
+                        )}
+                        {row.status === 'canceled' && (
+                          <button
+                            onClick={() => handleReactivate(row)}
+                            disabled={pending}
+                            className="rounded-md bg-green-900/30 border border-green-800/60 px-2.5 py-1 text-xs font-medium text-green-400 hover:bg-green-900/50 transition-colors disabled:opacity-40 whitespace-nowrap"
+                          >
+                            Reativar
                           </button>
                         )}
                       </div>

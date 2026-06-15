@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient, createServiceClient } from '@/lib/supabaseServer'
 import { getTenantStatusForUser } from '@/lib/tenant'
+import { SupportContact } from './_components/SupportContact'
 
 export const metadata = { title: 'Conta Suspensa — RevendaClick', robots: 'noindex' }
 
@@ -196,6 +197,8 @@ export default async function ContaSuspensaPage({
               </svg>
               Contato com suporte
             </a>
+
+            <SupportContact />
 
             <form action="/api/auth/logout" method="POST">
               <button
