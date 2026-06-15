@@ -79,8 +79,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 52 (FC001–FC052) |
-| Próxima FC | **FC053** |
+| Total documentadas | 53 (FC001–FC053) |
+| Próxima FC | **FC054** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -95,6 +95,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC050 | FC050 — Hardening status de tenant: getTenantStatusForUser sem filtro is_active; /conta-suspensa com motivo/assinatura/logout; database.types.ts regenerado — sessão 53 |
 | FC051 | FC051 — Validação de serviços externos por status: WA connection persiste para QUARENTENA/EXCLUÍDO; QuarantineTenant + DeleteTenant (soft/hard) agora chamam DisconnectInstance — sessão 54 |
 | FC052 | FC052 — Teste de aceitação: 4/4 fluxos aprovados; hotfix audit_logs (pgx SimpleProtocol []byte→string + ::jsonb cast); commit 191ad80 — sessão 54 |
+| FC053 | FC053 — Super Admin DELETE tenant "Acesso negado": proxy.ts não wired como middleware; getSession() stale; DELETE body não forwarded — 3 arquivos corrigidos; commit cfc060f — sessão 55 |
 
 ## Landing Page — CONGELADA (sessão 31)
 

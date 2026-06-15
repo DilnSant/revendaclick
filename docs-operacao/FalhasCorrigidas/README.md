@@ -71,6 +71,7 @@
 | [FC050](FC050_HARDENING_STATUS_TENANT.md) | Hardening status de tenant: getTenantStatusForUser sem filtro is_active; dashboard layout → /conta-suspensa por status; página centralizada com motivo, assinatura e logout | Auth / Frontend | HARDENING | 15/06/2026 |
 | [FC051](FC051_VALIDACAO_SERVICOS_EXTERNOS_STATUS_TENANT.md) | Validação de serviços externos por status: WA connection persiste para QUARENTENA/EXCLUÍDO; QuarantineTenant + DeleteTenant passam a chamar DisconnectInstance | WhatsApp / Admin | HARDENING | 15/06/2026 |
 | [FC052](FC052_TESTE_ACEITACAO_FLUXOS_ADMIN.md) | Teste de aceitação dos fluxos administrativos: 4 fluxos aprovados + hotfix audit_logs (pgx SimpleProtocol bytea→jsonb) — audit nunca havia gravado em produção | Admin / Backend | VALIDAÇÃO+HOTFIX | 15/06/2026 |
+| [FC053](FC053_SUPER_ADMIN_DELETE_TENANT_ACESSO_NEGADO.md) | Super Admin DELETE tenant: 3 causas raiz — proxy.ts não wired como middleware (sem refresh de sessão); getSession() em vez de getUser(); DELETE body nunca encaminhado | Admin / Frontend / Auth | CRÍTICA | 15/06/2026 |
 
 ---
 
@@ -146,6 +147,9 @@
 
 ### Admin / Backend (Validação)
 - FC052 — Teste de aceitação: 4 fluxos aprovados; audit_logs corrigido (pgx bytea→jsonb)
+
+### Admin / Frontend / Auth
+- FC053 — Super Admin DELETE tenant: proxy.ts não wired + getSession() stale + DELETE body missing
 
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
