@@ -273,14 +273,18 @@ export default function AdminTenantsTable({ tenants }: { tenants: TenantSummary[
                           </button>
                         </Tip>
 
-                        {/* Ativar Pro */}
-                        <Tip label="Converte imediatamente para o plano Pro (30 dias, sem cobrança Asaas)">
+                        {/* Reativar (canceled) / Ativar Pro */}
+                        <Tip label={t.sub_status === 'canceled' ? 'Reativa assinatura cancelada (Pro, 30 dias, sem cobrança Asaas)' : 'Converte imediatamente para o plano Pro (30 dias, sem cobrança Asaas)'}>
                           <button
                             onClick={() => action(t.id, 'activate', () => callAdmin(`/tenants/${t.id}/activate`, 'POST', { plan_name: 'pro' }))}
                             disabled={isLoading('activate')}
-                            className="rounded px-2 py-1 text-xs font-medium bg-green-900/40 text-green-400 border border-green-800 hover:bg-green-900/60 disabled:opacity-40"
+                            className={`rounded px-2 py-1 text-xs font-medium border disabled:opacity-40 ${
+                              t.sub_status === 'canceled'
+                                ? 'bg-green-900/60 text-green-300 border-green-700 hover:bg-green-900/80'
+                                : 'bg-green-900/40 text-green-400 border-green-800 hover:bg-green-900/60'
+                            }`}
                           >
-                            {isLoading('activate') ? '…' : 'Ativar Pro'}
+                            {isLoading('activate') ? '…' : t.sub_status === 'canceled' ? 'Reativar' : 'Ativar Pro'}
                           </button>
                         </Tip>
 
