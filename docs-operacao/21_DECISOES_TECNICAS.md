@@ -420,3 +420,18 @@ supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/d
 
 **Documentos corrigidos:** `PRODUCT_ARCHITECTURE.md`, `17_FLUXOS_NEGOCIO.md`, `19_RISCOS.md`, `DEPENDENCIES.md`, `STACK_OVERVIEW.md`.
 
+---
+
+## D35 — Regras de .gitignore para diretórios de rotas Next.js (15/06/2026 — FC057)
+
+**Decisão:** Padrões de diretórios em `.gitignore` que colidem com nomes de rotas Next.js devem ser ancorados à raiz com `/` inicial (ex: `/logs/`, `/tmp/`) ou usar extensões de arquivo (`*.log`). Nunca usar nomes de diretório genéricos sem ancoragem.
+
+**Por quê:** Uma regra `logs/` (sem `/` inicial) em gitignore é recursiva — ignora qualquer diretório chamado `logs/` em qualquer subpath do repositório. Isso silenciosamente impediu `frontend/app/(admin)/admin/logs/page.tsx` de ser rastreada pelo git desde a criação (sessão 45). A página nunca chegou ao GitHub nem à Vercel, resultando em 404 por 12 sessões consecutivas.
+
+**Regra operacional:**
+- `logs/` em `.gitignore` → **proibido** (recursivo, perigoso para rotas)
+- `/logs/` em `.gitignore` → correto (só ignora diretório `logs/` na raiz do repo)
+- `*.log` em `.gitignore` → correto (ignora arquivos, não diretórios de rota)
+
+**Auditoria recomendada:** Ao criar qualquer diretório de rota Next.js, verificar com `git check-ignore -v <caminho>` se o arquivo está sendo ignorado antes de assumir que foi commitado.
+

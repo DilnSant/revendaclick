@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 13/06/2026 (sessão 50 — FC044: Reclassificação de pendências não prioritárias → Backlog de Infraestrutura)
+> Última atualização: 15/06/2026 (sessão 57 — FC057: /admin/logs 404 definitivo — .gitignore recursivo bloqueando rota Next.js)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -26,7 +26,7 @@
 | **Campanhas** | ✓ Placeholder produção (`has_campaigns`) | Gated; "Em breve" com links Analytics/CRM — BUG-02 corrigido sessão 29 |
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
 | **Sandbox tenant** | ✓ `sandbox-revendaclick` (sessão 26) | Pro active, `tenant_id = e72eb104-98b7-4a71-946d-15e680496fc3`, substitui devecar |
-| **Admin Panel** | ✓ Produção (super_admin) | `/admin`; ativar/bloquear/feature/trial por tenant; simulate-event |
+| **Admin Panel** | ✓ Produção (super_admin) | 8 sub-rotas CRUD; quarentena + exclusão lógica/física; audit logging; CRUD tenants/users/subs/plans/whatsapp; /admin/logs definitivamente funcional pós FC057 |
 | **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035) — gate no frontend, lê do DB, valida antes de Asaas |
 | **Configurações** | ✓ Produção + Suporte card | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp; card "Suporte RevendaClick" ao final com email + botão mailto |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
@@ -79,6 +79,68 @@
 | **FC043 — Backup S3 Automatizado (sessão 49)** | ✓ **Concluída** | `backup.sh` refatorado (aws-cli no startup; path YYYY/MM; verify S3); compose: `AWS_REGION` + install startup; `restore-from-s3.sh` criado; `configure-s3-lifecycle.sh` criado (30d) |
 | **FC044 — Reclassificação pendências infra (sessão 50)** | ✓ **Concluída** | Backup S3 config + BetterStack Alerts + Leaked Password Protection → Backlog de Infraestrutura. Decisão de negócio: foco em comercialização. Apenas documentação — sem alteração de código, banco ou infra. |
 | **FC045 — Contagem documental de FCs desatualizada (sessão 51)** | ✓ **Concluída** | `23_PROXIMO_PASSO.md` (count 43→44, próximo FC044→FC045) + `FalhasCorrigidas/README.md` (FC044 adicionado ao índice; seção "Documentação" criada; próximo FC044→FC045 em Regras e Template). Apenas documentação. |
+| **FC046-FC047 — Super Admin CRUD completo + pós-deploy (sessão 52)** | ✓ **Completo** | CRUD assinaturas/tenants/usuários/planos/whatsapp; 10 endpoints backend novos; audit logging; fix compile error + audit_logs.tenant_id NOT NULL + entity_id não-UUID em WhatsApp |
+| **FC048-FC050 — Admin Panel hardening (sessão 53)** | ✓ **Completo** | Validação GetUsage() sem cache; quarentena (motivo, badge, retirar); exclusão lógica+física com modal; getTenantStatusForUser is_active; /conta-suspensa; database.types.ts regenerado |
+| **FC051-FC052 — Validação serviços externos + testes 4/4 (sessão 54)** | ✓ **Completo** | WA disconnection em quarentena/exclusão; hotfix audit_logs pgx []byte→string + ::jsonb cast; commit 191ad80 |
+| **FC053 — Super Admin DELETE tenant acesso negado (sessão 55)** | ✓ **Corrigido** | proxy.ts não wired como middleware; getSession() stale; DELETE body não forwarded — 3 arquivos; commit cfc060f |
+| **FC054 — 3 bugs produção /admin/logs (sessão 56)** | ✓ **Corrigido** | layout.tsx getSession→getUser; SubscriptionsTable Reativar button; SupportContact clipboard em /conta-suspensa — commit 4e22465 |
+| **FC055 — middleware.ts conflito com proxy.ts (sessão 55)** | ✓ **Corrigido** | 4 deploys ERROR (cfc060f→c78016c); middleware.ts removido; Next.js 16.2.6 usa proxy.ts como middleware nativo — commit ff00b46 |
+| **FC056 — AdminTenantsTable botão Reativar condicional (sessão 56)** | ✓ **Corrigido** | Botão exibido apenas quando tenant está bloqueado e assinatura pode ser reativada |
+| **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
+
+---
+
+## 2026-06-15 (sessão 57) — FC057: /admin/logs 404 definitivo — .gitignore recursivo bloqueando rota Next.js
+
+### Problema central
+
+`/admin/logs` retornava 404 em produção desde a criação da rota (sessão 45). Sessões 54/55/56 tentaram corrigir com fixes legítimos (getSession→getUser, remoção de middleware.ts, botão Reativar condicional) mas nenhum resolveu a causa raiz.
+
+### Causa raiz descoberta
+
+`.gitignore` linha 40 continha `logs/` (sem `/` inicial). Regra recursiva em gitignore: ignora qualquer diretório chamado `logs/` em qualquer subpath do repositório → bloqueou `frontend/app/(admin)/admin/logs/` desde a criação.
+
+`frontend/app/(admin)/admin/logs/page.tsx` **nunca foi rastreada pelo git, nunca commitada, nunca chegou à Vercel.** Confirmado via `git check-ignore -v`.
+
+### Arquivos alterados
+
+| Ação | Arquivo | Detalhe |
+|---|---|---|
+| CORRIGIDO | `.gitignore` | `logs/` → `/logs/` (root-anchored) |
+| ADICIONADO | `frontend/app/(admin)/admin/logs/page.tsx` | Primeira vez rastreada e commitada; `export const dynamic = 'force-dynamic'` |
+| ALTERADO | `frontend/app/login/page.tsx` | `router.push()` → `window.location.href`; `redirect` param respeitado para super_admin |
+
+### Regra derivada (D35)
+
+Regras de `.gitignore` sem `/` inicial são recursivas e podem silenciosamente bloquear diretórios de rotas Next.js. Padrões de log/temp devem ser ancorados à raiz (`/logs/`, `/tmp/`) ou usar extensões (`*.log`).
+
+### Histórico de tentativas anteriores
+
+| Sessão | FC | O que foi feito | Por que não resolveu |
+|---|---|---|---|
+| 54 | FC054 | `layout.tsx`: `getSession()` → `getUser()` | Fix correto, mas página ainda não existia no git |
+| 55 | FC055 | Remoção de `middleware.ts` conflitante | Fix correto, restaurou pipeline — mas sem a página |
+| 56 | FC056 | `AdminTenantsTable`: botão "Reativar" condicional | Fix de outro problema — logs continuou sem a página |
+| 57 | **FC057** | **`.gitignore` corrigido + arquivo commitado** | **CAUSA RAIZ eliminada** |
+
+### Validação
+
+- TypeScript: `npx tsc --noEmit` → 0 erros
+- Build local: `/admin/logs` registrado como rota dinâmica `ƒ /admin/logs`
+- Deploy: commit `0e3538c` → Vercel `dpl_53YWmJSxofTVHqnWjjf4xbJS8hbW` → **READY** em `app.revendaclick.com.br`
+
+### Commits
+
+`0e3538c` — fix(fc057): /admin/logs 404 definitivo — .gitignore recursivo bloqueava rota
+
+### Documentação
+
+- `docs-operacao/FalhasCorrigidas/FC057_ADMIN_LOGS_GITIGNORE_BLOQUEIO.md` — criado
+- `docs-operacao/FalhasCorrigidas/README.md` — count 55→57, FC058 next
+- `docs-operacao/23_PROXIMO_PASSO.md` — count →57 FCs, próximo FC058
+- `docs-operacao/REFERENCE.md` — count 55→57, FC056/FC057 adicionados
+- `docs-operacao/21_DECISOES_TECNICAS.md` — D35 adicionada (gitignore anchoring)
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` — esta entrada
 
 ---
 

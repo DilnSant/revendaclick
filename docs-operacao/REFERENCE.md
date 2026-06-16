@@ -79,8 +79,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 55 (FC001–FC055) |
-| Próxima FC | **FC056** |
+| Total documentadas | 57 (FC001–FC057) |
+| Próxima FC | **FC058** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -97,7 +97,9 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC052 | FC052 — Teste de aceitação: 4/4 fluxos aprovados; hotfix audit_logs (pgx SimpleProtocol []byte→string + ::jsonb cast); commit 191ad80 — sessão 54 |
 | FC053 | FC053 — Super Admin DELETE tenant "Acesso negado": proxy.ts não wired como middleware; getSession() stale; DELETE body não forwarded — 3 arquivos corrigidos; commit cfc060f — sessão 55 |
 | FC054 | FC054 — 3 bugs produção: layout.tsx getSession stale → /admin/logs 404; SubscriptionsTable clear_canceled_at + botão Reativar; SupportContact clipboard em /conta-suspensa — commit 4e22465 — sessão 56 |
-| FC055 | FC055 — middleware.ts conflito com proxy.ts: 4 deploys ERROR (cfc060f→c78016c); Next.js 16.2.6 usa proxy.ts como middleware nativo — commit ff00b46 — sessão 57 |
+| FC055 | FC055 — middleware.ts conflito com proxy.ts: 4 deploys ERROR (cfc060f→c78016c); Next.js 16.2.6 usa proxy.ts como middleware nativo — commit ff00b46 — sessão 55 |
+| FC056 | FC056 — AdminTenantsTable botão Reativar condicional: exibido apenas quando tenant está bloqueado e assinatura pode ser reativada — sessão 56 |
+| FC057 | FC057 — /admin/logs 404 definitivo: `.gitignore` `logs/` recursivo bloqueava rota Next.js; page.tsx commitada pela 1ª vez; login.tsx router.push→window.location.href — commit 0e3538c — sessão 57 |
 
 ## Landing Page — CONGELADA (sessão 31)
 
