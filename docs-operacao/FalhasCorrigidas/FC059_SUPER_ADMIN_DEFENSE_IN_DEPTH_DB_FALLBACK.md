@@ -175,3 +175,21 @@ Trigger PostgreSQL em `public.users` que chama `pg_net.http()` para Admin API é
 
 - Esta falha foi descoberta quando o usuário reportou o sintoma pós-FC058 (login ainda em `/onboarding`). O deploy FC058 (commit pendente) sozinho **não resolvia** o problema porque a claim JWT estava ausente — defense-in-depth é a única solução que cobre o estado atual dos dados sem requerer migração manual imediata.
 - Após o deploy deste FC059, o `auth.users.app_metadata.user_role` do `dilneysantos.developer@gmail.com` pode ser sincronizado via Admin API para normalizar o estado (opcional — não é mais bloqueador).
+
+## Verificação pós-deploy (sessão 59 — 26/06/2026)
+
+**Achado importante:** Ao executar o procedimento manual de sincronização documentado acima, foi constatado via Admin API que **`app_metadata.user_role` já estava `"super_admin"` para o `dilneysantos.developer@gmail.com`** no momento da sessão 59.
+
+| Fonte | Valor |
+|---|---|
+| `auth.users.app_metadata.user_role` | `"super_admin"` ✓ (já sincronizado) |
+| `public.users.role` | `"super_admin"` ✓ |
+| `last_sign_in_at` | `2026-06-26T21:51:31Z` (login recente confirmado) |
+
+**Implicações:**
+1. A sincronização manual foi aplicada em algum momento entre FC058 (sessão 58 — 23/06) e a verificação atual (sessão 59 — 26/06), provavelmente pelo owner durante um dos logins de teste ou deploy intermediário.
+2. O sintoma original do FC058 ("redireciona para /onboarding") já estava resolvido antes mesmo do deploy do FC059 — o que explica o `last_sign_in_at` recente.
+3. **FC059 permanece arquiteturalmente correto** porque:
+   - Caminho JWT-first preserva o comportamento atual sem overhead (sem query extra)
+   - DB-fallback é a defesa real contra futuras promoções via SQL sem sync manual
+   - Não há regressão (tenants regulares continuam usando o caminho JWT, sem query extra)
