@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 15/06/2026 (sessão 57 — FC057: /admin/logs DEFINITIVAMENTE corrigido — logs/ no .gitignore bloqueava a rota; página commitada pela primeira vez)
+> Atualizado em: 26/06/2026 (sessão 59 — FC059: super_admin defense-in-depth — DB-fallback quando `app_metadata.user_role` ausente no JWT)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,12 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 57 — 15/06/2026)
+## Estado Atual do Projeto (sessão 59 — 26/06/2026)
 
 | Componente | Status |
 |---|---|
+| **FC059 — Super Admin defense-in-depth (sessão 59)** | ✓ **IMPLEMENTADO** — `resolveUserRole()` em `frontend/lib/tenant.ts` com semântica JWT-first + DB-fallback via `createServiceClient`. Atualizado: `(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`. Novo endpoint `app/api/me/role/route.ts` para o login resolver destino. Causa raiz revelada: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` ausente (promoção SQL não sincroniza Auth server). Defense-in-depth cobre o gap sem requerer migração manual. |
+| **FC058 — Super Admin redirecionado para `/onboarding` (sessão 58)** | ✓ **PARCIAL** — Layout do dashboard distinguia role + redirect `www→app`. Mas a checagem dependia do JWT claim `user_role` que estava ausente — bug só completamente coberto após FC059. Adendo em FC058 explica a causa raiz completa. |
 | **FC057 — /admin/logs 404 definitivo — .gitignore bloqueava rota (sessão 57)** | ✓ **CONCLUÍDA** — CAUSA RAIZ: `.gitignore` linha 40 tinha `logs/` (recursivo) que impedia `frontend/app/(admin)/admin/logs/page.tsx` de ser rastreado pelo git. Página existia apenas localmente — NUNCA commitada/deployada. Fix: `logs/` → `/logs/` (root-anchored); página adicionada ao git pela 1ª vez + `dynamic='force-dynamic'`. Login: `router.push()` → `window.location.href` + `redirect` param respeitado. Commit `0e3538c` → Vercel `dpl_53YWmJSxofTVHqnWjjf4xbJS8hbW` → **READY**. |
 | **FC056 — Divergências pós-FC054/FC055 (sessão 57)** | ✓ **CONCLUÍDA** — (1) /admin/logs 404: 200 nos logs Vercel era de deploy antigo — rota de fato inexistente (corrigida em FC057). (2) Botão "Reativar" ausente em `/admin/tenants`: estava apenas em SubscriptionsTable; corrigido em `AdminTenantsTable` com label condicional por `sub_status === 'canceled'`. Commit `184bd09`. |
 | **FC055 — middleware.ts conflito proxy.ts — 4 deploys ERROR (sessão 57)** | ✓ **CONCLUÍDA** — `middleware.ts` criado no FC053 causou conflito fatal: `"Both middleware file ./middleware.ts and proxy file ./proxy.ts are detected."` Next.js 16.2.6 usa `proxy.ts` como middleware nativo — `middleware.ts` era desnecessário. Fix: `rm frontend/middleware.ts`. Deploy `ff00b46` → Vercel `dpl_9XuhFKQrkP7WahDqkdV1gs755wXZ` → **READY** em `app.revendaclick.com.br`. |
@@ -255,8 +257,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **57 falhas documentadas (FC001–FC057)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC058**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **59 falhas documentadas (FC001–FC059)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC060**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

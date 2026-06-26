@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabaseServer'
+import { resolveUserRole } from '@/lib/tenant'
 
 const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
@@ -14,7 +15,13 @@ async function proxyAdmin(request: Request, path: string[], method: string) {
   // Use getUser() instead of session claims — always returns current app_metadata
   // from Supabase Auth server, avoiding stale JWT claims after role changes.
   const { data: { user } } = await supabase.auth.getUser()
-  const role = user?.app_metadata?.user_role as string | undefined
+  if (!user) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  }
+
+  // FC059: defense-in-depth — JWT-first + DB-fallback so super_admin works
+  // even when app_metadata.user_role is missing (e.g. promoted via SQL).
+  const role = await resolveUserRole(user, user.id)
   if (role !== 'super_admin') {
     return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
   }

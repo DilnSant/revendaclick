@@ -34,11 +34,23 @@ function LoginForm() {
         return
       }
 
-      const role = data.user?.app_metadata?.user_role as string | undefined
+      // FC059: JWT may lack user_role. Fetch DB-resolved role via /api/me/role
+      // to pick the correct destination (super_admin → /admin, others → /dashboard).
+      let resolvedRole: string | null = null
+      try {
+        const res = await fetch('/api/me/role', { cache: 'no-store' })
+        if (res.ok) {
+          const json = await res.json()
+          resolvedRole = json.role ?? null
+        }
+      } catch {
+        // Network or auth hiccup — fall through with null role → /dashboard
+      }
+
       // Use `redirect` param when present (avoids client-side RSC cache issue with middleware).
       // Fall back to /admin for super_admin, /dashboard for regular users.
       const safeRedirect = redirect && redirect !== '/login' && redirect.startsWith('/') ? redirect : null
-      const destination = safeRedirect ?? (role === 'super_admin' ? '/admin' : '/dashboard')
+      const destination = safeRedirect ?? (resolvedRole === 'super_admin' ? '/admin' : '/dashboard')
       // Full-page navigation ensures fresh cookies reach proxy.ts before render
       window.location.href = destination
     })

@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 15/06/2026 (sessão 57 — FC057: /admin/logs 404 definitivo — .gitignore recursivo bloqueando rota Next.js)
+> Última atualização: 26/06/2026 (sessão 59 — FC059: super admin defense-in-depth — DB-fallback para `app_metadata.user_role` ausente no JWT)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -87,6 +87,61 @@
 | **FC055 — middleware.ts conflito com proxy.ts (sessão 55)** | ✓ **Corrigido** | 4 deploys ERROR (cfc060f→c78016c); middleware.ts removido; Next.js 16.2.6 usa proxy.ts como middleware nativo — commit ff00b46 |
 | **FC056 — AdminTenantsTable botão Reativar condicional (sessão 56)** | ✓ **Corrigido** | Botão exibido apenas quando tenant está bloqueado e assinatura pode ser reativada |
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
+| **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
+| **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-06-23 (sessão 58) — FC058: Super Admin redirecionado para /onboarding + subdomínio www. sem redirect canônico
+
+### Problema central
+
+Tentativa de login como super_admin (`dilneysantos.developer@gmail.com`) resultava em redirect para `/onboarding` (fluxo de criar loja) em vez de `/admin` (painel administrativo). Painel super_admin ficou **inacessível via fluxo normal** desde a migration 025 (2026-05-29) — owner vinha editando URL manualmente. Adicionalmente, usuários que chegavam ao app via `www.revendaclick.com.br/*` tinham sessão perdida por cookies serem scoped ao domínio exato.
+
+### Causa raiz
+
+**A) Layout do dashboard assumia "todo usuário tem tenant"** — `frontend/app/(dashboard)/layout.tsx:28` (pré-FC058):
+
+```ts
+const tenantStatus = await getTenantStatusForUser(uid)
+if (!tenantStatus) redirect('/onboarding')
+```
+
+`getTenantStatusForUser` retorna `null` para super_admin (que tem `tenant_id = NULL` por design — migration 025). Layout não distinguia "usuário sem tenant → /onboarding" de "super_admin → /admin".
+
+**B) Subdomínio www. sem redirect para app.** — `frontend/next.config.ts` aceitava imagens de `www.revendaclick.com.br` mas não tinha regra `redirects()`. Cookies Supabase são scoped ao domínio exato: login em `www.` não era reconhecido em `app.`, gerando confusão de "login quebrado".
+
+### Correção
+
+**A) Detecção de super_admin no dashboard layout** — `frontend/app/(dashboard)/layout.tsx`:
+- `getUser()` único no topo da função (antes era duplicado).
+- Early-return: `if (role === 'super_admin') redirect('/admin')` ANTES de `getTenantStatusForUser`.
+- Padrão consistente com `frontend/app/login/page.tsx:37-41`.
+
+**B) Redirect canônico www. → app.** — `frontend/next.config.ts`:
+- Novo bloco `async redirects()` com regra `www.revendaclick.com.br/:path*` → `https://app.revendaclick.com.br/:path*` (HTTP 308 permanente).
+- Preserva path e query string via `:path*`.
+
+### Validação
+
+- TypeScript: `npx tsc --noEmit` → **0 erros**
+- Healthcheck backend: `{"db":"ok","status":"ok"}` (HTTP 200) — sem regressão
+- Frontend raiz: HTTP 200 — sem regressão
+- Vitrine pública santos-car: HTTP 200 — sem regressão
+- Evolution: HTTP 200 — sem regressão
+
+### Documentação
+
+- `docs-operacao/FalhasCorrigidas/FC058_SUPER_ADMIN_REDIRECIONAMENTO_ONBOARDING.md` — criado
+- `docs-operacao/FalhasCorrigidas/README.md` — count 57→58, FC059 next, FC056 oficializado como adendo do FC055
+- `docs-operacao/REFERENCE.md` — count 57→58, FC058 adicionado
+- `docs-operacao/20_PENDENCIAS.md` — pendência resolvida
+- `docs-operacao/23_PROXIMO_PASSO.md` — nota sobre onde encontrar lead "Joaõ" (em `/admin/leads`, não `/leads`)
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` — esta entrada
+
+### Pendências comerciais (não técnicas)
+
+- Lead "Joaõ" (48998232010, São José/SC) — agora acessível via super_admin → `/admin/leads`. Requer ação comercial.
 
 ---
 
@@ -2661,6 +2716,89 @@ O embedded join PostgREST `.select('tenant_id, tenants(id, slug, name, phone_wha
 
 **Commits relacionados:**
 - Ver `git log` para commits desta data
+
+---
+
+## 2026-06-26 — FC059: Super Admin defense-in-depth — DB-fallback quando `app_metadata.user_role` ausente no JWT
+
+### Problema central
+
+A correção FC058 (sessão 58) substituiu `getTenantStatusForUser() → null → /onboarding` por `role === 'super_admin' → /admin` no `(dashboard)/layout.tsx`. **Mas** a checagem ainda dependia inteiramente do JWT claim `user_role`, que o usuário `dilneysantos.developer@gmail.com` **não possui** em `auth.users.app_metadata`. Resultado: o deploy FC058 sozinho não resolvia — super_admin continuava sendo redirecionado para `/onboarding` em produção.
+
+### Causa raiz revelada
+
+| Tabela | Coluna | Valor |
+|---|---|---|
+| `public.users` | `role` | `super_admin` (setado via SQL — migration 025) |
+| `auth.users` | `app_metadata.user_role` | `undefined` (nunca sincronizado) |
+
+Por que `auth.users.app_metadata.user_role` está ausente:
+- Único writer: `updateSupabaseAppMetadata()` em `backend/internal/onboarding/onboarding.go:184` — hardcoded para `role = "owner"`.
+- Chamada apenas no fluxo de onboarding (`CompleteOnboarding`).
+- Promover via SQL puro (`UPDATE public.users SET role = 'super_admin' WHERE id = ...`) **não propaga** para `auth.users.app_metadata`, porque `auth.users` é gerenciado pelo GoTrue (Auth server do Supabase). A única forma de escrever `app_metadata` em `auth.users` é via **Supabase Auth Admin API** (service_role JWT).
+
+### Correção — defense-in-depth
+
+Adicionado helper `resolveUserRole()` em `frontend/lib/tenant.ts` com semântica **JWT-first + DB-fallback**:
+
+```ts
+export const getUserRoleFromDB = cache(async (userId: string) => {
+  const admin = createServiceClient()
+  const { data } = await admin.from('users').select('role')
+    .eq('id', userId).eq('is_active', true).maybeSingle()
+  return data?.role ?? null
+})
+
+export async function resolveUserRole(user, userId) {
+  const fromJwt = user?.app_metadata?.user_role
+  if (typeof fromJwt === 'string' && fromJwt.length > 0) return fromJwt
+  return await getUserRoleFromDB(userId)
+}
+```
+
+**Comportamento:** JWT com claim válida → usa JWT (rápido). JWT sem claim → fallback `SELECT role FROM users` via service-role. Ambos falham → `null` (caller trata como desconhecido). `React.cache()` dedup.
+
+**Por que o endpoint `/api/me/role` é necessário:** `login/page.tsx` é `'use client'` — não pode usar `createServiceClient()` (bypassa RLS e exige env var server-only). Endpoint server-side expõe `resolveUserRole()` de forma segura e autenticada.
+
+### Call sites atualizados
+
+| Arquivo | Mudança |
+|---|---|
+| `frontend/lib/tenant.ts` | +52 linhas — `getUserRoleFromDB` + `resolveUserRole` |
+| `frontend/app/(dashboard)/layout.tsx` | super_admin check via `resolveUserRole(user, user.id)` |
+| `frontend/app/(admin)/layout.tsx` | super_admin gate via `resolveUserRole` |
+| `frontend/app/api/admin/[...path]/route.ts` | proxy guard via `resolveUserRole` + null user check |
+| `frontend/app/api/me/role/route.ts` | **NOVO** — endpoint server-side `{ role }` |
+| `frontend/app/login/page.tsx` | após `signInWithPassword`, fetch `/api/me/role` para destino |
+
+### Validação
+
+- `npx tsc --noEmit` → **0 erros**
+- Pós-deploy manual (após merge → Vercel auto-deploy):
+  - Login `dilneysantos.developer@gmail.com` → esperado: HTTP 200 em `/admin`
+  - Login `dilneysantos@gmail.com` (santos-car Pro, JWT com claim) → `/dashboard` (caminho JWT-first preservado)
+  - Tenant sem role especial → `/dashboard`
+  - `curl /api/me/role` (sem cookie) → `{"role":null}` HTTP 200
+
+### Prevenção (backlog)
+
+Procedimento manual documentado em `23_PROXIMO_PASSO.md`: ao promover usuário via SQL para role sensível, sincronizar também `auth.users.app_metadata.user_role` via Supabase Auth Admin API. Trigger SQL não é viável — `auth.users` write requer HTTP Admin API.
+
+**Arquivos criados/modificados:**
+- `frontend/lib/tenant.ts` — +52 linhas (getUserRoleFromDB, resolveUserRole)
+- `frontend/app/(dashboard)/layout.tsx` — resolveUserRole import + check
+- `frontend/app/(admin)/layout.tsx` — resolveUserRole import + check
+- `frontend/app/api/admin/[...path]/route.ts` — resolveUserRole import + null user check
+- `frontend/app/api/me/role/route.ts` — **NOVO** endpoint
+- `frontend/app/login/page.tsx` — fetch /api/me/role + try/catch fallback
+- `docs-operacao/FalhasCorrigidas/FC059_SUPER_ADMIN_DEFENSE_IN_DEPTH_DB_FALLBACK.md` — **NOVO**
+- `docs-operacao/FalhasCorrigidas/FC058_SUPER_ADMIN_REDIRECIONAMENTO_ONBOARDING.md` — adendo (causa raiz completa)
+- `docs-operacao/FalhasCorrigidas/README.md` — FC059 adicionado
+- `docs-operacao/23_PROXIMO_PASSO.md` — estado atualizado, count 57→59
+- `docs-operacao/REFERENCE.md` — count 58→59, próxima FC059→FC060
+
+**Commits relacionados:**
+- (a definir após commit e push)
 
 ---
 

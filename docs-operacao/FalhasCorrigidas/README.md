@@ -76,6 +76,8 @@
 | [FC055](FC055_MIDDLEWARE_TS_CONFLITO_PROXY_TS_DEPLOY_ERRO.md) | middleware.ts conflito com proxy.ts em Next.js 16.2.6 — 4 deploys consecutivos com ERROR; proxy.ts já é o middleware nativo, criar middleware.ts causou conflito fatal no build Vercel | Deploy / Frontend | CRÍTICA | 15/06/2026 |
 | [FC056](FC055_MIDDLEWARE_TS_CONFLITO_PROXY_TS_DEPLOY_ERRO.md#fc056--adendo-divergências-relatadas-após-fc054fc055) | Pós-FC055: /admin/logs interpretado como corrigido (200 nos logs Vercel eram de deploy antigo); botão "Reativar" ausente em /admin/tenants — adicionado no AdminTenantsTable | Admin / Frontend | ALTA | 15/06/2026 |
 | [FC057](FC057_ADMIN_LOGS_GITIGNORE_BLOQUEIO.md) | /admin/logs 404 definitivo: `logs/` no .gitignore bloqueava recursivamente o diretório de rota — página nunca commitada ao repositório; `.gitignore` corrigido para `/logs/` | Deploy / Frontend | CRÍTICA | 15/06/2026 |
+| [FC058](FC058_SUPER_ADMIN_REDIRECIONAMENTO_ONBOARDING.md) | Super Admin redirecionado para `/onboarding` ao logar (dashboard layout não distinguia role); subdomínio `www.` sem redirect para `app.` quebrava sessão entre subdomínios | Admin / Frontend | ALTA | 23/06/2026 |
+| [FC059](FC059_SUPER_ADMIN_DEFENSE_IN_DEPTH_DB_FALLBACK.md) | FC058 não resolvia em produção: `app_metadata.user_role` ausente no JWT (promoção SQL não sincroniza `auth.users`); `resolveUserRole()` com DB-fallback via service-role cobre o gap | Admin / Frontend | ALTA | 26/06/2026 |
 
 ---
 
@@ -158,8 +160,10 @@
 
 ### Deploy / Frontend
 - FC055 — middleware.ts conflito com proxy.ts (Next.js 16.2.6): 4 deploys ERROR; proxy.ts já é o middleware nativo
-- FC056 — Divergências pós-FC055: /admin/logs 200 nos logs Vercel era falso positivo; botão Reativar ausente em /admin/tenants
+- FC056 — Divergências pós-FC055: /admin/logs 200 nos logs Vercel era falso positivo; botão Reativar ausente em /admin/tenants *(adendo interno do FC055 — ver seção "Adendos" em [FC055](FC055_MIDDLEWARE_TS_CONFLITO_PROXY_TS_DEPLOY_ERRO.md#fc056--adendo-divergências-relatadas-após-fc054fc055))*
 - FC057 — /admin/logs 404 definitivo: `logs/` no .gitignore bloqueava diretório de rota; corrigido para `/logs/`; login pós-sessão usa `window.location.href`
+- FC058 — Super Admin redirecionado para `/onboarding` ao logar; subdomínio `www.` sem redirect para `app.` quebrava sessão entre subdomínios
+- FC059 — FC058 sozinho não resolvia (JWT sem claim `user_role`); `resolveUserRole()` com JWT-first + DB-fallback via service-role é a camada de defesa que cobre o gap sem requerer migração manual
 
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
@@ -172,7 +176,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC058.
+3. **Numeração sequencial:** próximo número disponível é FC059.
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -184,8 +188,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC056
-# Nome do arquivo: FC056_DESCRICAO_CURTA.md
+# Próximo número: FC059
+# Nome do arquivo: FC059_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 

@@ -79,8 +79,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 57 (FC001–FC057) |
-| Próxima FC | **FC058** |
+| Total documentadas | 59 (FC001–FC059) |
+| Próxima FC | **FC060** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -98,8 +98,10 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC053 | FC053 — Super Admin DELETE tenant "Acesso negado": proxy.ts não wired como middleware; getSession() stale; DELETE body não forwarded — 3 arquivos corrigidos; commit cfc060f — sessão 55 |
 | FC054 | FC054 — 3 bugs produção: layout.tsx getSession stale → /admin/logs 404; SubscriptionsTable clear_canceled_at + botão Reativar; SupportContact clipboard em /conta-suspensa — commit 4e22465 — sessão 56 |
 | FC055 | FC055 — middleware.ts conflito com proxy.ts: 4 deploys ERROR (cfc060f→c78016c); Next.js 16.2.6 usa proxy.ts como middleware nativo — commit ff00b46 — sessão 55 |
-| FC056 | FC056 — AdminTenantsTable botão Reativar condicional: exibido apenas quando tenant está bloqueado e assinatura pode ser reativada — sessão 56 |
+| FC056 | FC056 — AdminTenantsTable botão Reativar condicional: exibido apenas quando tenant está bloqueado e assinatura pode ser reativada — sessão 56 *(adendo interno do FC055 — sem arquivo próprio)* |
 | FC057 | FC057 — /admin/logs 404 definitivo: `.gitignore` `logs/` recursivo bloqueava rota Next.js; page.tsx commitada pela 1ª vez; login.tsx router.push→window.location.href — commit 0e3538c — sessão 57 |
+| FC058 | FC058 — Super Admin redirecionado para `/onboarding` ao logar: layout.tsx não distinguia role (sem tenant → /onboarding em vez de /admin); subdomínio `www.` sem redirect canônico para `app.` quebrava sessão entre subdomínios — sessão 58 |
+| FC059 | FC059 — Super Admin defense-in-depth: `app_metadata.user_role` ausente no JWT (promoção SQL não sincroniza Auth server); `resolveUserRole()` com DB-fallback via service-role cobre o gap — sessão 59 |
 
 ## Landing Page — CONGELADA (sessão 31)
 

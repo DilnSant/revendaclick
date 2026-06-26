@@ -35,6 +35,21 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'app.revendaclick.com.br' },
     ],
   },
+  // FC058: force canonical sub-domain. Cookies are scoped to the exact domain,
+  // so a login made on `www.` is not visible on `app.` and vice-versa, breaking
+  // the session. Redirect every request from www. to app. preserving path + query.
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          { type: 'host', value: 'www.revendaclick.com.br' },
+        ],
+        destination: 'https://app.revendaclick.com.br/:path*',
+        permanent: true,
+      },
+    ]
+  },
   async headers() {
     return [
       {

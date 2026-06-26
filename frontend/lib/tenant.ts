@@ -268,6 +268,59 @@ export const getTenantStatusForUser = cache(async (userId: string): Promise<Tena
   }
 })
 
+// ─── Role resolution (JWT-first, DB-fallback) — FC059 ────────────────────────
+
+/**
+ * Fetches the user's role from public.users via service-role.
+ * Used as fallback when JWT app_metadata.user_role is missing — e.g. users
+ * promoted to super_admin via SQL without syncing auth.users (FC059).
+ * Cached per request via React.cache.
+ */
+export const getUserRoleFromDB = cache(
+  async (userId: string): Promise<string | null> => {
+    if (!userId) return null
+    try {
+      const admin = createServiceClient()
+      const { data, error } = await admin
+        .from('users')
+        .select('role')
+        .eq('id', userId)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (error) {
+        console.error('[getUserRoleFromDB] error:', error.message, { userId })
+        return null
+      }
+      return data?.role ?? null
+    } catch (err) {
+      console.error('[getUserRoleFromDB] unexpected error:', err)
+      return null
+    }
+  }
+)
+
+/**
+ * Resolves the effective user role with JWT-first + DB-fallback semantics.
+ * - Returns app_metadata.user_role if present and non-empty
+ * - Else falls back to getUserRoleFromDB(userId)
+ * - Returns null if both sources fail — caller treats as "unknown"
+ *
+ * This is the defense-in-depth layer: even if a user's JWT is missing the
+ * role claim (e.g. never synced to auth.users.app_metadata), every route
+ * guard can still resolve the correct role from the database.
+ */
+export async function resolveUserRole(
+  user: { app_metadata?: Record<string, unknown> | null } | null,
+  userId: string
+): Promise<string | null> {
+  const fromJwt = user?.app_metadata?.user_role
+  if (typeof fromJwt === 'string' && fromJwt.length > 0) {
+    return fromJwt
+  }
+  return await getUserRoleFromDB(userId)
+}
+
 // ─── Plan usage (dashboard) ──────────────────────────────────────────────────
 
 function computeAlert(pct: number, max: number): PlanUsage['vehicles_alert'] {

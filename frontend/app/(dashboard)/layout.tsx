@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
-import { getUserIdFromHeaders, getTenantStatusForUser, getTenantById, getUsageFromAPI, type TenantContext } from '@/lib/tenant'
+import { getUserIdFromHeaders, getTenantStatusForUser, getTenantById, getUsageFromAPI, resolveUserRole, type TenantContext } from '@/lib/tenant'
 import { createClient } from '@/lib/supabaseServer'
 import { getSubscription } from '@/lib/billing'
 import PlanAlertBanner from '@/components/ui/PlanAlertBanner'
@@ -12,17 +12,18 @@ interface Props {
 }
 
 export default async function DashboardLayout({ children }: Props) {
-  // Middleware injects x-user-id on protected routes; fall back to Supabase
-  // getUser() for any route not yet in the middleware DASHBOARD_PREFIXES list.
-  let uid = await getUserIdFromHeaders()
-
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  if (!uid) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
-    uid = user.id
-  }
+  // Middleware injects x-user-id on protected routes; fall back to user.id.
+  const uid = (await getUserIdFromHeaders()) ?? user.id
+
+  // FC059: defense-in-depth — resolve role with JWT-first + DB-fallback so
+  // super_admin works even when app_metadata.user_role is missing in JWT
+  // (FC058 cause: users promoted via SQL without syncing auth.users).
+  const role = await resolveUserRole(user, user.id)
+  if (role === 'super_admin') redirect('/admin')
 
   const tenantStatus = await getTenantStatusForUser(uid)
   if (!tenantStatus) redirect('/onboarding')
