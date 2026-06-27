@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getUserIdFromHeaders, getTenantForUser, getUsageFromAPI } from '@/lib/tenant'
-import CopyStoreLink from '@/components/dashboard/CopyStoreLink'
+import StoreCard from '@/components/dashboard/StoreCard'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabaseServer'
 import UsageBar from '@/components/ui/UsageBar'
@@ -175,23 +175,63 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Quick links */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {/* Plan banner */}
-        {usage && (
-          <div className="card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-900">Plano atual: {usage.plan_display}</p>
-                <p className="mt-0.5 text-xs text-gray-500">Status: {usage.subscription_status}</p>
-              </div>
-              <Link href="/billing" className="btn-primary text-xs">Gerenciar</Link>
-            </div>
-          </div>
-        )}
+      {/* Store highlight — featured card after KPIs */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <StoreCard slug={tenant.slug} published={checklistWithFlags?.published_store === true} />
+        </div>
 
-        {/* Store link */}
-        <CopyStoreLink slug={tenant.slug} />
+        {/* Quick access — Ver loja + Plan banner */}
+        <div className="space-y-4">
+          {usage && (
+            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Plano atual</p>
+              <p className="mt-1.5 text-lg font-heading font-bold text-gray-900">{usage.plan_display}</p>
+              <p className="mt-0.5 text-xs text-gray-500">Status: {usage.subscription_status}</p>
+              <Link
+                href="/billing"
+                className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/90"
+              >
+                Gerenciar assinatura →
+              </Link>
+            </div>
+          )}
+          <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Acesso rápido</p>
+            <Link
+              href={`/${tenant.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="dashboard-open-store"
+              className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Ver Minha Loja
+              </span>
+              <svg className="h-3.5 w-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </Link>
+            <Link
+              href="/store"
+              data-testid="dashboard-store-page"
+              className="mt-2 flex items-center justify-between gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016A3.001 3.001 0 0021 9.349m-18 0a2.998 2.998 0 00.94-2.07 2.998 2.998 0 00.94-2.07m18 4.14a2.998 2.998 0 00-.94-2.07 2.998 2.998 0 00-.94-2.07" />
+                </svg>
+                Página da Loja
+              </span>
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

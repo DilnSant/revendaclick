@@ -2802,6 +2802,105 @@ Procedimento manual documentado em `23_PROXIMO_PASSO.md`: ao promover usuário v
 
 ---
 
+## 2026-06-26 (sessão 60) — FC060: Auditoria operacional + FC061: Página da Loja destaque
+
+### FC060 — Auditoria operacional da sessão 60
+
+Auditoria completa do estado de produção no início da sessão: backend health (`/healthz` 200), migrations (1–37 aplicadas), nomenclatura de planos (premium confirmado no DB), backups (rotina diária ativa, 7 dias retenção local), uptime (VPS healthy), JWT (claim `user_role` presente para tenants normais pós-FC059).
+
+**Resultado:** zero divergências código↔docs; nenhum bug encontrado; nenhum checkpoint vermelho. Documentado em `23_PROXIMO_PASSO.md` e em `FalhasCorrigidas/FC060_*` (adendo interno do FC059 — sem arquivo próprio).
+
+---
+
+### FC061 — "Página da Loja" sem destaque: nova rota, sidebar, dashboard card, CTA âmbar
+
+#### Problema
+
+A funcionalidade "Página da Loja" (vitrine pública `https://app.revendaclick.com.br/{slug}`) era a peça central de geração de leads do SaaS, mas dentro do sistema do lojista estava:
+
+1. **Escondida na sidebar** — único ponto era um link "Ver loja" de 11px no store-identity panel.
+2. **Miniaturizada no dashboard** — `CopyStoreLink` em "Quick links" sem hierarquia visual.
+3. **Bug visual crítico** — `CopyStoreLink.tsx:11` exibia `revendaclick.com.br/${slug}` (domínio errado). URL correta: `https://app.revendaclick.com.br/${slug}`.
+4. **Sem CTA de incompletude** — lojista não era avisado quando a loja estava sem `store_contact` configurado.
+5. **Sem atalho** — para editar contato público, lojista tinha que lembrar de ir em `/settings?tab=contact`.
+6. **Sem métricas** — não havia card com "leads gerados pela loja" ou status publicado visível.
+
+#### Causa raiz
+
+- **Ausência de rota dedicada** — não existia `/store`.
+- **Hierarquia visual fraca** — `CopyStoreLink` era sub-componente de "Quick links".
+- **Bug de domínio** — copy-paste antigo usava domínio raiz ao invés do subdomínio de aplicação.
+- **Métricas nunca priorizadas** — `StoreMetrics` não existia; sem agregação "leads da loja".
+
+#### Correção aplicada
+
+**Nova rota dedicada `/store`** (`frontend/app/(dashboard)/store/page.tsx` — Server Component):
+- Header com título + badge de status (Publicada verde / Não publicada âmbar).
+- Botão "Ver Minha Loja" no header (abre `/{slug}` em nova aba).
+- Botão "Editar Loja" → `/settings?tab=contact`.
+- **CTA condicional âmbar:** quando `!published`, card com "Sua Página da Loja ainda não está publicada." + "Configurar Agora" → `/settings?tab=contact`.
+- Sub-componentes:
+  - `StoreActions.tsx` (Client) — card de URL pública com Copiar + Abrir + Compartilhar WhatsApp (`api.whatsapp.com/send?text=...` com URL pré-preenchida).
+  - `StoreMetrics.tsx` (Server) — 3 cards: Status, Leads gerados (de `checklist.received_first_lead` + count real), Origem principal.
+- Dicas de divulgação (4 bullets: Instagram, WhatsApp Business bio, base de clientes, link para `/leads`).
+
+**Item dedicado na sidebar** — `frontend/components/layout/DashboardShell.tsx`:
+- Adicionado item em `NAV_BASE` entre Dashboard e Veículos:
+  ```tsx
+  { href: '/store', label: 'Página da Loja', icon: <svg storefront /> }
+  ```
+- Visível para todos os planos (consistente com NAV_BASE).
+
+**Card de destaque no dashboard** — `frontend/components/dashboard/StoreCard.tsx` (Client Component):
+- Substitui o obsoleto `CopyStoreLink`.
+- Card com gradiente sutil (`from-primary/[0.06]`) + borda `primary/20`.
+- Pill de status absoluta (verde/âmbar).
+- Linha de URL com botão Copiar (`data-testid="store-card-copy"`).
+- Botão principal "Abrir Loja" (`bg-primary`) + secundário "Editar Loja" / âmbar "Configurar Agora".
+- Mensagem inline quando `!published`: "Sua Página da Loja ainda não está publicada. Configure o contato público para aparecer na vitrine."
+
+**Card lateral de acesso rápido no dashboard** — substituiu o bloco "Quick links":
+- Coluna 2/3: `<StoreCard />`.
+- Coluna 1/3: Plano atual + "Acesso rápido" com 2 botões (Ver Minha Loja + Página da Loja → `/store`).
+
+**Métricas (Opção C)** — exibir apenas dados que já existem na infra:
+- Status (de `/api/onboarding`).
+- Leads gerados (count real de `/api/leads?limit=500` + flag `checklist.received_first_lead`).
+- Origem principal (placeholder "Vitrine pública" — 100% das origens hoje).
+
+**Métricas deferidas:** visitas e taxa de conversão (requerem nova tabela `store_visits` + tracking pixel/middleware → próximo FC quando houver demanda).
+
+**Bug de domínio corrigido** — `CopyStoreLink.tsx` removido. Todos os displays de URL agora usam `app.revendaclick.com.br/${slug}` (correto).
+
+#### Validação
+
+- `cd frontend && npx tsc --noEmit` → **0 erros**.
+- Multi-tenant: componente usa apenas `slug` (não toca em `tenant_id` direto); `/store` funciona para santos-car (Pro) e sandbox-revendaclick (Pro) — todos os planos têm acesso (NAV_BASE).
+- SEO público: **não alterado** — `/store` é rota interna (autenticada, sob `(dashboard)`). URLs públicas `app.revendaclick.com.br/{slug}` permanecem idênticas.
+- Regras de negócio: **não alteradas** — `published_store` continua derivado de `tenant.store_contact_configured` (regra existente).
+
+#### Arquivos criados/modificados
+
+| Tipo | Arquivo |
+|---|---|
+| Criado | `frontend/app/(dashboard)/store/page.tsx` |
+| Criado | `frontend/app/(dashboard)/store/_components/StoreActions.tsx` |
+| Criado | `frontend/app/(dashboard)/store/_components/StoreMetrics.tsx` |
+| Criado | `frontend/components/dashboard/StoreCard.tsx` |
+| Removido | `frontend/components/dashboard/CopyStoreLink.tsx` |
+| Editado | `frontend/app/(dashboard)/dashboard/page.tsx` |
+| Editado | `frontend/components/layout/DashboardShell.tsx` |
+| Criado | `docs-operacao/FalhasCorrigidas/FC061_PAGINA_LOJA_DESTAQUE.md` |
+| Editado | `docs-operacao/FalhasCorrigidas/README.md` (FC061 + Por área + count + próxima) |
+| Editado | `docs-operacao/REFERENCE.md` (count 59→60, FC061 adicionado, próxima FC062) |
+| Editado | `docs-operacao/23_PROXIMO_PASSO.md` (estado sessão 60 + próxima FC062) |
+| Editado | `docs-operacao/22_HISTORICO_ALTERACOES.md` (esta entrada) |
+
+**Commits relacionados:**
+- (a definir após commit e push)
+
+---
+
 ## Template para novas entradas
 
 ```

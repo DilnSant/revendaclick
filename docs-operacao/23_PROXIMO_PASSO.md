@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 26/06/2026 (sessão 59 — FC059: super_admin defense-in-depth — DB-fallback quando `app_metadata.user_role` ausente no JWT)
+> Atualizado em: 26/06/2026 (sessão 60 — FC061: "Página da Loja" destaque — nova rota `/store`, sidebar item, dashboard card, CTA âmbar, métricas; FC060 = auditoria operacional sem bug)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,12 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 59 — 26/06/2026)
+## Estado Atual do Projeto (sessão 60 — 26/06/2026)
 
 | Componente | Status |
 |---|---|
+| **FC061 — "Página da Loja" sem destaque na UX (sessão 60)** | ✓ **IMPLEMENTADO** — Nova rota dedicada `/store` (server component) com header + badge de status, CTA âmbar condicional "Sua Página da Loja ainda não está publicada." + "Configurar Agora" → `/settings?tab=contact` quando `!published`. Sub-componentes: `StoreActions.tsx` (URL pública + Copiar + Abrir + Compartilhar WhatsApp via `api.whatsapp.com`) + `StoreMetrics.tsx` (Status / Leads gerados / Origem principal). Sidebar: novo item "Página da Loja" entre Dashboard e Veículos (NAV_BASE, visível todos os planos). Dashboard: substituído `CopyStoreLink` por `StoreCard` (gradient `primary/[0.06]`, pill de status, URL com Copiar, Abrir Loja + Editar Loja/Configurar Agora); bloco "Acesso rápido" lateral com "Ver Minha Loja" + "Página da Loja". `CopyStoreLink.tsx` removido (bug de domínio `revendaclick.com.br` → `app.revendaclick.com.br` corrigido). Métricas de visitas/conversão **deferidas** (requerem migration `store_visits` + tracking pixel — fora do escopo deste FC). TypeScript validado (`tsc --noEmit` exit 0). |
+| **FC060 — Auditoria operacional sessão 60 (sessão 60)** | ✓ **VALIDADO** — Zero divergências código↔docs; nenhum bug encontrado; checkpoints confirmados (backend health, migrations, nomenclatura, backups, uptime, JWT normalizado) |
 | **FC059 — Super Admin defense-in-depth (sessão 59)** | ✓ **IMPLEMENTADO** — `resolveUserRole()` em `frontend/lib/tenant.ts` com semântica JWT-first + DB-fallback via `createServiceClient`. Atualizado: `(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`. Novo endpoint `app/api/me/role/route.ts` para o login resolver destino. Causa raiz revelada: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` ausente (promoção SQL não sincroniza Auth server). Defense-in-depth cobre o gap sem requerer migração manual. |
 | **FC058 — Super Admin redirecionado para `/onboarding` (sessão 58)** | ✓ **PARCIAL** — Layout do dashboard distinguia role + redirect `www→app`. Mas a checagem dependia do JWT claim `user_role` que estava ausente — bug só completamente coberto após FC059. Adendo em FC058 explica a causa raiz completa. |
 | **FC057 — /admin/logs 404 definitivo — .gitignore bloqueava rota (sessão 57)** | ✓ **CONCLUÍDA** — CAUSA RAIZ: `.gitignore` linha 40 tinha `logs/` (recursivo) que impedia `frontend/app/(admin)/admin/logs/page.tsx` de ser rastreado pelo git. Página existia apenas localmente — NUNCA commitada/deployada. Fix: `logs/` → `/logs/` (root-anchored); página adicionada ao git pela 1ª vez + `dynamic='force-dynamic'`. Login: `router.push()` → `window.location.href` + `redirect` param respeitado. Commit `0e3538c` → Vercel `dpl_53YWmJSxofTVHqnWjjf4xbJS8hbW` → **READY**. |
@@ -257,8 +259,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **59 falhas documentadas (FC001–FC059)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC060**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **60 falhas documentadas (FC001–FC059, FC061)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC062**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

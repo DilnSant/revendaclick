@@ -1,6 +1,6 @@
 # Sidebar — Snapshot Atual
 
-> Última atualização: 2026-06-05 (sessão 41 enc. — logo sidebar 64px→110px, mobile 40px→56px)
+> Última atualização: 2026-06-26 (sessão 60 — FC061: item "Página da Loja" entre Dashboard e Veículos em NAV_BASE)
 > Implementado em: `frontend/components/layout/DashboardShell.tsx`
 > Decisão técnica: D28 em `21_DECISOES_TECNICAS.md`
 
@@ -13,6 +13,7 @@
 │  [Logo do tenant]                       │
 │                                         │
 │  Dashboard            /dashboard        │
+│  Página da Loja       /store            │  ← FC061 (sessão 60) — visível todos os planos
 │  Veículos             /vehicles         │
 │  Interessados         /leads            │
 │  Clientes             /customers        │

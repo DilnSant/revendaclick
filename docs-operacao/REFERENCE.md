@@ -79,8 +79,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 59 (FC001–FC059) |
-| Próxima FC | **FC060** |
+| Total documentadas | 60 (FC001–FC059, FC061) |
+| Próxima FC | **FC062** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -102,6 +102,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC057 | FC057 — /admin/logs 404 definitivo: `.gitignore` `logs/` recursivo bloqueava rota Next.js; page.tsx commitada pela 1ª vez; login.tsx router.push→window.location.href — commit 0e3538c — sessão 57 |
 | FC058 | FC058 — Super Admin redirecionado para `/onboarding` ao logar: layout.tsx não distinguia role (sem tenant → /onboarding em vez de /admin); subdomínio `www.` sem redirect canônico para `app.` quebrava sessão entre subdomínios — sessão 58 |
 | FC059 | FC059 — Super Admin defense-in-depth: `app_metadata.user_role` ausente no JWT (promoção SQL não sincroniza Auth server); `resolveUserRole()` com DB-fallback via service-role cobre o gap — sessão 59 |
+| FC061 | FC061 — "Página da Loja" sem destaque: nova rota dedicada `/store` + item na sidebar + `StoreCard` no dashboard + CTA âmbar quando não publicada + métricas; `CopyStoreLink` removido (bug de domínio `revendaclick.com.br` → `app.revendaclick.com.br` corrigido) — sessão 60 |
 
 ## Landing Page — CONGELADA (sessão 31)
 

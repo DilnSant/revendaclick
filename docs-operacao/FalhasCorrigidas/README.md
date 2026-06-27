@@ -78,6 +78,7 @@
 | [FC057](FC057_ADMIN_LOGS_GITIGNORE_BLOQUEIO.md) | /admin/logs 404 definitivo: `logs/` no .gitignore bloqueava recursivamente o diretório de rota — página nunca commitada ao repositório; `.gitignore` corrigido para `/logs/` | Deploy / Frontend | CRÍTICA | 15/06/2026 |
 | [FC058](FC058_SUPER_ADMIN_REDIRECIONAMENTO_ONBOARDING.md) | Super Admin redirecionado para `/onboarding` ao logar (dashboard layout não distinguia role); subdomínio `www.` sem redirect para `app.` quebrava sessão entre subdomínios | Admin / Frontend | ALTA | 23/06/2026 |
 | [FC059](FC059_SUPER_ADMIN_DEFENSE_IN_DEPTH_DB_FALLBACK.md) | FC058 não resolvia em produção: `app_metadata.user_role` ausente no JWT (promoção SQL não sincroniza `auth.users`); `resolveUserRole()` com DB-fallback via service-role cobre o gap | Admin / Frontend | ALTA | 26/06/2026 |
+| [FC061](FC061_PAGINA_LOJA_DESTAQUE.md) | Página da Loja sem destaque na UX do lojista: dispersa, sidebar sem item próprio, dashboard com card pequeno, CopyStoreLink com domínio errado (`revendaclick.com.br` vs `app.revendaclick.com.br`); nova rota `/store`, item dedicado na sidebar, StoreCard no dashboard, CTA âmbar, métricas | Frontend / UX | MÉDIA | 26/06/2026 |
 
 ---
 
@@ -164,11 +165,14 @@
 - FC057 — /admin/logs 404 definitivo: `logs/` no .gitignore bloqueava diretório de rota; corrigido para `/logs/`; login pós-sessão usa `window.location.href`
 - FC058 — Super Admin redirecionado para `/onboarding` ao logar; subdomínio `www.` sem redirect para `app.` quebrava sessão entre subdomínios
 - FC059 — FC058 sozinho não resolvia (JWT sem claim `user_role`); `resolveUserRole()` com JWT-first + DB-fallback via service-role é a camada de defesa que cobre o gap sem requerer migração manual
+- FC060 — Auditoria operacional da sessão 60: zero divergências código↔docs; nenhum bug encontrado; checkpoints confirmados (backend health, migrations, nomenclatura, backups, uptime, JWT normalizado)
 
 ### Documentação
 - FC041 — Saneamento documental final: count FC desatualizado (38→40) em 4 arquivos
 - FC044 — Reclassificação de pendências não prioritárias → Backlog de Infraestrutura
 - FC045 — Contagem documental de FCs desatualizada: count 43→44, próximo FC044→FC045, FC044 ausente do índice
+- FC060 — Auditoria operacional sessão 60: zero divergências código↔docs; nenhum bug identificado; checkpoints todos verdes
+- FC061 — Página da Loja destaque: nova rota `/store` + sidebar item + StoreCard no dashboard + CTA âmbar + métricas; CopyStoreLink removido (bug de domínio corrigido)
 
 ---
 
@@ -176,7 +180,7 @@
 
 1. **Nunca corrigir bug sem registrar.** Todo bug corrigido deve ter um FC.
 2. **Se o problema reincidir:** abrir o FC correspondente → seção "Como Diagnosticar" → comparar com o estado atual → registrar a regressão no documento.
-3. **Numeração sequencial:** próximo número disponível é FC059.
+3. **Numeração sequencial:** próximo número disponível é **FC062** (FC061 usado na sessão 60).
 4. **Atualizar este README** ao criar cada novo FC.
 5. **Relacionar com outras docs:**
    - `22_HISTORICO_ALTERACOES.md` — contexto da sessão em que foi corrigido
@@ -188,8 +192,8 @@
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC059
-# Nome do arquivo: FC059_DESCRICAO_CURTA.md
+# Próximo número: FC062
+# Nome do arquivo: FC062_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
