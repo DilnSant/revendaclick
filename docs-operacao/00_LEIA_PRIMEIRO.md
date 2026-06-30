@@ -1,349 +1,260 @@
-# REVENDACLICK — LEIA PRIMEIRO
+# 00 — LEIA PRIMEIRO
 
-Este é o ponto de entrada oficial para qualquer agente IA, desenvolvedor ou manutenção no projeto.
+Este é o ponto de entrada operacional do projeto.
 
-Nenhuma implementação deve ser iniciada antes da leitura completa dos documentos abaixo.
+Objetivo: orientar o Claude a carregar somente o contexto necessário, sem desperdiçar tokens e sem ler o projeto inteiro.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-LEITURA OBRIGATÓRIA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-Ler exatamente nesta ordem:
 
-1. CLAUDE.md
+---
 
-2. docs-operacao/REFERENCE.md
+## Pastas auxiliares da IA
 
-3. docs-operacao/MEMORY.md
+Estas pastas existem para apoiar o trabalho do Claude, mas não devem ser lidas por padrão:
 
-4. docs-operacao/PRODUCT_ARCHITECTURE.md
+- `memory/` — regras práticas, preferências do usuário e lições aprendidas
+- `templates/` — modelos de resumo, autorização e relatório final
+- `prompts/` — prompts operacionais curtos
 
-5. docs-operacao/DEPENDENCIES.md
+Usar apenas quando a tarefa exigir.
 
-6. docs-operacao/ENVIRONMENTS.md
+Não ler essas pastas inteiras.
 
-7. docs-operacao/20_PENDENCIAS.md
+## Regra principal
 
-8. docs-operacao/21_DECISOES_TECNICAS.md
+Antes de qualquer tarefa, o Claude deve ler:
 
-9. docs-operacao/22_HISTORICO_ALTERACOES.md
+- `CLAUDE.md`
+- `.claude/01_CONTEXTO.md`
+- `.claude/02_AUTORIZACOES.md`
+- `.claude/03_FLUXO_TRABALHO.md`
+- `.claude/04_VALIDACAO.md`
+- `AI_GOVERNANCE/00_POLITICA_GERAL.md`
 
-10. docs-operacao/23_PROXIMO_PASSO.md
+Depois disso, deve carregar apenas os documentos específicos da tarefa.
 
-11. Todos os snapshots:
+---
 
-docs-operacao/features/
+## Não fazer
 
-12. Todos os prompts:
+O Claude não deve:
 
-prompts/
+- ler todas as pastas por padrão
+- abrir todos os documentos por segurança
+- refazer trabalho já feito
+- alterar arquivos sem autorização quando houver risco
+- executar deploy sem autorização
+- criar migration sem autorização
+- mexer em RLS sem autorização
+- assumir que uma ação manual foi executada
+- continuar sessão longa sem resumir
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PROMPTS OFICIAIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-prompts/00_PROMPT_INICIO_SESSAO.md
+## Leitura mínima obrigatória
 
-prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
+Para qualquer tarefa, ler:
 
-prompts/02_PROMPT_AUDITORIA.md
+- `docs-operacao/23_PROXIMO_PASSO.md`
+- `docs-operacao/REFERENCE.md`
 
-prompts/03_PROMPT_BUG_CRITICO.md
+Se houver pendência envolvida, ler também:
 
-prompts/04_PROMPT_DEPLOY.md
+- `docs-operacao/20_PENDENCIAS.md`
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VALIDAÇÃO DE CONCEITOS OFICIAIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-Antes de qualquer alteração, confirmar entendimento dos conceitos abaixo.
+## Leitura por tipo de tarefa
 
-━━━━━━━━━━━━━━━━━━
-PLANOS
-━━━━━━━━━━━━━━━━━━
+| Tipo de tarefa | Ler também |
+|---|---|
+| Arquitetura | `docs-operacao/PRODUCT_ARCHITECTURE.md`, `docs-operacao/21_DECISOES_TECNICAS.md`, `docs-operacao/MEMORY.md` |
+| Frontend | `docs-operacao/PRODUCT_ARCHITECTURE.md`, `docs-operacao/MEMORY.md`, `docs-operacao/features/FEATURE_FLAGS_SNAPSHOT.md`, `docs-operacao/features/SIDEBAR_SNAPSHOT.md` |
+| Backend | `docs-operacao/DEPENDENCIES.md`, `docs-operacao/PRODUCT_ARCHITECTURE.md`, `docs-operacao/08_API_ROTAS_REAIS.md` |
+| Banco / Migration | `docs-operacao/REFERENCE.md`, `docs-operacao/21_DECISOES_TECNICAS.md`, `docs-operacao/PRODUCT_ARCHITECTURE.md` |
+| Deploy | `prompts/04_PROMPT_DEPLOY.md`, `docs-operacao/ENVIRONMENTS.md`, `docs-operacao/DEPENDENCIES.md`, `docs-operacao/REFERENCE.md` |
+| Bug crítico | `prompts/03_PROMPT_BUG_CRITICO.md`, `docs-operacao/FalhasCorrigidas/README.md` |
+| Auditoria | `prompts/02_PROMPT_AUDITORIA.md`, `docs-operacao/REFERENCE.md`, `docs-operacao/MEMORY.md`, `docs-operacao/PRODUCT_ARCHITECTURE.md`, `docs-operacao/DEPENDENCIES.md`, `docs-operacao/ENVIRONMENTS.md`, `docs-operacao/21_DECISOES_TECNICAS.md`, `docs-operacao/22_HISTORICO_ALTERACOES.md`, `docs-operacao/23_PROXIMO_PASSO.md` |
+| Encerramento | `prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md` |
 
-Nomes internos (banco) e comerciais (UX):
+---
 
-starter   → Starter
-pro       → Pro
-premium   → Premium
-scale     → Scale
+## Quando usar diagnóstico completo
 
-IMPORTANTE:
+Usar diagnóstico completo somente quando o usuário pedir:
 
-O banco, a API, o frontend e toda a documentação utilizam:
+- "início de sessão completo"
+- "diagnóstico completo"
+- "auditoria geral"
+- "verifique tudo"
+- "reconcilie documentação e código"
+- "quero retomar o projeto do zero"
 
-premium
+Nesse caso, ler:
 
-como nome oficial do plano 3.
+- `docs-operacao/REFERENCE.md`
+- `docs-operacao/MEMORY.md`
+- `docs-operacao/PRODUCT_ARCHITECTURE.md`
+- `docs-operacao/DEPENDENCIES.md`
+- `docs-operacao/ENVIRONMENTS.md`
+- `docs-operacao/20_PENDENCIAS.md`
+- `docs-operacao/21_DECISOES_TECNICAS.md`
+- `docs-operacao/22_HISTORICO_ALTERACOES.md`
+- `docs-operacao/23_PROXIMO_PASSO.md`
 
-Nunca usar 'performance' como plan_name — não existe mais (migration 026).
+---
 
-━━━━━━━━━━━━━━━━━━
-WHATSAPP DA LOJA
-━━━━━━━━━━━━━━━━━━
+## Conceitos obrigatórios do projeto
 
-Função:
+### Planos oficiais
+
+Usar somente:
+
+- `starter`
+- `pro`
+- `premium`
+- `scale`
+
+Não usar:
+
+- `start`
+- `performance`
+- `enterprise` como `plan.name`
+
+---
+
+## Feature flags
+
+Controle de acesso deve usar feature flags.
+
+Não usar comparação direta de plano no frontend.
+
+Errado:
+
+`if (plan === 'pro')`
+
+Correto:
+
+`hasFeature(...)`
+
+Antes de alterar gates de acesso, verificar documentação e código real.
+
+---
+
+## WhatsApp da Loja versus Central de Atendimento
+
+### WhatsApp da Loja
 
 - contato público da loja
-- botão falar via WhatsApp
-- atendimento manual
-- negociação direta
+- usado na vitrine pública
+- link direto para WhatsApp
+- não usa Evolution API
+- não usa QR Code
 
-Não utiliza:
+### Central de Atendimento
 
-- Evolution
-- QR Code
-- automação
+- integração interna
+- usa Evolution API
+- usa QR Code
+- depende de add-on ou feature flag
+- pode envolver automações e IA
 
-Faz parte do plano base.
+Nunca misturar esses dois conceitos.
 
-━━━━━━━━━━━━━━━━━━
-CENTRAL DE ATENDIMENTO
-━━━━━━━━━━━━━━━━━━
+---
 
-Função:
+## Super Admin
 
-- Evolution
-- QR Code
-- atendimento centralizado
-- mensagens automáticas
-- notificações
-- automações
-
-Depende do add-on:
-
-whatsapp_automation
-
-Não é o mesmo conceito de WhatsApp da Loja.
-
-━━━━━━━━━━━━━━━━━━
-SUPER ADMIN
-━━━━━━━━━━━━━━━━━━
-
-Super Admin:
+O `super_admin`:
 
 - não representa uma loja
 - não opera tenant comercial
-- não utiliza tenant operacional
-- não possui branding de loja
+- pode ter `tenant_id = NULL`
+- acessa `/admin`
+- não deve ser redirecionado como usuário comum de tenant
 
-Acesso:
+---
 
-/admin
+## Multi-tenant
 
-━━━━━━━━━━━━━━━━━━
-TENANTS
-━━━━━━━━━━━━━━━━━━
+Toda alteração que tocar dados deve preservar:
 
-Tenant operacional atual:
+- `tenant_id`
+- RLS
+- isolamento entre tenants
+- autorização correta
+- JWT correto
+- service role apenas quando justificado
 
-santos-car
+Risco cross-tenant é incidente crítico.
 
-Devecar:
+---
 
-- não é tenant operacional ativo
-- não deve ser utilizado como referência operacional
-- utilizar apenas como histórico quando necessário
+## Banco de dados
 
-━━━━━━━━━━━━━━━━━━
-FEATURE FLAGS
-━━━━━━━━━━━━━━━━━━
+Antes de criar migration:
 
-Permissões devem utilizar:
+1. verificar última migration em `docs-operacao/REFERENCE.md`
+2. verificar pasta `database/migrations/`
+3. confirmar próximo número
+4. avaliar impacto em RLS
+5. avaliar impacto em `database.types.ts`
+6. pedir autorização
 
-feature flags
+Nunca criar migration por tentativa e erro.
 
-Nunca utilizar:
+---
 
-plan_name
+## Produção
 
-para controle de acesso.
+Antes de qualquer ação em produção:
 
-Exemplo incorreto:
+1. confirmar ambiente
+2. confirmar risco
+3. confirmar rollback
+4. confirmar comando de validação
+5. pedir autorização
 
-if (plan === 'pro')
+Nunca assumir que deploy funcionou.
 
-Exemplo correto:
+Validar healthcheck.
 
-if (hasFeature('crm'))
+---
 
-━━━━━━━━━━━━━━━━━━
-ADD-ONS OFICIAIS
-━━━━━━━━━━━━━━━━━━
+## Sessões longas
 
-user_extra
+Se a sessão passar de 15 a 20 mensagens ou ficar confusa:
 
-- +1 usuário
-- R$20/mês
+1. parar
+2. resumir decisões
+3. listar arquivos alterados
+4. listar pendências
+5. indicar próximo passo
+6. abrir nova sessão com o resumo
 
-whatsapp_automation
+---
 
-- Central de Atendimento
-- QR Code
-- Evolution
-- automações
-- R$39/mês
+## Correção cirúrgica
 
-ia_recovery
+Se uma alteração estiver parcialmente errada:
 
-- recuperação automática
-- follow-up IA
-- lembretes IA
-- R$39/mês
+- não refazer tudo
+- corrigir apenas o trecho necessário
+- manter o restante estável
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRAS OBRIGATÓRIAS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-Nunca:
+## Encerramento de sessão
 
-- assumir comportamento
-- assumir arquitetura
-- assumir estrutura do banco
-- assumir feature flag
-- assumir deploy realizado
+Ao final de uma tarefa com alteração, executar o procedimento de:
 
-Sempre:
+- `prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md`
 
-- verificar documentação
-- verificar código
-- verificar migrations
-- verificar histórico
-- verificar snapshots
+Atualizar documentação operacional quando o comportamento real do sistema mudar.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONFLITOS DOCUMENTAIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-Se existir conflito entre documentos:
+## Regra final
 
-PARAR.
-
-Apresentar:
-
-1. arquivo
-
-2. conflito encontrado
-
-3. impacto
-
-4. risco
-
-5. recomendação
-
-Não iniciar implementação até resolver o conflito.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-APÓS A LEITURA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Antes de qualquer implementação apresentar obrigatoriamente:
-
-1. Estado atual do projeto
-
-2. Arquitetura ativa
-
-3. Ambiente ativo
-
-4. Últimas alterações relevantes
-
-5. Pendências abertas
-
-6. Próximo passo recomendado
-
-7. Riscos conhecidos
-
-8. Divergências encontradas
-
-9. Conceitos obsoletos encontrados
-
-10. Documentação impactada pela tarefa solicitada
-
-11. Possíveis riscos de regressão
-
-Aguardar aprovação antes de iniciar alterações.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ANTES DE CODIFICAR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Identificar:
-
-1. causa raiz
-
-2. arquivos afetados
-
-3. tabelas afetadas
-
-4. APIs afetadas
-
-5. fluxos afetados
-
-6. feature flags afetadas
-
-7. billing afetado
-
-8. multi-tenant afetado
-
-9. documentação afetada
-
-10. testes necessários
-
-Apresentar análise antes da implementação.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-AÇÕES MANUAIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Se existir qualquer ação manual necessária:
-
-PARAR.
-
-Entregar exatamente:
-
-1. caminho
-
-2. tela
-
-3. botão
-
-4. valor
-
-5. comando
-
-6. ordem correta
-
-7. resultado esperado
-
-Nunca assumir que a ação foi executada.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ENCERRAMENTO OBRIGATÓRIO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Ao finalizar qualquer tarefa executar integralmente:
-
-prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
-
-Nenhuma sessão deve ser encerrada sem:
-
-- atualização documental
-- atualização de histórico
-- atualização de pendências
-- atualização de próximos passos
-- atualização de snapshots afetados
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRA FINAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Nenhuma implementação é considerada concluída enquanto existir divergência entre:
-
-CÓDIGO
-
-e
-
-DOCUMENTAÇÃO.
-
-A documentação operacional é a fonte oficial da verdade do projeto.
+A tarefa não está concluída enquanto código e documentação estiverem divergentes.

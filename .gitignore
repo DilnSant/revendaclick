@@ -62,3 +62,32 @@ assets/
 # ── Editors ───────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
+
+# Estrutura de governança IA
+!.claude/
+!.claude/*.md
+.claude/settings.local.json
+
+!memory/
+!memory/*.md
+
+# Backups locais de reorganização IA
+_backup_*/
+
+# Ajuste fino da governança IA
+# Rastrear somente os arquivos oficiais da estrutura mínima
+
+.claude/*
+!.claude/
+!.claude/01_CONTEXTO.md
+!.claude/02_AUTORIZACOES.md
+!.claude/03_FLUXO_TRABALHO.md
+!.claude/04_VALIDACAO.md
+
+memory/*
+!memory/
+!memory/00_REGRAS_DE_USO_IA.md
+!memory/01_PREFERENCIAS_USUARIO.md
+!memory/02_LICOES_APRENDIDAS.md
+
+_backup_*/

@@ -1,270 +1,52 @@
-# PROMPT OFICIAL DE ENCERRAMENTO DE SESSÃO — REVENDACLICK
+# 01 — PROMPT DE ENCERRAMENTO DE SESSÃO
 
-Copiar e colar integralmente ao final de toda sessão.
+Use este prompt ao final de uma sessão.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OBJETIVO
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-Encerrar somente quando:
+## Prompt
 
-✓ código atualizado
+Encerrar sessão.
 
-✓ documentação atualizada
+Antes de finalizar:
 
-✓ testes executados
+1. Informe o que foi feito.
+2. Liste os arquivos alterados.
+3. Liste validações executadas.
+4. Informe se houve alteração de código.
+5. Informe se houve alteração de banco.
+6. Informe se houve alteração de documentação.
+7. Informe se houve deploy.
+8. Informe riscos restantes.
+9. Informe pendências abertas.
+10. Informe o próximo passo recomendado.
 
-✓ deploy validado
+Se houve mudança de comportamento, verifique se estes documentos precisam ser atualizados:
 
-✓ histórico atualizado
+- `docs-operacao/MEMORY.md`
+- `docs-operacao/20_PENDENCIAS.md`
+- `docs-operacao/21_DECISOES_TECNICAS.md`
+- `docs-operacao/22_HISTORICO_ALTERACOES.md`
+- `docs-operacao/23_PROXIMO_PASSO.md`
+- `docs-operacao/REFERENCE.md`
+- `docs-operacao/PRODUCT_ARCHITECTURE.md`
+- `docs-operacao/DEPENDENCIES.md`
+- `docs-operacao/ENVIRONMENTS.md`
 
-✓ próximos passos registrados
+Se algum bug foi corrigido, verificar se precisa registrar em:
 
-✓ snapshots atualizados
+- `docs-operacao/FalhasCorrigidas/`
 
-✓ decisões registradas
+Não diga que validou algo se o comando não foi executado.
 
-✓ sem divergência entre código e documentação
+Formato final:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 1 — DOCUMENTAÇÃO OBRIGATÓRIA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STATUS: RESOLVIDO | PARCIAL | PENDENTE
 
-Atualizar:
-
-docs-operacao/MEMORY.md
-
-docs-operacao/20_PENDENCIAS.md
-
-docs-operacao/21_DECISOES_TECNICAS.md
-
-docs-operacao/22_HISTORICO_ALTERACOES.md
-
-docs-operacao/23_PROXIMO_PASSO.md
-
-docs-operacao/FalhasCorrigidas/
-
-Atualizar snapshots impactados:
-
-docs-operacao/features/
-
-Especialmente:
-
-- FEATURE_FLAGS_SNAPSHOT.md
-- SIDEBAR_SNAPSHOT.md
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 2 — AUDITORIA DOCUMENTAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Validar impacto em:
-
-docs-operacao/REFERENCE.md
-
-docs-operacao/PRODUCT_ARCHITECTURE.md
-
-docs-operacao/DEPENDENCIES.md
-
-docs-operacao/ENVIRONMENTS.md
-
-docs-operacao/17_FLUXOS_NEGOCIO.md
-
-Atualizar quando necessário.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 3 — REGISTRAR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Registrar:
-
-### Alterações realizadas
-
-### Arquivos alterados
-
-### Commits realizados
-
-### Push realizado
-
-### Deploy realizado
-
-### Migrations executadas
-
-### Testes executados
-
-### Bugs corrigidos
-
-### Pendências abertas
-
-### Próximos passos
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 4 — AUDITORIA DE NOMENCLATURA
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Verificar referências obsoletas:
-
-Start
-
-Performance
-
-Compradores
-
-Devecar operacional
-
-Coolify
-
-middleware.ts
-
-Se encontrados:
-
-corrigir
-
-ou
-
-registrar em:
-
-MEMORY.md → OBSOLETO
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 4.1 — CAUSA RAIZ
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Para cada correção realizada informar:
-
-### Causa Raiz
-
-- origem exata
-- arquivo responsável
-- função responsável
-- tabela responsável
-
-### Correção
-
-- o que foi alterado
-
-### Prevenção
-
-- como evitar recorrência
-
-Não aceitar explicações sem evidência.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 5 — AUDITORIA MULTI-TENANT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Confirmar:
-
-✓ tenant_id
-
-✓ RLS
-
-✓ JWT
-
-✓ feature flags
-
-✓ isolamento entre tenants
-
-Se houver risco:
-
-PARAR.
-
-Documentar.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 6 — TESTES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Executar:
-
-Frontend
-
-npx tsc --noEmit
-
-Backend
-
-go build ./...
-
-go vet ./...
-
-go test ./...
-
-Registrar resultado.
-
-Informar:
-
-- total executado
-- aprovados
-- falhas
-- novos testes
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 6.1 — DEPLOY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Confirmar:
-
-Frontend
-
-- EXECUTADO
-ou
-- NÃO EXECUTADO
-
-Backend
-
-- EXECUTADO
-ou
-- NÃO EXECUTADO
-
-Banco
-
-- EXECUTADO
-ou
-- NÃO EXECUTADO
-
-Informar:
-
-- commit
-- hash
-- ambiente
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PASSO 7 — RELATÓRIO FINAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Apresentar:
-
-RESOLVIDO ✓
-
-PARCIAL ⚠
-
-PENDENTE ✗
-
-Informar:
-
-1. O que foi feito
-
-2. O que ficou pendente
-
-3. Riscos existentes
-
-4. Próxima ação recomendada
-
-5. Documentos atualizados
-
-6. Commits realizados
-
-7. Deploy realizado
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REGRA FINAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Não encerrar a sessão enquanto existir divergência entre:
-
-CÓDIGO
-
-e
-
-DOCUMENTAÇÃO.
-
-A documentação operacional deve permanecer sincronizada com o estado real do sistema.
+1. Feito
+2. Arquivos alterados
+3. Validações
+4. Documentação
+5. Pendências
+6. Riscos
+7. Próximo passo

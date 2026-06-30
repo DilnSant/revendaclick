@@ -1,552 +1,107 @@
-# REVENDACLICK — PROJECT CONTEXT
+# CLAUDE — INSTRUÇÕES DO PROJETO
 
-## PROJECT
+Você é o engenheiro principal deste projeto.
 
-Name:
-RevendaClick
-
-Positioning:
-“A plataforma que acelera sua revenda”
-
-Goal:
-Build a scalable automotive multi-tenant SaaS platform for vehicle dealerships.
+Seu trabalho é ajudar no desenvolvimento sem desperdiçar contexto, sem alterar arquivos sem necessidade e sem colocar produção em risco.
 
 ---
 
-# CORE STACK
+## Regra principal
 
-## Frontend
-- Next.js 16
-- React
-- TailwindCSS
-- SSR
-- App Router
-- Server Components
+Antes de qualquer alteração:
 
-## Backend
-- Go (Golang)
-- REST API
-- Clean Architecture
-
-## Database
-- Supabase
-- PostgreSQL
-- Auth
-- RLS mandatory
-
-## Infrastructure
-- VPS Hostinger
-- Docker
-- Docker Compose V2
-- Coolify
-- Nginx
-- SSL
-
-## Integrations
-- OpenRouter
-- Evolution API
-- Asaas
+1. Entenda a tarefa.
+2. Leia somente o contexto necessário.
+3. Verifique o código real.
+4. Identifique riscos.
+5. Peça autorização quando necessário.
+6. Faça a menor alteração segura.
+7. Valide.
+8. Atualize a documentação quando houver mudança de comportamento.
 
 ---
 
-# ARCHITECTURE
+## Arquivos obrigatórios
 
-Mandatory:
-- real multi-tenant architecture
-- tenant_id in every business table
-- RLS enabled in all tables
-- SSR compatible
-- SEO-oriented public pages
-- production-ready code
-- modular architecture
-- scalable architecture
-- Docker-first architecture
-- self-hosted infrastructure
+Leia estes arquivos antes de trabalhar:
 
-Forbidden:
-- SQLite
-- Firebase
-- Railway
-- Vercel
-- mock implementations
-- placeholder implementations
-- fake data
-- temporary solutions
-- bypassing RLS
-- removing Supabase
-- removing PostgreSQL
+- `.claude/01_CONTEXTO.md`
+- `.claude/02_AUTORIZACOES.md`
+- `.claude/03_FLUXO_TRABALHO.md`
+- `.claude/04_VALIDACAO.md`
+- `AI_GOVERNANCE/00_POLITICA_GERAL.md`
+
+Para entender o estado atual do projeto, leia também:
+
+- `docs-operacao/23_PROXIMO_PASSO.md`
+- `docs-operacao/REFERENCE.md`
 
 ---
 
-# PROJECT STRUCTURE
+## Pastas auxiliares
 
-Root:
-- /frontend
-- /backend
-- /database
-- /infra
+Use somente quando necessário:
 
-Frontend:
-- Next.js App Router
-- proxy.ts
-- Tailwind
-- SSR
+- `memory/` — preferências, lições aprendidas e regras práticas de uso da IA
+- `templates/` — modelos de resumo, pedido de autorização e relatório final
+- `prompts/` — prompts operacionais curtos
+- `docs-operacao/` — documentação operacional real do projeto
 
-Backend:
-- internal/
-- modular services
-- repository pattern
-- middleware separation
-
-Database:
-- migrations
-- policies
-- seeds
-- indexes
-
-Infrastructure:
-- docker-compose.yml
-- docker-compose.prod.yml
-- nginx/
-- coolify/
-- github actions
+Não leia essas pastas inteiras por padrão.
 
 ---
 
-# NEXT.JS RULES
+## Regra de economia de contexto
 
-Project uses:
-- Next.js 16
-- async cookies()
-- async params
-- App Router only
-- proxy.ts instead of middleware.ts
+Não leia o projeto inteiro.
 
-Important:
-- do not use cookies() inside unstable_cache
-- params must be awaited
-- preserve SSR compatibility
-- standalone runtime mandatory
+Não leia todas as pastas.
+
+Não leia todos os documentos por padrão.
+
+Use `.claude/01_CONTEXTO.md` para decidir quais arquivos ler conforme o tipo de tarefa.
 
 ---
 
-# SUPABASE SSR RULES
+## Stack oficial
 
-Mandatory:
-- use @supabase/ssr
-- cookies() must be async
-- cookie adapter must contain:
-  - get
-  - set
-  - remove
+Este projeto usa:
 
-Never:
-- remove set/remove from cookie adapter
-- use deprecated auth helpers
+- Backend em Go
+- Frontend em Next.js
+- Banco Supabase PostgreSQL
+- RLS obrigatório
+- Arquitetura multi-tenant real
+- tenant_id em tabelas de negócio
+- Documentação operacional em `docs-operacao/`
 
 ---
 
-# MULTI-TENANT RULES
+## Proibido sem autorização
 
-Requirements:
-- tenant isolation everywhere
-- tenant-aware APIs
-- tenant-aware frontend
-- tenant-aware SSR
-- slug-based public routing
-- tenant validation in all queries
+Não fazer sem autorização explícita:
 
-All business tables must contain:
-- id
-- tenant_id
-- created_at
-- updated_at
-
-Mandatory:
-- RLS enabled
-- JWT tenant validation
-- tenant middleware
-- tenant-aware services
-
-Never:
-- expose cross-tenant data
-- bypass tenant validation
-- trust frontend tenant values
+- alterar banco
+- criar migration
+- alterar RLS
+- alterar autenticação
+- alterar autorização
+- alterar billing
+- alterar deploy
+- alterar CI/CD
+- alterar Docker
+- alterar Nginx
+- alterar variáveis de ambiente
+- fazer push
+- fazer deploy
+- apagar dados
+- commitar secrets
+- criar mocks em produção
+- criar dados falsos
+- alterar arquitetura
 
 ---
 
-# BACKEND RULES
+## Regra final
 
-Architecture:
-- Clean Architecture
-- service layer
-- repository layer
-- DTO separation
-- middleware separation
-
-Requirements:
-- JWT validation
-- tenant validation
-- scalable modules
-- Docker-ready
-- production-ready logging
-- healthcheck endpoints
-
-Mandatory:
-- validate request payloads
-- isolate business logic
-- preserve modularity
-
----
-
-# DATABASE RULES
-
-Requirements:
-- PostgreSQL only
-- RLS enabled
-- indexes optimized
-- foreign keys enforced
-- auditability
-- tenant-safe queries
-
-Default pattern:
-tenant_id = auth.jwt() ->> 'tenant_id'
-
-Mandatory:
-- migration-based changes
-- indexed tenant_id
-- timestamps everywhere
-
-Never:
-- disable RLS
-- query without tenant scope
-- use unsafe policies
-
----
-
-# FRONTEND RULES
-
-Requirements:
-- SSR compatible
-- SEO optimized
-- responsive UI
-- scalable components
-- clean SaaS design
-- reusable components
-
-Design:
-- TailwindCSS
-- clean dashboard UI
-- red primary color (#E53935)
-
-Mandatory:
-- server-first approach
-- App Router patterns
-- loading.tsx when needed
-- error.tsx when needed
-
-Never:
-- break SSR
-- move logic unnecessarily to client
-- create giant components
-
----
-
-# SECURITY RULES
-
-Always:
-- validate tenant_id
-- validate JWT
-- enforce RLS
-- isolate tenant data
-- sanitize inputs
-- validate permissions
-
-Never:
-- bypass tenant validation
-- expose cross-tenant data
-- trust client-only validation
-
-Mandatory:
-- secure headers
-- HTTPS
-- rate limiting ready
-- environment isolation
-
----
-
-# DEVOPS RULES
-
-Infrastructure:
-- Dockerized services
-- Coolify deployment
-- Nginx reverse proxy
-- SSL mandatory
-
-Repository:
-- keep repository clean
-- ignore node_modules
-- ignore .next
-- ignore build artifacts
-- ignore .env files
-
-Mandatory:
-- healthchecks
-- restart unless-stopped
-- isolated docker networks
-- production-safe containers
-
-Never:
-- expose unnecessary ports
-- use development containers in production
-- commit secrets
-
----
-
-# DOCKER RULES
-
-Mandatory:
-- always use Docker Compose V2
-- always use `docker compose`
-- never use legacy `docker-compose`
-
-Production requirements:
-- healthchecks mandatory
-- restart unless-stopped
-- isolated docker network
-- nginx reverse proxy
-- standalone frontend runtime
-
-Validation commands:
-- docker compose build
-- docker compose up -d
-- docker compose ps
-- docker compose logs
-
-Never:
-- use deprecated compose syntax
-- expose internal services publicly
-
----
-
-# NGINX RULES
-
-Mandatory:
-- reverse proxy
-- gzip enabled
-- websocket support
-- security headers
-- HTTPS redirect
-
-Production:
-- proxy buffering optimized
-- SSR compatible routing
-- API reverse proxy isolation
-
----
-
-# CI/CD RULES
-
-Mandatory:
-- GitHub Actions
-- containerized builds
-- production validation before deploy
-- image versioning
-- rollback-ready deployments
-
-Workflow:
-1. validate
-2. build
-3. push image
-4. deploy
-5. validate runtime
-
-Never:
-- deploy without validation
-- overwrite production blindly
-
----
-
-# CLAUDE CODE EXECUTION RULES
-
-Always:
-- validate real builds
-- validate runtime after changes
-- execute docker compose after infra modifications
-- validate healthchecks
-- validate imports
-- validate TypeScript
-- validate Go build
-- validate networking
-- validate nginx configuration
-- validate environment variables
-
-Never:
-- stop after generating files
-- assume code works without execution
-- finish tasks without runtime validation
-- leave broken containers
-- leave failing builds
-- leave unresolved lint errors
-
-Mandatory after implementation:
-1. build
-2. runtime validation
-3. healthcheck validation
-4. container validation
-5. final operational summary
-
----
-
-# RESPONSE RULES
-
-Always:
-- generate real code
-- generate complete files
-- provide exact file paths
-- provide exact commands
-- implementation-first responses
-- concise responses
-- preserve architecture
-
-Avoid:
-- long explanations
-- pseudo code
-- giant responses
-- unnecessary abstractions
-- repeated context
-
-Never:
-- provide partial implementations
-- omit critical files
-- generate fake integrations
-
----
-
-# EXECUTION STRATEGY
-
-Preferred execution:
-- work in isolated blocks
-- complete one infrastructure layer at a time
-- validate before continuing
-- avoid giant multi-feature implementations
-
-Recommended flow:
-1. infrastructure
-2. deployment
-3. authentication
-4. multi-tenant
-5. integrations
-6. onboarding
-7. billing
-8. observability
-
-Always:
-- prefer iterative implementation
-- preserve architecture stability
-- preserve production compatibility
-
----
-
-# WORKFLOW RULES
-
-Preferred workflow:
-1. small scoped tasks
-2. isolated implementation
-3. validate
-4. commit
-5. start new session
-
-Avoid:
-- giant prompts
-- giant sessions
-- multiple unrelated tasks
-- context accumulation
-
-Mandatory:
-- restart sessions after major blocks
-- preserve clean context
-- avoid token explosion
-
----
-
-# VALIDATION CHECKLIST
-
-Before finishing any task validate:
-
-- build success
-- runtime success
-- docker status
-- healthchecks
-- TypeScript
-- Go compilation
-- nginx config
-- environment variables
-- SSR functionality
-- tenant isolation
-- API responses
-
----
-
-# CURRENT OFFICIAL STATUS
-
-> Esta seção é um ponteiro — não reflete estado em tempo real.
-> Estado atualizado: `docs-operacao/23_PROXIMO_PASSO.md`
-> Valores de referência rápida: `docs-operacao/REFERENCE.md`
-
-Stack em produção:
-- Frontend: Next.js 16 no Vercel (`app.revendaclick.com.br`) — deploy automático via GitHub
-- Backend Go: VPS Hostinger `2.24.67.84` via Docker + CI/CD self-hosted runner
-- Evolution API v2.3.7: VPS (`evolution.revendaclick.com.br`)
-- Database: Supabase PostgreSQL cloud (`ibgaywezfcbbiiziaoac`)
-- CI/CD: GitHub Actions → GHCR → self-hosted runner no VPS
-
-Todos os módulos em produção: auth, onboarding, vehicles, leads, CRM, customers,
-financial, sales, commissions, analytics, billing (Asaas), add-ons, evolution
-(WhatsApp), AI (OpenRouter), admin panel, observability (Prometheus).
-
----
-
-# OFFICIAL NEXT PHASES
-
-> Todas as fases de lançamento estão concluídas. Itens abaixo são histórico.
-
-1. ~~GitHub clean repository~~ (CI/CD pronto)
-2. ~~VPS Hostinger~~ (contratada)
-3. ~~Production Docker~~ (docker-compose.production.yml ativo)
-4. ~~Coolify~~ (não utilizado — deploy via CI/CD self-hosted runner)
-5. ~~Domain~~ (DNS apontado)
-6. ~~SSL~~ (Let's Encrypt via VPS nginx — não via Coolify)
-7. ~~CI/CD~~ (GitHub Actions configurado)
-8. ~~Evolution API~~ (integrada)
-9. ~~Multi-tenant authentication~~ (Supabase SSR completo)
-10. ~~SaaS onboarding~~ (implementado)
-11. ~~Asaas billing~~ (webhook receiver + subscription gate + idempotency)
-12. ~~Observability~~ (Prometheus metrics, analytics cache, DB pool collector)
-13. ~~Performance optimization~~ (nginx cache, DB indexes, analytics TTL cache)
-14. ~~Security hardening~~ (CSP, HSTS, input length limits, tenant gate, rate limit)
-15. ~~Production launch~~ (smoke tests, CI/CD deploy pipeline, VPS live)
-
----
-
-# MAIN OBJECTIVE
-
-Build a production-grade automotive SaaS platform combining:
-- ERP
-- CRM
-- Marketplace
-- Lead generation
-- WhatsApp automation
-- Financial management
-- AI integration
-- SEO public pages
-- Subscription billing
-
-Focus:
-- scalability
-- performance
-- monetization
-- tenant isolation
-- conversion
-- operational efficiency
-- production stability
+Se houver dúvida, pare e pergunte antes de alterar.
