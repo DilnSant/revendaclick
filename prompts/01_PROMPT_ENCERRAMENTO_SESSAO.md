@@ -50,3 +50,10 @@ STATUS: RESOLVIDO | PARCIAL | PENDENTE
 5. Pendências
 6. Riscos
 7. Próximo passo
+
+Não altere arquivos sem autorização.
+Não faça commit sem autorização.
+Não faça push sem autorização.
+Não faça deploy sem autorização.
+
+Ao final, gere um prompt curto para iniciar a próxima sessão.
