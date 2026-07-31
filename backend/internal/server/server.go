@@ -41,6 +41,7 @@ func New(cfg *config.Config, pool *pgxpool.Pool, logger *zap.Logger) http.Handle
 	// ── Observability collectors (background goroutines) ─────────────────────
 	go observability.StartDBCollector(pool)
 	go observability.StartBusinessCollector(pool, logger)
+	go billing.StartDueReminderWorker(pool, cfg.ResendAPIKey, cfg.ResendFromEmail, logger)
 
 	// ── Global middleware ─────────────────────────────────────────────────────
 	r.Use(appMiddleware.RequestID())

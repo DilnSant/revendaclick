@@ -112,7 +112,7 @@ func (r *Repository) ActivateByAsaasSubID(ctx context.Context, asaasSubID string
 
 func (r *Repository) MarkPastDueByAsaasSubID(ctx context.Context, asaasSubID string) error {
 	_, err := r.pool.Exec(ctx,
-		`UPDATE subscriptions SET status = 'past_due', grace_until = NOW() + INTERVAL '3 days'
+		`UPDATE subscriptions SET status = 'past_due', grace_until = NOW() + INTERVAL '7 days'
 		 WHERE asaas_subscription_id = $1`,
 		asaasSubID,
 	)
@@ -141,8 +141,8 @@ func (r *Repository) ReactivateByTenantID(ctx context.Context, tenantID string) 
 			status         = 'trialing',
 			canceled_at    = NULL,
 			grace_until    = NULL,
-			current_period_end = NOW() + INTERVAL '7 days',
-			trial_ends_at  = NOW() + INTERVAL '7 days'
+			current_period_end = NOW() + INTERVAL '30 days',
+			trial_ends_at  = NOW() + INTERVAL '30 days'
 		WHERE tenant_id = $1`,
 		tenantID,
 	)
@@ -427,12 +427,12 @@ func (r *Repository) ActivateAddonByAsaasID(ctx context.Context, asaasAddonID st
 	return err
 }
 
-// MarkAddonPastDueByAsaasID sets status='past_due' + 3-day grace after PAYMENT_OVERDUE or PAYMENT_REFUNDED.
+// MarkAddonPastDueByAsaasID sets status='past_due' + 7-day grace after PAYMENT_OVERDUE or PAYMENT_REFUNDED.
 func (r *Repository) MarkAddonPastDueByAsaasID(ctx context.Context, asaasAddonID string) error {
 	_, err := r.pool.Exec(ctx, `
 		UPDATE subscription_addons SET
 			status      = 'past_due',
-			grace_until = NOW() + INTERVAL '3 days',
+			grace_until = NOW() + INTERVAL '7 days',
 			updated_at  = NOW()
 		WHERE asaas_addon_id = $1 AND status = 'active'`,
 		asaasAddonID,

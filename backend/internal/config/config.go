@@ -37,6 +37,8 @@ type Config struct {
 	LeadWebhookSecret    string
 	LeadNotifyInstance   string
 	LeadNotifyNumber     string
+	ResendAPIKey         string
+	ResendFromEmail      string
 }
 
 func Load() (*Config, error) {
@@ -61,6 +63,8 @@ func Load() (*Config, error) {
 		LeadWebhookSecret:   getEnv("WEBHOOK_SECRET", ""),
 		LeadNotifyInstance:  getEnv("LEAD_NOTIFY_INSTANCE", ""),
 		LeadNotifyNumber:    getEnv("LEAD_NOTIFY_NUMBER", ""),
+		ResendAPIKey:        getEnv("RESEND_API_KEY", ""),
+		ResendFromEmail:     getEnv("RESEND_FROM_EMAIL", "cobranca@revendaclick.com.br"),
 	}
 
 	// Support both EVOLUTION_API_URL and legacy EVOLUTION_BASE_URL
