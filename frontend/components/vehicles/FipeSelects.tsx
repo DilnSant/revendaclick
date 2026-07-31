@@ -189,7 +189,7 @@ export default function FipeSelects({
     if (!onFipePrice) return
     try {
       const res = await fetch(
-        `https://parallelum.com.br/fipe/api/v1/carros/marcas/${brandCode}/modelos/${modelCode}/anos/${versionCode}`,
+        `/api/fipe/price?brand=${brandCode}&model=${modelCode}&version=${versionCode}`,
       )
       if (!res.ok) return
       const data = await res.json()
