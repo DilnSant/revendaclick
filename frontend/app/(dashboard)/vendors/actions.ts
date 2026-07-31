@@ -30,7 +30,7 @@ export async function inviteVendor(
     email,
     options: {
       data: { name },
-      redirectTo: `${appUrl}/auth/callback`,
+      redirectTo: `${appUrl}/reset-password`,
     },
   })
 
