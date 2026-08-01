@@ -15,8 +15,10 @@ import (
 
 const resendAPIURL = "https://api.resend.com/emails"
 
-// StartDueReminderWorker polls daily for invoices due in 7 days and sends a
-// payment reminder e-mail via Resend to the tenant's registered e-mail.
+// StartDueReminderWorker polls daily for pending invoices due within the next
+// 7 days (not just exactly 7 days out, so a worker outage doesn't permanently
+// skip a reminder) and sends a payment reminder e-mail via Resend to the
+// tenant's registered e-mail.
 // Call as: go billing.StartDueReminderWorker(pool, cfg.ResendAPIKey, cfg.ResendFromEmail, logger)
 func StartDueReminderWorker(pool *pgxpool.Pool, resendAPIKey, fromEmail string, logger *zap.Logger) {
 	if resendAPIKey == "" {
@@ -53,8 +55,9 @@ func sendDueReminders(pool *pgxpool.Pool, client *http.Client, resendAPIKey, fro
 		FROM billing_invoices bi
 		JOIN tenants t ON t.id = bi.tenant_id
 		WHERE bi.status = 'pending'
-		  AND bi.due_date = (CURRENT_DATE + INTERVAL '7 days')::date
 		  AND bi.reminder_sent_at IS NULL
+		  AND bi.due_date >= CURRENT_DATE
+		  AND bi.due_date <= (CURRENT_DATE + INTERVAL '7 days')::date
 	`)
 	if err != nil {
 		logger.Warn("billing: due reminder query failed", zap.Error(err))
@@ -84,8 +87,31 @@ func sendDueReminders(pool *pgxpool.Pool, client *http.Client, resendAPIKey, fro
 	}
 }
 
+// daysUntil returns the number of days between today and dueDate (format
+// "2006-01-02"). Returns 0 if dueDate can't be parsed, treating it as due now.
+func daysUntil(dueDate string) int {
+	due, err := time.Parse("2006-01-02", dueDate)
+	if err != nil {
+		return 0
+	}
+	today := time.Now().Truncate(24 * time.Hour)
+	return int(due.Sub(today).Hours() / 24)
+}
+
 func sendReminderEmail(ctx context.Context, client *http.Client, resendAPIKey, fromEmail string, d dueInvoice) error {
-	subject := fmt.Sprintf("Sua fatura RevendaClick vence em 7 dias (%s)", d.dueDate)
+	daysLeft := daysUntil(d.dueDate)
+
+	var whenPhrase string
+	switch {
+	case daysLeft <= 0:
+		whenPhrase = "vence hoje"
+	case daysLeft == 1:
+		whenPhrase = "vence amanhã"
+	default:
+		whenPhrase = fmt.Sprintf("vence em %d dias", daysLeft)
+	}
+
+	subject := fmt.Sprintf("Sua fatura RevendaClick %s (%s)", whenPhrase, d.dueDate)
 
 	paymentLine := ""
 	if d.paymentURL != "" {
@@ -94,10 +120,10 @@ func sendReminderEmail(ctx context.Context, client *http.Client, resendAPIKey, f
 
 	emailHTML := fmt.Sprintf(`
 		<p>Olá, %s!</p>
-		<p>Sua fatura da assinatura RevendaClick no valor de R$ %.2f vence em <strong>%s</strong> (daqui a 7 dias).</p>
+		<p>Sua fatura da assinatura RevendaClick no valor de R$ %.2f <strong>%s</strong> (%s).</p>
 		%s
 		<p>Se o pagamento já foi feito, desconsidere este aviso.</p>
-	`, html.EscapeString(d.tenantName), d.value, html.EscapeString(d.dueDate), paymentLine)
+	`, html.EscapeString(d.tenantName), d.value, whenPhrase, html.EscapeString(d.dueDate), paymentLine)
 
 	payload := map[string]any{
 		"from":    fromEmail,
