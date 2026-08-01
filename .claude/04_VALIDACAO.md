@@ -43,7 +43,7 @@ Regenerar types quando necessário:
 
 cd frontend
 
-npx supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > src/types/database.types.ts
+npx supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > lib/database.types.ts
 
 ---
 

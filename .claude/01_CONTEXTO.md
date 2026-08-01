@@ -103,7 +103,7 @@ Ler:
 Depois verificar:
 
 - `database/migrations/`
-- `frontend/src/types/database.types.ts`
+- `frontend/lib/database.types.ts`
 
 ---
 
