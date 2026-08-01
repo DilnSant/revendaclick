@@ -435,3 +435,17 @@ supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/d
 
 **Auditoria recomendada:** Ao criar qualquer diretório de rota Next.js, verificar com `git check-ignore -v <caminho>` se o arquivo está sendo ignorado antes de assumir que foi commitado.
 
+---
+
+## D36 — Corrigir paths-ignore no workflow de CI/CD para não redeployar por mudança só de documentação (01/08/2026 — sessão 63)
+
+**Decisão:** O workflow `.github/workflows/ci.yml` deve receber um filtro `paths-ignore` no gatilho `on: push: branches: [main]`, excluindo padrões que cobrem apenas documentação e governança (`**.md`, `docs-operacao/**`, `docs-produto/**`, `prompts/**`, `templates/**`, `.claude/**`). Commits que alterem exclusivamente esses caminhos não devem mais disparar rebuild/redeploy do backend.
+
+**Por quê:** Confirmado duas vezes na prática. Na sessão 62, o push da migração de comandos/agentes (16 arquivos `.md`) reconstruiu e redeployou o backend inteiro sem nenhuma mudança de código. Hoje (sessão 63), o mesmo ocorreu ao publicar o encerramento da sessão 62 (commit `d7b98e6`, apenas `docs-operacao/*.md`): pipeline completo rodou (test → build → push → deploy → smoke test) e o container `rc_backend` reiniciou em produção por zero mudança de comportamento.
+
+**Trade-off:** Se um commit único misturar código e documentação, o `paths-ignore` não impede o deploy — correto, pois ainda há mudança real. A lista de padrões ignorados precisa ser mantida manualmente conforme surgirem novas pastas de documentação; um padrão esquecido continua causando redeploys desnecessários até ser adicionado.
+
+**Regra operacional:** Alterar CI/CD exige autorização explícita antes da implementação (`.claude/02_AUTORIZACOES.md`). Status: **IMPLEMENTADA** — autorizada e aplicada em 01/08/2026 (sessão 63), commit `d7eb90f`.
+
+**Auditoria recomendada:** Validado em duas etapas: (1) o próprio commit `d7eb90f` (código, `.github/workflows/ci.yml`) disparou o pipeline normalmente; (2) o commit seguinte, exclusivamente de `.md` (este registro + `20_PENDENCIAS.md`), serve de segunda validação — não deve disparar rebuild/redeploy do backend.
+
