@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient, createServiceClient } from '@/lib/supabaseServer'
+import { sendEmail, escapeHtml } from '@/lib/resend'
 
 const API = process.env.INTERNAL_API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080'
 
@@ -53,6 +54,18 @@ export async function inviteVendor(
 
   revalidatePath('/vendors')
   const inviteLink = (data as { properties?: { action_link?: string } }).properties?.action_link ?? ''
+
+  if (inviteLink) {
+    await sendEmail(
+      email,
+      'Você foi convidado para o RevendaClick',
+      `<p>Olá, ${escapeHtml(name)}!</p>
+       <p>Você foi convidado para acessar o RevendaClick. Clique no link abaixo para definir sua senha e acessar sua conta:</p>
+       <p><a href="${escapeHtml(inviteLink)}">Definir senha e acessar</a></p>
+       <p>Se você não esperava este convite, pode ignorar este e-mail.</p>`,
+    )
+  }
+
   return { success: true, inviteLink }
 }
 
