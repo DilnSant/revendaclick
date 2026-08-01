@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 01/08/2026 (sessão 61 — FC065: SSL crítico corrigido; novas pendências de backlog registradas)
+> Atualizado em: 01/08/2026 (sessão 62 — migração de comandos/agentes; pendências de CI/CD registradas: `paths-ignore` e actions em Node 20)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -26,6 +26,8 @@
 | CONCLUÍDA | Self-hosted runner | — | Runner ativo no VPS |
 | CONCLUÍDA | Evolution OOM fix | — | NODE_OPTIONS heap + 768m + Redis cache (commit d17025e) |
 | CONCLUÍDA | Backup S3 | — | FC043: aws-cli no startup, path YYYY/MM, verify pós-upload, lifecycle 30d, restore-from-s3.sh (sessão 49) |
+| PENDENTE | `paths-ignore` no workflow de CI/CD | Média | `.github/workflows/ci.yml` dispara em `on: push: branches: [main]` **sem filtro de `paths`** — qualquer commit só de documentação reconstrói a imagem do backend e redeploya produção. Observado em 01/08/2026 no push da migração de comandos/agentes (16 arquivos `.md`, deploy completo executado). Containers de produção reiniciam sem nenhuma mudança de código. Corrigir com `paths-ignore` para `**.md`, `docs-operacao/**`, `docs-produto/**`, `prompts/**`, `templates/**`, `.claude/**`. **Alterar CI/CD exige autorização** (`.claude/02_AUTORIZACOES.md`) e deve virar decisão registrada em `21_DECISOES_TECNICAS.md`. |
+| PENDENTE | Actions em Node.js 20 descontinuado | Baixa | Anotação recorrente do pipeline: `actions/checkout@v4`, `actions/setup-go@v5`, `docker/build-push-action@v6`, `docker/login-action@v3` e `docker/setup-buildx-action@v3` têm target Node.js 20 e já estão sendo **forçadas** a rodar em Node.js 24 pelo runner. Não quebra nada hoje; quebrará quando o GitHub remover o fallback. Corrigir subindo as versões das actions. Ver https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/ |
 
 ---
 

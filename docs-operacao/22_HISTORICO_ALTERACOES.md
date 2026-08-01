@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 01/08/2026 (sessão 61 — trial 30d/carência 7d/lembrete de vencimento por Resend; FC062–FC065; SSL crítico corrigido)
+> Última atualização: 01/08/2026 (sessão 62 — comandos `/` e agentes migrados; `.gitignore` corrigido; repo de planejamento descartado)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -92,6 +92,69 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-08-01 (sessão 62) — Comandos `/` e agentes migrados; `.gitignore` escondia `.claude/`
+
+### Contexto
+
+O usuário mantinha duas pastas com o mesmo nome em `~/Projetos`: `revendaclick` (este repo, real, em produção) e `RevendaClick` (repositório de planejamento, sem nenhum commit, 461 MB). A documentação de produto validada já tinha sido trazida na sessão 61 para `docs-produto/`, mas os 7 comandos `/` e 5 agentes ficaram para trás — este repo não tinha `.claude/commands/` nem `.claude/agents/`, e o ritual de sessão era copiar e colar os arquivos de `prompts/`.
+
+### 1. Migração dos comandos e agentes
+
+Os 12 arquivos foram **reescritos, não copiados**. O repositório de origem trazia uma governança própria — máquina de oito estados, `PROCESSOS.md`, `PERMISSOES.md`, `memory/ESTADO_ATUAL.md` — que não existe aqui e conflitaria com a vigente (`AI_GOVERNANCE/00_POLITICA_GERAL.md` + `.claude/01–04` + `prompts/` + `templates/`), validada por 61 sessões. Trouxe-se o mecanismo, não a burocracia.
+
+Mapeamento aplicado:
+
+| Origem (`RevendaClick`) | Destino (este repo) |
+|---|---|
+| `memory/PENDENCIAS.md` | `docs-operacao/20_PENDENCIAS.md` |
+| `memory/DECISOES.md` | `docs-operacao/21_DECISOES_TECNICAS.md` |
+| `memory/CONTEXTO.md` | `docs-operacao/22_HISTORICO_ALTERACOES.md` |
+| `memory/ESTADO_ATUAL.md` + `MAQUINA_DE_ESTADOS.md` | `docs-operacao/23_PROXIMO_PASSO.md` |
+| `memory/PROJECT_MEMORY.md` | `docs-operacao/MEMORY.md` |
+| `AI_GOVERNANCE/PERMISSOES.md` | `.claude/02_AUTORIZACOES.md` |
+| `AI_GOVERNANCE/PROCESSOS.md` | `.claude/03_FLUXO_TRABALHO.md` + `04_VALIDACAO.md` |
+| `.docs/` | `docs-produto/` |
+
+Comandos: `/abrir-sessao`, `/encerrar-sessao`, `/checklist-dia`, `/auditoria`, `/novo-modulo`, `/registrar-decisao`, `/registrar-pendencia`. Agentes: `revisor-codigo`, `auditor-governanca`, `documentador`, `gestor-memoria`, `planejador-arquitetura`. `CLAUDE.md` passou a listar ambos e a citar `docs-produto/`.
+
+### 2. `.gitignore` escondia `.claude/commands/` e `.claude/agents/` — mesma classe do FC057
+
+A regra `.claude/*` (linha 80) excluía tudo dentro de `.claude/` exceto os quatro `.md` nomeados explicitamente. Os 12 arquivos novos funcionariam na máquina local e **nunca chegariam ao GitHub** — exatamente a falha do FC057, que custou 12 sessões e um 404 em produção, e que motivou a decisão D35.
+
+Detectado **antes** de criar os arquivos, via `git check-ignore -v`. Corrigido com exceções para os dois diretórios (liberando primeiro o diretório, já que o git não reinclui arquivo cujo diretório-pai está excluído); `settings.local.json` segue ignorado. Validado com arquivo de teste real (`git status` → `??`).
+
+### 3. Caminho errado de `database.types.ts` na governança
+
+`.claude/04_VALIDACAO.md` mandava regenerar os tipos do Supabase para `src/types/database.types.ts` e `.claude/01_CONTEXTO.md` mandava conferir `frontend/src/types/database.types.ts`. O diretório `frontend/src/` **não existe** — o arquivo real é `frontend/lib/database.types.ts`, importado por `lib/supabaseClient.ts` e `lib/supabaseServer.ts`. Seguir a instrução criaria um arquivo órfão enquanto o real ficaria desatualizado após uma migration — falha silenciosa.
+
+`docs-produto/11-contexto-tecnico.md` também cita `apps/web/src/types/`, mas descreve a reconstrução do zero que nunca aconteceu — mantido, conforme a ressalva já registrada em `docs-produto/README.md`.
+
+### 4. Repositório de planejamento descartado
+
+`RevendaClick` movido para `~/Projetos/descartar/RevendaClick.planejamento-descontinuado`. Antes de mover, conferiu-se os 4 documentos de `.docs/` que nunca foram migrados (`08-decisoes-tecnicas`, `09-integracoes`, `10-prompts`, `CHANGELOG`): todos são modelos de estrutura sem conteúdo validado — cada um declara isso no próprio texto — e os quatro assuntos já são cobertos por documentos reais deste repo. Nada se perdeu; a pasta segue recuperável.
+
+### Validação
+
+- 138 links internos dos 12 arquivos verificados — **0 quebrados**
+- 46 caminhos citados entre crases conferidos — todos existem
+- `git check-ignore` + arquivo de teste real → 12 arquivos rastreáveis
+- `git ls-tree HEAD -- .claude/` → 16 arquivos rastreados (4 originais + 12 novos)
+- CI/CD completo verde: test-backend → build-push → deploy → smoke test
+- `api.revendaclick.com.br/health` → `{"db":"ok","status":"ok"}`; `app.revendaclick.com.br` → 200
+
+### Pendências registradas
+
+Duas em `20_PENDENCIAS.md` → Infraestrutura:
+
+- **Média** — `.github/workflows/ci.yml` dispara em `push: branches: [main]` **sem filtro de `paths`**: commits só de documentação reconstroem a imagem e redeployam produção. Observado neste próprio push (16 arquivos `.md` → deploy completo).
+- **Baixa** — actions com target Node.js 20 (`checkout@v4`, `setup-go@v5`, `docker/*`), já forçadas para Node 24 pelo runner.
+
+### Commits
+
+`7f544ec` (migração + `.gitignore` + `CLAUDE.md`) e `73a5191` (caminho `database.types.ts`), ambos em `origin/main`.
 
 ---
 

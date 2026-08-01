@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 01/08/2026 (sessão 61 — billing trial/carência/lembrete Resend; FC062–FC065; SSL crítico corrigido — ver seção "Estado Atual" abaixo)
+> Atualizado em: 01/08/2026 (sessão 62 — comandos `/` e agentes migrados; `.gitignore` corrigido; pasta de planejamento descartada — ver seção "Estado Atual" abaixo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,14 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 61 — 01/08/2026)
+## Estado Atual do Projeto (sessão 62 — 01/08/2026)
 
 | Componente | Status |
 |---|---|
+| **Comandos `/` e agentes (sessão 62)** | ✓ **EM PRODUÇÃO NO REPO** — 7 comandos (`.claude/commands/`) e 5 agentes (`.claude/agents/`) migrados do repositório de planejamento `RevendaClick` (descontinuado). Reescritos, não copiados: a governança de origem (máquina de 8 estados, `PROCESSOS.md`, `PERMISSOES.md`) foi **descartada** para não conflitar com a vigente; cada comando aponta para os documentos reais deste repo. Comandos: `/abrir-sessao`, `/encerrar-sessao`, `/checklist-dia`, `/auditoria`, `/novo-modulo`, `/registrar-decisao`, `/registrar-pendencia`. Substituem a cópia manual de `prompts/`, que seguem válidos como referência. Commit `7f544ec`. |
+| **`.gitignore` — `.claude/*` escondia commands/agents (sessão 62)** | ✓ **CORRIGIDO** — a regra `.claude/*` (linha 80) excluía tudo em `.claude/` exceto os 4 `.md` nomeados; `commands/` e `agents/` seriam invisíveis ao git. **Mesma classe do FC057** (regra de `.gitignore` escondendo código real → decisão D35). Exceções adicionadas para os dois diretórios; `settings.local.json` segue ignorado. Validado com `git check-ignore` e com arquivo de teste real. Commit `7f544ec`. |
+| **Caminho errado de `database.types.ts` (sessão 62)** | ✓ **CORRIGIDO** — `.claude/04_VALIDACAO.md` mandava gerar os tipos em `src/types/database.types.ts` e `.claude/01_CONTEXTO.md` mandava conferir `frontend/src/types/database.types.ts`. `frontend/src/` **não existe**; o arquivo real é `frontend/lib/database.types.ts`. Seguir a instrução criaria arquivo órfão e deixaria o real desatualizado após migration. Commit `73a5191`. |
+| **Repositório de planejamento `RevendaClick` (sessão 62)** | ✓ **DESCARTADO** — movido para `~/Projetos/descartar/RevendaClick.planejamento-descontinuado`. Nunca teve commit; os 4 docs não migrados (`08-decisoes-tecnicas`, `09-integracoes`, `10-prompts`, `CHANGELOG`) eram modelos de estrutura vazios, já cobertos por documentos reais daqui. Elimina o risco de abrir sessão na pasta errada. |
 | **Billing — trial 30d/carência 7d/lembrete de vencimento (sessão 61)** | ✓ **PRODUÇÃO** — trial e carência alterados (migrations 038/039, afeta só novos eventos); worker diário `StartDueReminderWorker` envia e-mail via Resend 7 dias antes do vencimento; testado em produção sem cair em spam. |
 | **FC062 — Preço FIPE bloqueado por CSP (sessão 61)** | ✓ **CORRIGIDO** — rota proxy `/api/fipe/price`, mesmo padrão de brands/models/versions. Commit `2a8de19`. |
 | **FC063 — Convite de vendedor redirecionava para login (sessão 61)** | ✓ **CORRIGIDO E VALIDADO EM PRODUÇÃO** — `redirectTo` de `/auth/callback` (server, não lê fragmento) para `/reset-password` (client, já tratava o fluxo). Commit `c7d27a6`. Complementar: convite agora envia e-mail automático via Resend (commit `5e14748`), testado sem spam. |
@@ -323,17 +327,18 @@ Se algo deixou de ser válido (plano renomeado, serviço trocado, rota removida)
 
 ## Contexto para a Próxima Sessão
 
-**Copiar e executar ao iniciar:**
+**Desde a sessão 62, basta digitar o comando** (não é mais preciso copiar prompt):
 
 ```
-prompts/00_PROMPT_INICIO_SESSAO.md
+/abrir-sessao      → inicia a sessão (equivale a prompts/00_PROMPT_INICIO_SESSAO.md)
+/encerrar-sessao   → encerra a sessão (equivale a prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md)
 ```
 
-**Copiar e executar ao encerrar:**
+Demais comandos: `/checklist-dia`, `/auditoria`, `/novo-modulo`, `/registrar-decisao`, `/registrar-pendencia`.
+Agentes: `revisor-codigo`, `auditor-governanca`, `documentador`, `gestor-memoria`, `planejador-arquitetura`.
+Ver tabela completa em `CLAUDE.md`. Os arquivos de `prompts/` seguem válidos como referência.
 
-```
-prompts/01_PROMPT_ENCERRAMENTO_SESSAO.md
-```
+**Os comandos não concedem autorização** — `.claude/02_AUTORIZACOES.md` continua valendo integralmente.
 
 Ao iniciar uma nova sessão:
 
