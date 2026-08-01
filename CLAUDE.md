@@ -45,9 +45,42 @@ Use somente quando necessário:
 - `memory/` — preferências, lições aprendidas e regras práticas de uso da IA
 - `templates/` — modelos de resumo, pedido de autorização e relatório final
 - `prompts/` — prompts operacionais curtos
-- `docs-operacao/` — documentação operacional real do projeto
+- `docs-operacao/` — documentação operacional real do projeto (como o sistema **é** hoje)
+- `docs-produto/` — visão, requisitos, modelagem e regras validadas (o que o sistema **deve fazer**)
 
 Não leia essas pastas inteiras por padrão.
+
+---
+
+## Comandos
+
+Digite `/` para executá-los. Cada comando é a fonte única do seu procedimento — siga o arquivo, não uma versão de memória.
+
+| Comando | Para quê |
+|---|---|
+| `/abrir-sessao` | Carrega o contexto mínimo e apresenta estado, próximo passo, pendências e riscos |
+| `/encerrar-sessao` | Relata a sessão e atualiza a documentação operacional para a próxima retomada |
+| `/checklist-dia` | Verifica o que já está satisfeito e o que falta antes de encerrar |
+| `/auditoria` | Auditoria estrutural, documental e técnica (relata, não corrige) |
+| `/novo-modulo` | Planeja e documenta um módulo ou feature novo antes de implementar |
+| `/registrar-decisao` | Grava uma decisão em `docs-operacao/21_DECISOES_TECNICAS.md` |
+| `/registrar-pendencia` | Grava uma pendência em `docs-operacao/20_PENDENCIAS.md` |
+
+Frases de intenção também acionam o processo: "vamos continuar" / "bom dia" → `/abrir-sessao`; "até amanhã" / "encerrar" → `/encerrar-sessao`; "auditar" → `/auditoria`.
+
+## Agentes
+
+Especialistas invocáveis para trabalho que merece uma passagem dedicada:
+
+| Agente | Para quê |
+|---|---|
+| `revisor-codigo` | Revisa código escrito — correção, segurança, multi-tenant, RLS |
+| `auditor-governanca` | Auditoria independente de documentação contra código real |
+| `documentador` | Sincroniza `docs-operacao/` com o código após mudança de comportamento |
+| `gestor-memoria` | Executa o ritual de encerramento e a continuidade entre sessões |
+| `planejador-arquitetura` | Avalia impacto arquitetural antes da implementação começar |
+
+Os comandos e agentes **não concedem autorização** — `.claude/02_AUTORIZACOES.md` continua valendo integralmente.
 
 ---
 

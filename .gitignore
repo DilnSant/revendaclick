@@ -84,6 +84,13 @@ _backup_*/
 !.claude/03_FLUXO_TRABALHO.md
 !.claude/04_VALIDACAO.md
 
+# Comandos e agentes de governança (ver D35 e FC057 — um diretório excluído
+# pelo pai não pode ser reincluído só pelos arquivos: liberar o diretório antes)
+!.claude/commands/
+!.claude/commands/*.md
+!.claude/agents/
+!.claude/agents/*.md
+
 memory/*
 !memory/
 !memory/00_REGRAS_DE_USO_IA.md
