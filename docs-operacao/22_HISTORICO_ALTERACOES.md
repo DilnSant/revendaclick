@@ -160,6 +160,16 @@ Certificado renovado (válido até 2026-10-30), mecanismo de renovação automá
 - 3 envios reais de teste via Resend confirmados sem cair em spam (convite, lembrete de
   vencimento, teste de domínio).
 
+### 6. Addendum — SSL do beautynow.app.br (outro projeto, mesma VPS)
+
+A pedido, aplicado o mesmo fix do FC065 em `api.beautynow.app.br` (não é RevendaClick, sem FC
+próprio). `evo.beautynow.app.br` estava sem DNS (NXDOMAIN) — removido do certificado; reemitido só
+com `api.beautynow.app.br` via `webroot` (linhagem nova `api.beautynow.app.br-0001`, válida até
+2026-10-30). Achado no processo: o tráfego público desse domínio passa pela Cloudflare, que serve
+certificado próprio (Google Trust Services) — o Let's Encrypt local pode não ser o que de fato
+protege o usuário final; não foi possível confirmar se o Nginx desta VPS está no caminho real de
+serving do beautynow. Ver `docs-operacao/20_PENDENCIAS.md`.
+
 ### Documentação
 
 - `docs-operacao/FalhasCorrigidas/FC062...FC065` — criados.
