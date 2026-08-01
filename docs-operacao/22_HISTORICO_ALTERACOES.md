@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 01/08/2026 (sessão 62 — comandos `/` e agentes migrados; `.gitignore` corrigido; repo de planejamento descartado)
+> Última atualização: 01/08/2026 (sessão 63 — D36: paths-ignore no CI/CD para não redeployar por mudança só de docs)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -36,7 +36,7 @@
 | **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open; devecar desconectado |
 | **OpenRouter AI** | ✓ Produção | classify-lead, suggest-reply |
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
-| **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy |
+| **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy; `paths-ignore` (sessão 63, D36) evita redeploy do backend por commits só de documentação |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
 | **Billing Asaas — santos-car** | ✓ **Restaurado** (sessão 44) | Ficou `past_due`/`starter` durante testes E2E sessão 42; restaurado para `active`/`pro` via SQL (sessão 44). `sub_b3y3xwo9s18g50xc` no campo asaas_subscription_id |
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
@@ -92,6 +92,49 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-08-01 (sessão 63) — D36: paths-ignore no CI/CD para não redeployar por mudança só de docs
+
+### Contexto
+
+Sessão aberta com `git status` mostrando 1 commit local não enviado desde o encerramento da sessão
+62 (`d7b98e6`, só `docs-operacao/*.md`) — deixado sem push de propósito, porque o CI/CD não tinha
+`paths-ignore` e enviaria um redeploy completo do backend sem nenhuma mudança de código (a própria
+pendência registrada naquela sessão). A pedido do usuário ("atualizar na vps"), o commit foi
+publicado mesmo assim — decisão consciente do usuário, avisada previamente via pergunta direta.
+
+### 1. Push do commit de docs → confirmou o problema na prática
+
+`git push` do commit `d7b98e6` disparou o pipeline completo (test → build → push → deploy → smoke
+test) e reiniciou `rc_backend` em produção sem qualquer mudança de comportamento. Healthcheck pós-
+deploy confirmado: `{"db":"ok","status":"ok"}`. Serviu de segunda evidência prática do problema já
+apontado na sessão 62.
+
+### 2. D36 — decisão registrada, depois autorizada e implementada
+
+Registrada em `21_DECISOES_TECNICAS.md`: adicionar `paths-ignore` ao gatilho `push` de
+`.github/workflows/ci.yml` para `**.md`, `docs-operacao/**`, `docs-produto/**`, `prompts/**`,
+`templates/**`, `.claude/**`. Autorização formal pedida (CI/CD exige aprovação explícita,
+`.claude/02_AUTORIZACOES.md`) e concedida pelo usuário. Implementada em commit `d7eb90f`.
+
+### 3. Validação em dois sentidos
+
+- Commit de código (`d7eb90f`, o próprio `ci.yml`) → pipeline disparou normalmente (test, build,
+  deploy, smoke test todos ✓) — confirma que mudanças reais de código continuam sendo deployadas.
+- Commit seguinte, exclusivamente de `.md` (`10f2123` — fechamento de pendência + D36 IMPLEMENTADA)
+  → **não apareceu** em `gh run list`, confirmando que o `paths-ignore` funciona como esperado.
+
+### Pendências
+
+`20_PENDENCIAS.md`: item "paths-ignore no workflow de CI/CD" movido de PENDENTE para CONCLUÍDA.
+Resta apenas a pendência de baixa prioridade (actions em Node.js 20 descontinuado).
+
+### Commits
+
+`d7b98e6` (push de docs da sessão 62, sem alteração nesta sessão), `d7eb90f` (fix: paths-ignore),
+`10f2123` (docs: D36 implementada + pendência fechada), todos em `origin/main`.
 
 ---
 

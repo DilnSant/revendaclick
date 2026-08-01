@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 01/08/2026 (sessão 62 — comandos `/` e agentes migrados; `.gitignore` corrigido; pasta de planejamento descartada — ver seção "Estado Atual" abaixo)
+> Atualizado em: 01/08/2026 (sessão 63 — D36: paths-ignore no CI/CD implementado e validado — ver seção "Estado Atual" abaixo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,11 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 62 — 01/08/2026)
+## Estado Atual do Projeto (sessão 63 — 01/08/2026)
 
 | Componente | Status |
 |---|---|
+| **CI/CD — paths-ignore (sessão 63, D36)** | ✓ **IMPLEMENTADO E VALIDADO EM PRODUÇÃO** — `.github/workflows/ci.yml` ignora `**.md`, `docs-operacao/**`, `docs-produto/**`, `prompts/**`, `templates/**`, `.claude/**` no gatilho `push`. Commits só de documentação não redeployam mais o backend. Validado nos dois sentidos: commit de código (`d7eb90f`) disparou o pipeline normalmente; commit de docs (`10f2123`) não apareceu em `gh run list`. Autorizado explicitamente pelo usuário antes da implementação. Pendência fechada em `20_PENDENCIAS.md`; decisão em D36 (`21_DECISOES_TECNICAS.md`). |
 | **Comandos `/` e agentes (sessão 62)** | ✓ **EM PRODUÇÃO NO REPO** — 7 comandos (`.claude/commands/`) e 5 agentes (`.claude/agents/`) migrados do repositório de planejamento `RevendaClick` (descontinuado). Reescritos, não copiados: a governança de origem (máquina de 8 estados, `PROCESSOS.md`, `PERMISSOES.md`) foi **descartada** para não conflitar com a vigente; cada comando aponta para os documentos reais deste repo. Comandos: `/abrir-sessao`, `/encerrar-sessao`, `/checklist-dia`, `/auditoria`, `/novo-modulo`, `/registrar-decisao`, `/registrar-pendencia`. Substituem a cópia manual de `prompts/`, que seguem válidos como referência. Commit `7f544ec`. |
 | **`.gitignore` — `.claude/*` escondia commands/agents (sessão 62)** | ✓ **CORRIGIDO** — a regra `.claude/*` (linha 80) excluía tudo em `.claude/` exceto os 4 `.md` nomeados; `commands/` e `agents/` seriam invisíveis ao git. **Mesma classe do FC057** (regra de `.gitignore` escondendo código real → decisão D35). Exceções adicionadas para os dois diretórios; `settings.local.json` segue ignorado. Validado com `git check-ignore` e com arquivo de teste real. Commit `7f544ec`. |
 | **Caminho errado de `database.types.ts` (sessão 62)** | ✓ **CORRIGIDO** — `.claude/04_VALIDACAO.md` mandava gerar os tipos em `src/types/database.types.ts` e `.claude/01_CONTEXTO.md` mandava conferir `frontend/src/types/database.types.ts`. `frontend/src/` **não existe**; o arquivo real é `frontend/lib/database.types.ts`. Seguir a instrução criaria arquivo órfão e deixaria o real desatualizado após migration. Commit `73a5191`. |
