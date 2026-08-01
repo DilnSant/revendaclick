@@ -29,6 +29,8 @@ services:
       ASAAS_WEBHOOK_TOKEN:    "${ASAAS_WEBHOOK_TOKEN}"
       METRICS_TOKEN:          "${METRICS_TOKEN}"
       BETTER_STACK_SOURCE_TOKEN: "${BETTER_STACK_SOURCE_TOKEN:-}"
+      RESEND_API_KEY:         "${RESEND_API_KEY:-}"
+      RESEND_FROM_EMAIL:      "${RESEND_FROM_EMAIL:-cobranca@revendaclick.com.br}"
     volumes:
       - backend_logs:/app/logs
     healthcheck:
