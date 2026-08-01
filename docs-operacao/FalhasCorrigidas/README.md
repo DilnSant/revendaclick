@@ -189,11 +189,16 @@
 
 ---
 
+| [FC062](FC062_FIPE_PRICE_CSP_BLOQUEADO.md) | Preço FIPE não preenchia automaticamente — chamada direta ao navegador bloqueada pelo connect-src do CSP | Estoque / Frontend | MÉDIA | 31/07/2026 |
+| [FC063](FC063_CONVITE_VENDEDOR_REDIRECT_LOGIN.md) | Convite de vendedor redirecionava para login — link usa fluxo implícito (fragmento), redirectTo apontava para Route Handler server-side que só lê ?code= | Equipe / Auth / Frontend | ALTA | 31/07/2026 |
+| [FC064](FC064_RESEND_ENV_AUSENTE_COMPOSE.md) | RESEND_API_KEY não chegava ao container — ausente da allowlist environment: do docker-compose, perdida a cada redeploy | Billing / Infra / Deploy | MÉDIA | 01/08/2026 |
+| [FC065](FC065_CERTBOT_STANDALONE_PORTA80_NGINX.md) | Certbot não renovava — plugin standalone conflitando com Nginx na porta 80; certificado a 10 dias de expirar | Infra / VPS / SSL | CRÍTICA | 01/08/2026 |
+
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC062
-# Nome do arquivo: FC062_DESCRICAO_CURTA.md
+# Próximo número: FC066
+# Nome do arquivo: FC066_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 

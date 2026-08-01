@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 26/06/2026 (sessão 59 — FC059: super admin defense-in-depth — DB-fallback para `app_metadata.user_role` ausente no JWT)
+> Última atualização: 01/08/2026 (sessão 61 — trial 30d/carência 7d/lembrete de vencimento por Resend; FC062–FC065; SSL crítico corrigido)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -28,6 +28,9 @@
 | **Sandbox tenant** | ✓ `sandbox-revendaclick` (sessão 26) | Pro active, `tenant_id = e72eb104-98b7-4a71-946d-15e680496fc3`, substitui devecar |
 | **Admin Panel** | ✓ Produção (super_admin) | 8 sub-rotas CRUD; quarentena + exclusão lógica/física; audit logging; CRUD tenants/users/subs/plans/whatsapp; /admin/logs definitivamente funcional pós FC057 |
 | **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035) — gate no frontend, lê do DB, valida antes de Asaas |
+| **Trial / Carência / Lembrete de vencimento** | ✓ Produção (sessão 61) | Trial 30 dias, carência 7 dias (migration 038); worker diário de lembrete por e-mail via Resend 7 dias antes do vencimento (migration 039, FC064 corrigiu env var ausente) |
+| **Convite de vendedor por e-mail** | ✓ Produção (sessão 61) | Antes só gerava link manual (rate limit Supabase, FC021); agora envia automaticamente via Resend; redirect corrigido (FC063) |
+| **SSL — api/evolution.revendaclick.com.br** | ✓ Renovado até 2026-10-30 (sessão 61) | FC065: certbot usava `standalone` (conflito com Nginx na porta 80), trocado para `webroot`; `--dry-run` validado |
 | **Configurações** | ✓ Produção + Suporte card | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp; card "Suporte RevendaClick" ao final com email + botão mailto |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
 | **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open; devecar desconectado |
@@ -89,6 +92,83 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-07-31 – 2026-08-01 (sessão 61) — Billing (trial/carência/lembrete), FC062–FC065, SSL crítico
+
+### Contexto
+
+Sessão iniciada num repositório de planejamento separado (`RevendaClick`, greenfield, descontinuado
+ao final da sessão) que acabou trazendo pedidos de suporte de produção real para este repositório.
+A partir daí, a sessão passou a trabalhar direto aqui. `docs-produto/` (visão, requisitos,
+modelagem, regras de negócio, glossário, roadmap validados naquele repositório) foi trazido para
+este repositório antes de descartar o outro.
+
+### 1. Billing — trial 30 dias, carência 7 dias, lembrete de vencimento por e-mail (Resend)
+
+Trial (7→30 dias) e carência de inadimplência (3→7 dias) alterados via trigger de banco
+(`auto_assign_trial_subscription`, `set_subscription_grace`, migration `038`) + código Go
+(`billing/repository.go`) — afeta só novos eventos, sem retroagir sobre tenants já em trial/carência.
+
+Novo worker `billing.StartDueReminderWorker` (`backend/internal/billing/reminder.go`): envia e-mail
+via Resend para o tenant quando uma fatura pendente está a até 7 dias do vencimento
+(`reminder_sent_at` evita duplicidade). Nova coluna `billing_invoices.reminder_sent_at` (migration
+`039`). Corrigido nesta mesma sessão (ver seção 4): a query original usava igualdade exata de data
+(`= 7 dias`), trocada para janela (`<= 7 dias`) para não perder o envio se o worker cair um dia.
+
+Commits: `9508e46`, `fae5c58`. Migrations: `038`, `039` (aplicadas em produção).
+
+### 2. FC062 — Preço FIPE bloqueado por CSP
+
+Ver `FalhasCorrigidas/FC062_FIPE_PRICE_CSP_BLOQUEADO.md`. Commit `2a8de19`.
+
+### 3. FC063 — Convite de vendedor redirecionava para login
+
+Ver `FalhasCorrigidas/FC063_CONVITE_VENDEDOR_REDIRECT_LOGIN.md`. Commit `c7d27a6`. Validado em
+produção (convite de teste real via Admin API, redirect seguido via curl, usuário removido depois).
+
+**Complementar (mesma sessão):** convite de vendedor passou a ser enviado automaticamente por
+e-mail via Resend (antes só gerava link para compartilhamento manual — comportamento intencional
+para fugir do rate limit do SMTP do Supabase, ver FC021). Novo `frontend/lib/resend.ts` (helper
+reutilizável). Commit `5e14748`. Testado em produção, e-mail chegou sem cair em spam.
+
+### 4. FC064 — RESEND_API_KEY ausente da allowlist do docker-compose
+
+Ver `FalhasCorrigidas/FC064_RESEND_ENV_AUSENTE_COMPOSE.md`. Commit `aaf16f2`. Descoberto ao
+verificar se o worker de lembrete (item 1) estava realmente funcionando em produção — não estava,
+silenciosamente, desde o primeiro redeploy.
+
+Na mesma verificação, corrigida também a fragilidade da query do worker (igualdade exata de data
+→ janela) e o texto do e-mail (calculava "vence em 7 dias" fixo; agora calcula os dias reais
+restantes). Commit `fae5c58`.
+
+### 5. FC065 — Certificado SSL a 10 dias de expirar (certbot mal configurado)
+
+Ver `FalhasCorrigidas/FC065_CERTBOT_STANDALONE_PORTA80_NGINX.md`. Achado pelo smoke test do
+próprio CI/CD (`scripts/smoke-test.sh`) — não relacionado ao trabalho da sessão, mas crítico.
+Certificado renovado (válido até 2026-10-30), mecanismo de renovação automática corrigido
+(`standalone` → `webroot`) e validado com `certbot renew --dry-run` bem-sucedido. **Pendência:**
+`api.beautynow.app.br` (mesma VPS, outro projeto) tem o mesmo problema, não corrigido aqui.
+
+### Validação geral
+
+- `go build`/`go vet` limpos após cada mudança de backend.
+- `npx tsc --noEmit` limpo após cada mudança de frontend.
+- CI/CD (test → build → deploy) verde em todos os pushes, exceto o smoke test de TLS (item 5),
+  que não bloqueia o deploy do código — só sinaliza o problema de certificado.
+- 3 envios reais de teste via Resend confirmados sem cair em spam (convite, lembrete de
+  vencimento, teste de domínio).
+
+### Documentação
+
+- `docs-operacao/FalhasCorrigidas/FC062...FC065` — criados.
+- `docs-operacao/FalhasCorrigidas/README.md` — índice atualizado, próximo FC066.
+- `docs-operacao/20_PENDENCIAS.md` — pendências novas registradas (comissão de vendedores,
+  certificado do beautynow, roadmap .docx não analisado — herdado do repo descontinuado).
+- `docs-operacao/23_PROXIMO_PASSO.md` — atualizado.
+- `docs-operacao/22_HISTORICO_ALTERACOES.md` — esta entrada.
+- `docs-produto/` — novo, trazido do repositório de planejamento descontinuado.
 
 ---
 

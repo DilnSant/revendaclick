@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 26/06/2026 (sessão 60 — FC061: "Página da Loja" destaque — nova rota `/store`, sidebar item, dashboard card, CTA âmbar, métricas; FC060 = auditoria operacional sem bug)
+> Atualizado em: 01/08/2026 (sessão 61 — billing trial/carência/lembrete Resend; FC062–FC065; SSL crítico corrigido — ver seção "Estado Atual" abaixo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,16 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 60 — 26/06/2026)
+## Estado Atual do Projeto (sessão 61 — 01/08/2026)
 
 | Componente | Status |
 |---|---|
+| **Billing — trial 30d/carência 7d/lembrete de vencimento (sessão 61)** | ✓ **PRODUÇÃO** — trial e carência alterados (migrations 038/039, afeta só novos eventos); worker diário `StartDueReminderWorker` envia e-mail via Resend 7 dias antes do vencimento; testado em produção sem cair em spam. |
+| **FC062 — Preço FIPE bloqueado por CSP (sessão 61)** | ✓ **CORRIGIDO** — rota proxy `/api/fipe/price`, mesmo padrão de brands/models/versions. Commit `2a8de19`. |
+| **FC063 — Convite de vendedor redirecionava para login (sessão 61)** | ✓ **CORRIGIDO E VALIDADO EM PRODUÇÃO** — `redirectTo` de `/auth/callback` (server, não lê fragmento) para `/reset-password` (client, já tratava o fluxo). Commit `c7d27a6`. Complementar: convite agora envia e-mail automático via Resend (commit `5e14748`), testado sem spam. |
+| **FC064 — RESEND_API_KEY ausente do docker-compose (sessão 61)** | ✓ **CORRIGIDO** — env var faltava na allowlist `environment:` do backend, perdida a cada redeploy. Corrigido também: query do worker de lembrete usava igualdade exata de data (perderia o envio se o worker caísse um dia) → trocada para janela. Commits `aaf16f2`, `fae5c58`. |
+| **FC065 — SSL a 10 dias de expirar (sessão 61)** | ✓ **CORRIGIDO — CRÍTICO** — certbot usava `standalone` (conflito de porta 80 com Nginx) há semanas, renovação automática falhando silenciosamente. Renovado manualmente (válido até 2026-10-30) e mecanismo trocado para `webroot` — `--dry-run` validado. **Pendência:** `api.beautynow.app.br` (mesma VPS) tem o mesmo bug, não corrigido. |
+| **docs-produto/ (sessão 61)** | ✓ **NOVO** — visão, requisitos, modelagem, regras de negócio, glossário e roadmap trazidos de um repositório de planejamento separado (descontinuado). Complementa `docs-operacao/` — ver `docs-produto/README.md`. |
 | **FC061 — "Página da Loja" sem destaque na UX (sessão 60)** | ✓ **IMPLEMENTADO** — Nova rota dedicada `/store` (server component) com header + badge de status, CTA âmbar condicional "Sua Página da Loja ainda não está publicada." + "Configurar Agora" → `/settings?tab=contact` quando `!published`. Sub-componentes: `StoreActions.tsx` (URL pública + Copiar + Abrir + Compartilhar WhatsApp via `api.whatsapp.com`) + `StoreMetrics.tsx` (Status / Leads gerados / Origem principal). Sidebar: novo item "Página da Loja" entre Dashboard e Veículos (NAV_BASE, visível todos os planos). Dashboard: substituído `CopyStoreLink` por `StoreCard` (gradient `primary/[0.06]`, pill de status, URL com Copiar, Abrir Loja + Editar Loja/Configurar Agora); bloco "Acesso rápido" lateral com "Ver Minha Loja" + "Página da Loja". `CopyStoreLink.tsx` removido (bug de domínio `revendaclick.com.br` → `app.revendaclick.com.br` corrigido). Métricas de visitas/conversão **deferidas** (requerem migration `store_visits` + tracking pixel — fora do escopo deste FC). TypeScript validado (`tsc --noEmit` exit 0). |
 | **FC060 — Auditoria operacional sessão 60 (sessão 60)** | ✓ **VALIDADO** — Zero divergências código↔docs; nenhum bug encontrado; checkpoints confirmados (backend health, migrations, nomenclatura, backups, uptime, JWT normalizado) |
 | **FC059 — Super Admin defense-in-depth (sessão 59)** | ✓ **IMPLEMENTADO** — `resolveUserRole()` em `frontend/lib/tenant.ts` com semântica JWT-first + DB-fallback via `createServiceClient`. Atualizado: `(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`. Novo endpoint `app/api/me/role/route.ts` para o login resolver destino. Causa raiz revelada: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` ausente (promoção SQL não sincroniza Auth server). Defense-in-depth cobre o gap sem requerer migração manual. |
@@ -259,8 +265,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **60 falhas documentadas (FC001–FC059, FC061)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC062**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **64 falhas documentadas (FC001–FC059, FC061–FC065)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC066**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

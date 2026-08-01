@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 13/06/2026 (sessão 50 — FC044: Reclassificação de pendências não prioritárias)
+> Atualizado em: 01/08/2026 (sessão 61 — FC065: SSL crítico corrigido; novas pendências de backlog registradas)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -20,7 +20,7 @@
 | CONCLUÍDA | VPS Hostinger | — | Contratada e configurada |
 | CONCLUÍDA | Docker Compose produção | — | `docker-compose.production.yml` ativo |
 | CONCLUÍDA | CI/CD GitHub Actions | — | test → build → deploy → smoke-test |
-| CONCLUÍDA | SSL Let's Encrypt | — | api + evolution com renovação automática |
+| CONCLUÍDA | SSL Let's Encrypt | — | api + evolution com renovação automática. **Nota (01/08/2026, FC065):** a renovação estava de fato quebrada há semanas (`authenticator = standalone` conflitando com Nginx na porta 80) — certificado chegou a 10 dias de expirar sem ninguém perceber, até o smoke test do CI acusar. Corrigido para `webroot`, `--dry-run` validado. Ver `FalhasCorrigidas/FC065`. |
 | CONCLUÍDA | Nginx reverse proxy | — | rate limiting, cache, security headers |
 | CONCLUÍDA | Fix nginx webhook location | — | `^/api/v1/webhooks/` → `^/api/webhooks/` — rate limit estava sendo ignorado (commit 39b5a38) |
 | CONCLUÍDA | Self-hosted runner | — | Runner ativo no VPS |
@@ -203,3 +203,6 @@ Frontend Next.js continua como stack oficial.
 | **Backup S3** | Configurar vars `BACKUP_S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` no `/opt/revendaclick/.env`. Container `rc_backup` e scripts já existem e estão prontos. | Quando crescimento de dados justificar redundância offsite |
 | **BetterStack Alerts HTTP 500** | Criar alerta no BetterStack para logs backend com status >= 500 | Quando volume de usuários reais justificar monitoramento ativo |
 | **Leaked Password Protection** | Supabase Dashboard → Authentication → Settings → Security → ON. Requer upgrade para Supabase Pro (HaveIBeenPwned.org) | Quando upgrade Supabase Pro for justificado por outros motivos (ex.: volume, SLA, compliance) |
+| **Certificado SSL `api.beautynow.app.br`** | Mesmo problema do FC065 (`authenticator = standalone`) confirmado no mesmo VPS, em outro projeto — não corrigido nesta sessão por estar fora do escopo do RevendaClick. | Aplicar o mesmo fix (`certonly --webroot`) antes que também expire — checar `certbot certificates` |
+| **Regra de cálculo de comissão de vendedores** | `Regra de Comissão` existe no schema (`seller_commission_rules`: percentual ou valor fixo por vendedor), mas a fórmula de cálculo automático (percentual fixo/por faixa/por vendedor) nunca foi documentada como regra de negócio. MVP atual usa só valor previsto + status pago/não pago, sem depender disso. | Quando o cálculo automático de comissão for priorizado |
+| **"Roadmap Finalização RevendaClick.docx"** | Documento antigo nunca analisado em detalhe — pode conter itens de roadmap não cobertos pela documentação atual (herdado do repositório de planejamento descontinuado). | Baixa prioridade — analisar se surgir dúvida sobre itens de roadmap não descritos em `docs-produto/07-roadmap.md` |
