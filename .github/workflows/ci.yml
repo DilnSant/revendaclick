@@ -3,6 +3,13 @@ name: CI/CD
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs-operacao/**"
+      - "docs-produto/**"
+      - "prompts/**"
+      - "templates/**"
+      - ".claude/**"
   pull_request:
     branches: [main]
 
