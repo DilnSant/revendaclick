@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 01/08/2026 (sessão 63 — D36: paths-ignore no CI/CD para não redeployar por mudança só de docs)
+> Última atualização: 06/08/2026 (sessão 64 — D37 conta Asaas nova + D38 landing reformulada e descongelada)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -44,7 +44,7 @@
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
 | **FC033 — Cancel sub não cancela add-ons** | ✓ **Corrigido** (sessão 30) | Opção A: cancelTenantAddons em cascata; 7/7 smoke tests — commit `529efb2` |
 | **Etapa 5 — Billing real add-ons** | ✓ **Implementado** (sessão 30) | Asaas subscription por add-on; status lifecycle; webhook routing; is_redundant |
-| **Landing Page** | ✓ **Hero reformulado** (sessão 38) | Hero: formulário removido → CTA direto /register; logo tipográfico; copy novo. Fluxo de leads backend: INALTERADO (CONGELADO) |
+| **Landing Page** | ✓ **Reformulada + 6 landings segmentadas** (sessão 64 — D38) | Congelamento da sessão 31 revogado pelo usuário. `components/marketing/` → `components/landing/`; `app/page.tsx` reescrita; rotas `/revendas-pequenas` `/multimarcas` `/premium` `/crm-automotivo` `/erp-automotivo` `/site-para-revendas`, todas estáticas. Fluxo de leads backend: **INALTERADO (segue congelado)** |
 | **Admin Leads** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação 25/pág, alerta leads sem contato 4h |
 | **Admin Lead Detalhe** | ✓ Produção (sessão 31) | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
 | **Pipeline Comercial Leads** | ✓ Produção (migrations 030-031) | 5 status: novo → contatado → em_negociacao → convertido / perdido |
@@ -92,6 +92,68 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-08-06 (sessão 64, continuação) — Landing reformulada e descongelada (D38)
+
+### Contexto
+
+A landing estava documentada como **CONGELADA** desde a sessão 31 ("não adicionar features").
+O usuário **revogou o congelamento explicitamente** nesta sessão. A revogação vale para layout,
+copy e rotas de marketing — **o fluxo de captura de leads não foi tocado e segue congelado**
+(`POST /api/leads/landing`, `landing_leads`, migrations 028–031, `/admin/leads`).
+
+Parte deste trabalho já estava no working tree quando o sistema travou e foi reiniciado; os
+commits abaixo recuperaram as alterações, que estavam prestes a ser perdidas.
+
+### O que mudou
+
+| Área | Alteração |
+|---|---|
+| Componentes | `components/marketing/` removido (16 arquivos) e substituído por `components/landing/` (~25 arquivos). Sobreviveram `PixelScripts`, `FloatingWhatsApp` e `ConversionLink`, ainda importados |
+| Landing principal | `app/page.tsx` reescrita sobre as seções novas: Hero, LossSection, Consequence, BeforeAfter, FeatureGrid, Benefits, LossCalculator, HowItWorks, Testimonials, Metrics, Comparison, AISection, Faq, FinalCta |
+| Estilos | `app/globals.css` +90 linhas |
+| Landings segmentadas | 6 rotas novas — `/revendas-pequenas`, `/multimarcas`, `/premium`, `/crm-automotivo`, `/erp-automotivo`, `/site-para-revendas`. Todas geradas por `SegmentPage.tsx` a partir de `SEGMENTOS` em `segments/data.ts`; cada `page.tsx` tem 8 linhas |
+| Backend | `SetupRequest.validate()` em `onboarding.go` passou a rejeitar slugs reservados |
+| E2E | `TEST_USERS.sandbox` removido de `e2e/helpers/auth.ts` — o tenant nunca existiu no banco |
+| Migration 040 | Versionada. Fora aplicada em produção mas o arquivo nunca havia sido commitado |
+| `.gitignore` | Regra para o arquivo local de anotações com as chaves do Asaas |
+
+### Por que a validação de slug reservado foi necessária
+
+A vitrine pública é servida por `app/(public)/[slug]`. No Next.js a **rota estática vence a
+dinâmica** — um lojista que cadastrasse a loja com slug `premium` ou `multimarcas` teria a vitrine
+inacessível: o visitante veria a landing segmentada no lugar da loja, **sem erro nenhum**. As 6
+rotas novas ampliaram bastante essa superfície.
+
+⚠️ A lista `slugsReservados` (Go) e `SLUGS_RESERVADOS` (`segments/data.ts`) são sincronizadas **à
+mão**. Pendência aberta em `20_PENDENCIAS.md` para cobrir isso com teste.
+
+### Validação executada
+
+| Comando | Resultado |
+|---|---|
+| `go build ./...` + `go vet` + `go test ./internal/onboarding/` | limpos |
+| `gofmt -l` | `onboarding.go` estava fora do padrão → corrigido antes do commit |
+| `npx tsc --noEmit` | exit 0 |
+| `npx next build` | exit 0 — as 6 rotas segmentadas prerenderizadas como estáticas |
+| `npx eslint app components` | 0 erros; 2 warnings **pré-existentes** (`AdminShell.tsx:170`, `DashboardShell.tsx:193` — `react-hooks/set-state-in-effect`), nenhum no código novo |
+
+### Commits
+
+```
+4fa4f84 chore(billing): versionar migration 040 e ignorar anotações com credenciais
+525e5ad feat(landing): reformular landing page e adicionar landings segmentadas
+068df1e fix(onboarding): rejeitar slugs que colidem com rotas estáticas do frontend
+6075e99 test(e2e): remover TEST_USERS.sandbox — o tenant nunca existiu
+2e62a78 docs(sessão 64): troca da conta Asaas, reset de IDs órfãos e limpeza de tenants
+```
+
+### Estado
+
+**Commitado localmente, NÃO deployado.** Falta o push (que dispara o deploy da Vercel) e a
+conferência visual das 7 rotas em produção.
 
 ---
 

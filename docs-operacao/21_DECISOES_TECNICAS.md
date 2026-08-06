@@ -485,3 +485,47 @@ de auditoria da conta antiga e não são usados para chamar a API.
 
 **Melhoria pendente (não implementada):** ampliar o fallback de `service.go:101` para cobrir também
 `invalid_customer` e HTTP 400, em vez de depender da substring `"404"`.
+
+---
+
+## D38 — Revogação do congelamento da landing e landings segmentadas por SEO (06/08/2026 — sessão 64)
+
+**Decisão:** O congelamento da landing page (sessão 31) está **revogado**, autorizado pelo usuário.
+A landing foi reformulada e passaram a existir 6 landings segmentadas indexáveis por conta própria.
+
+**O que mudou:**
+
+- `components/marketing/` foi substituído por `components/landing/`. Do conjunto antigo sobraram
+  apenas `PixelScripts`, `FloatingWhatsApp` e `ConversionLink`, que seguem em uso.
+- `app/page.tsx` foi reescrita sobre as seções novas (Hero, LossSection, Consequence, BeforeAfter,
+  FeatureGrid, Benefits, LossCalculator, HowItWorks, Testimonials, Metrics, Comparison, AISection,
+  Faq, FinalCta).
+- 6 rotas novas de primeiro nível: `/revendas-pequenas`, `/multimarcas`, `/premium`,
+  `/crm-automotivo`, `/erp-automotivo`, `/site-para-revendas`.
+
+**Por que segmentar em rotas próprias, e não em query string ou âncora:** cada segmento precisa de
+`title`, `description`, `keywords`, canonical e JSON-LD próprios para ser indexado como página
+independente. Isso só existe com rota real — variação por query string é a mesma URL para o
+buscador.
+
+**Por que uma fonte de dados única:** as 6 páginas compartilham `SegmentPage.tsx` e diferem apenas
+pelos dados em `segments/data.ts`. Cada `app/<slug>/page.tsx` tem 8 linhas. Criar um segmento novo é
+adicionar uma entrada em `data.ts` — o layout não é duplicado 6 vezes.
+
+**O que NÃO foi revogado:** o fluxo de captura de leads continua congelado. `POST /api/leads/landing`,
+a tabela `landing_leads`, as migrations 028–031 e `/admin/leads` **não foram tocados**. A revogação
+vale para layout, copy e rotas de marketing — não para o backend de leads.
+
+**Consequência estrutural — colisão de slug:** a vitrine pública é servida por `app/(public)/[slug]`.
+No Next.js a rota estática vence a dinâmica, então um tenant cadastrado com slug igual a um diretório
+de primeiro nível de `app/` teria a vitrine inacessível: o visitante veria a landing no lugar da
+loja, sem erro nenhum. Por isso `SetupRequest.validate()`
+(`backend/internal/onboarding/onboarding.go`) passou a rejeitar slugs reservados.
+
+**Impacto ao alterar:** criar rota nova em `frontend/app/` sem adicionar o slug a `slugsReservados`
+no backend reabre a colisão. A sincronia é **manual** — não há teste que a garanta. Ver a pendência
+correspondente em `20_PENDENCIAS.md`.
+
+**Validação:** `npx tsc --noEmit` exit 0; `npx next build` exit 0 com as 6 rotas prerenderizadas como
+estáticas; `eslint` sem erros no código novo; `go build`/`go vet`/`go test ./internal/onboarding/`
+limpos.

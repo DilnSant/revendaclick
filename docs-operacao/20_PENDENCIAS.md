@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 06/08/2026 (sessão 64 — troca da conta Asaas (D37), reset dos IDs órfãos e limpeza de tenants)
+> Atualizado em: 06/08/2026 (sessão 64 — troca da conta Asaas (D37), reset dos IDs órfãos, limpeza de tenants e landing reformulada/descongelada (D38))
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -90,7 +90,9 @@
 | CONCLUÍDA | Fix BUG 5: Settings/Users invite modal | — | + Convidar Membro com roles Administrador/Gerente |
 | CONCLUÍDA | Dashboard com KPIs | — | Métricas principais |
 | CONCLUÍDA | Módulo Leads/CRM | — | Lista, kanban, atividades |
-| CONCLUÍDA | Landing page — fluxo completo (sessões 31) | — | Formulário + API + Supabase + /admin/leads + /admin/leads/[id]; migrations 028-031; backend CONGELADO |
+| CONCLUÍDA | Landing page — fluxo completo (sessões 31) | — | Formulário + API + Supabase + /admin/leads + /admin/leads/[id]; migrations 028-031; **fluxo de captura de leads segue CONGELADO** (não foi tocado pela reformulação da sessão 64 — ver D38) |
+| CONCLUÍDA | Landing reformulada + 6 landings segmentadas (sessão 64) | — | Congelamento da sessão 31 **revogado pelo usuário** (D38). `components/marketing/` → `components/landing/`; `app/page.tsx` reescrita; rotas `/revendas-pequenas` `/multimarcas` `/premium` `/crm-automotivo` `/erp-automotivo` `/site-para-revendas`. `tsc`, `next build`, `eslint` e `go build/vet/test` limpos. **Ainda não deployada** — falta push |
+| PENDENTE | Sincronia manual entre rotas de `frontend/app/` e `slugsReservados` no backend | Média | D38: a vitrine é servida por `app/(public)/[slug]` e no Next.js a rota estática vence a dinâmica. `SetupRequest.validate()` (`backend/internal/onboarding/onboarding.go`) rejeita os slugs reservados, mas a lista é mantida **à mão** e duplicada em `frontend/components/landing/segments/data.ts` (`SLUGS_RESERVADOS`). Criar rota nova em `app/` sem atualizar o Go reabre a colisão — o lojista cadastra a loja e a vitrine fica inacessível, **sem erro nenhum**. Sem risco hoje (só existe `santos-car`, sem colisão). Corrigir com um teste que leia os diretórios de `frontend/app/` e falhe se algum não estiver na lista |
 | CONCLUÍDA | Landing page — hero reformulado (sessão 38) | — | Formulário → CTA direto /register; logo tipográfico; copy novo; fluxo de leads backend inalterado |
 | CONCLUÍDA | Auth — auditoria e correções (sessão 38) | — | FC035 forgot-password appUrl; login "Email not confirmed" msg; email confirmation ON; password "No requirements"; AUTH APROVADO |
 | CONCLUÍDA | UX ativação lojista (sessão 39) | — | 9 problemas corrigidos no fluxo cadastro→onboarding: /vehicles/new→/vehicles; tab=contact; pré-fill; erros amigáveis; logo 80px; aviso spam — commit `ee85f9c` |

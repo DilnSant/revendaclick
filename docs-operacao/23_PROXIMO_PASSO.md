@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 06/08/2026 (sessão 64 — troca da conta Asaas + reset de IDs órfãos (D37) e limpeza de tenants — ver "Estado Atual" abaixo)
+> Atualizado em: 06/08/2026 (sessão 64 — troca da conta Asaas + reset de IDs órfãos (D37), limpeza de tenants e landing reformulada/descongelada (D38) — ver "Estado Atual" abaixo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -27,6 +27,7 @@
 
 | Componente | Status |
 |---|---|
+| **Landing reformulada + landings segmentadas (sessão 64, D38)** | ✓ **COMMITADA — AINDA NÃO EM PRODUÇÃO** — o congelamento da sessão 31 foi **revogado pelo usuário**. `components/marketing/` substituído por `components/landing/` (sobraram `PixelScripts`, `FloatingWhatsApp`, `ConversionLink`); `app/page.tsx` reescrita; 6 landings segmentadas em `/revendas-pequenas`, `/multimarcas`, `/premium`, `/crm-automotivo`, `/erp-automotivo`, `/site-para-revendas`, todas geradas por `SegmentPage.tsx` a partir de `segments/data.ts` e prerenderizadas como estáticas. `onboarding.go` passou a rejeitar slugs reservados para a rota estática não engolir a vitrine `[slug]`. Validado: `tsc --noEmit`, `next build`, `eslint`, `go build/vet/test` — todos limpos. **Falta push** (dispara deploy Vercel) e conferência visual das 7 rotas em produção. |
 | **Conta Asaas nova + reset de IDs órfãos (sessão 64, D37)** | ✓ **EM PRODUÇÃO** — a conta anterior foi encerrada. Chaves novas em `/opt/revendaclick/.env` no VPS com escape `$$` (D18); validado que o container recebe `$aact_prod_...` com um único `$`. Chave testada direto contra a API a partir do VPS: HTTP 200 (IP `2.24.67.84` liberado). Migration 040 zerou `tenants.asaas_customer_id`, `subscriptions.asaas_subscription_id`/`asaas_payment_link`, `subscription_addons.asaas_addon_id` e esvaziou `billing_customers`; `billing_invoices` (26) e `billing_events` (128) preservados. Webhook validado: token errado/ausente → 401, correto → 400. **PENDENTE: teste ponta a ponta de assinatura real.** |
 | **Limpeza de tenants (sessão 64)** | ✓ **EXECUTADA** — banco reduzido a **1 tenant** (`santos-car`). Excluídos `devecar`, `finalcar`, `auditoria-rc-s42` e `revenda-click`, com `auth.users` correspondentes, dados em cascata, 1 auth órfão de teste e 5 objetos órfãos de storage. Backup pré-operação: `/opt/revendaclick/backups/backup-2026-08-06T11-24-57Z.sql.gz`. |
 | **CI/CD — paths-ignore (sessão 63, D36)** | ✓ **IMPLEMENTADO E VALIDADO EM PRODUÇÃO** — `.github/workflows/ci.yml` ignora `**.md`, `docs-operacao/**`, `docs-produto/**`, `prompts/**`, `templates/**`, `.claude/**` no gatilho `push`. Commits só de documentação não redeployam mais o backend. Validado nos dois sentidos: commit de código (`d7eb90f`) disparou o pipeline normalmente; commit de docs (`10f2123`) não apareceu em `gh run list`. Autorizado explicitamente pelo usuário antes da implementação. Pendência fechada em `20_PENDENCIAS.md`; decisão em D36 (`21_DECISOES_TECNICAS.md`). |
@@ -133,7 +134,7 @@
 | **E2E .env.e2e** | ✓ template criado em `frontend/.env.e2e` |
 | **METRICS_TOKEN** | ✓ confirmado presente e funcional no VPS (nginx bloqueia externo — correto) |
 | **santos-car plano** | ✓ Atualizado: santos-car está em Pro (corrigido em REFERENCE.md + ENVIRONMENTS.md) |
-| **Landing page** | ✓ **CONGELADA** (sessão 31) | Fluxo principal completo; não adicionar features |
+| **Landing page** | ✓ **Congelamento REVOGADO** (sessão 64 — D38) | Reformulada + 6 landings segmentadas. O **fluxo de captura de leads segue congelado** e intocado. Ver D38 |
 | **Migrations 030–031** | ✓ aplicadas (sessão 31) | Pipeline comercial leads: status, notes, last_contact_at, next_action |
 | **Admin leads pipeline** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação, alerta 4h; `/admin/leads/[id]` — detalhe |
 | **Webhook landing lead** | ✓ Deployado (sessão 31) | `POST /api/webhooks/landing-lead` — opcional; Evolution/WA opcionais (D31) |

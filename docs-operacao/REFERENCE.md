@@ -122,15 +122,41 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC059 | FC059 — Super Admin defense-in-depth: `app_metadata.user_role` ausente no JWT (promoção SQL não sincroniza Auth server); `resolveUserRole()` com DB-fallback via service-role cobre o gap — sessão 59 |
 | FC061 | FC061 — "Página da Loja" sem destaque: nova rota dedicada `/store` + item na sidebar + `StoreCard` no dashboard + CTA âmbar quando não publicada + métricas; `CopyStoreLink` removido (bug de domínio `revendaclick.com.br` → `app.revendaclick.com.br` corrigido) — sessão 60 |
 
-## Landing Page — CONGELADA (sessão 31)
+## Landing Page — congelamento REVOGADO (sessão 64 — 06/08/2026)
 
-**Fluxo principal completo:** `Landing → POST /api/leads/landing → Supabase landing_leads → /admin/leads`
+> O congelamento da sessão 31 **não vale mais**. A landing foi reformulada e ganhou
+> landings segmentadas para SEO. Ver D38 em `21_DECISOES_TECNICAS.md`.
+>
+> O que **continua congelado** é o **fluxo de captura de leads** — `POST /api/leads/landing`,
+> a tabela `landing_leads` e `/admin/leads` não foram tocados e não devem ser alterados junto
+> com mudanças de layout.
+
+**Fluxo principal (inalterado):** `Landing → POST /api/leads/landing → Supabase landing_leads → /admin/leads`
 
 | Rota | Tipo | Notas |
 |---|---|---|
-| `/` | Static | Landing page completa — **não adicionar features** |
+| `/` | Static | Landing principal — `app/page.tsx` + `components/landing/` |
+| `/revendas-pequenas` | Static | Landing segmentada |
+| `/multimarcas` | Static | Landing segmentada |
+| `/premium` | Static | Landing segmentada |
+| `/crm-automotivo` | Static | Landing segmentada |
+| `/erp-automotivo` | Static | Landing segmentada |
+| `/site-para-revendas` | Static | Landing segmentada |
 | `/obrigado` | Static | Thank-you page, robots: noindex |
 | `/privacidade` | Static | Política de privacidade LGPD, robots: index |
+
+**Componentes:** `frontend/components/landing/` — substituiu `components/marketing/`, que foi
+removido (sobraram apenas `PixelScripts`, `FloatingWhatsApp` e `ConversionLink`, ainda em uso).
+
+**Landings segmentadas:** todas as 6 são geradas pelo mesmo `SegmentPage.tsx` a partir de
+`SEGMENTOS` em `components/landing/segments/data.ts`. Para criar outra, basta adicionar a entrada
+em `data.ts` e um `app/<slug>/page.tsx` de 8 linhas — **e replicar o slug em `slugsReservados`
+no backend** (ver aviso abaixo).
+
+> ⚠️ **Toda rota nova de primeiro nível em `frontend/app/` precisa entrar em `slugsReservados`
+> em `backend/internal/onboarding/onboarding.go`.** A vitrine é servida por `app/(public)/[slug]`
+> e no Next.js a rota estática vence a dinâmica — um lojista que cadastrasse a loja com esse slug
+> ficaria com a vitrine inacessível. A lista é sincronizada **à mão**; não há teste que a proteja.
 
 ## Landing Page — tabela de leads (migrations 028–031)
 
