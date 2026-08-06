@@ -141,3 +141,93 @@
     @apply text-gray-500 text-base leading-relaxed;
   }
 }
+
+/* ── Landing: slider da calculadora de prejuízo ──────────────────────────
+   Usado por components/landing/LossCalculator.tsx. Estilizado à mão porque
+   input[type=range] não aceita @apply nos pseudo-elementos de thumb.       */
+@layer components {
+  .range-brand {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 9999px;
+    background: rgb(255 255 255 / 0.1);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .range-brand::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background: rgb(var(--primary));
+    border: 3px solid #07080B;
+    box-shadow: 0 0 0 1px rgb(var(--primary) / 0.5), 0 4px 14px rgb(var(--primary) / 0.45);
+    transition: transform 0.15s ease;
+  }
+
+  .range-brand::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background: rgb(var(--primary));
+    border: 3px solid #07080B;
+    box-shadow: 0 0 0 1px rgb(var(--primary) / 0.5), 0 4px 14px rgb(var(--primary) / 0.45);
+    transition: transform 0.15s ease;
+  }
+
+  .range-brand::-webkit-slider-thumb:hover { transform: scale(1.12); }
+  .range-brand::-moz-range-thumb:hover     { transform: scale(1.12); }
+
+  .range-brand:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 4px rgb(var(--primary) / 0.35);
+  }
+  .range-brand:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 4px rgb(var(--primary) / 0.35);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .range-brand::-webkit-slider-thumb,
+    .range-brand::-moz-range-thumb { transition: none; }
+    .range-brand::-webkit-slider-thumb:hover,
+    .range-brand::-moz-range-thumb:hover { transform: none; }
+  }
+}
+
+/* ── Landing: revelação por scroll ───────────────────────────────────────
+   Usado por components/landing/Reveal.tsx. O respeito a reduced-motion
+   fica aqui, e não em JS, para o conteúdo nunca depender do observer
+   para ficar visível.                                                     */
+@layer components {
+  /* Padrão: visível. Se o JS não rodar, a landing continua legível inteira —
+     o conteúdo nunca depende de JavaScript para existir na tela. */
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* A classe .js-reveal é marcada no <html> por um script inline em app/page.tsx,
+     antes da primeira pintura. Só então o estado inicial "escondido" entra. */
+  .js-reveal .reveal {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    transition: opacity 700ms ease-out, transform 700ms ease-out;
+    will-change: opacity, transform;
+  }
+
+  .js-reveal .reveal.is-shown {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js-reveal .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+}
