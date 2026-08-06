@@ -60,13 +60,31 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Trigger deploy | Push para `main` |
 | Frontend deploy | Vercel — automático via integração GitHub |
 
+## Billing / Asaas
+
+| Item | Valor |
+|---|---|
+| Conta | **Nova conta, trocada em 06/08/2026 (sessão 64)** — a anterior foi encerrada |
+| Ambiente | `production` (`https://www.asaas.com/api/v3`) |
+| Onde ficam as chaves | `/opt/revendaclick/.env` no **VPS** — lidas só pelo backend Go (`config.go:58-60`) |
+| Vars | `ASAAS_API_KEY`, `ASAAS_ENV`, `ASAAS_WEBHOOK_TOKEN` |
+| Webhook | `POST https://api.revendaclick.com.br/api/webhooks/asaas`, header `asaas-access-token` |
+| IP liberado no Asaas | `2.24.67.84` (whitelist obrigatória — sem isso tudo volta `not_allowed_ip`) |
+
+> **NUNCA colocar `ASAAS_*` na Vercel** — o frontend não lê essas variáveis em lugar nenhum.
+> Ver D37 em `21_DECISOES_TECNICAS.md`.
+>
+> **`ASAAS_API_KEY` precisa de `$$` no `.env`** (a chave começa com `$`) por causa da dupla
+> interpolação do Docker Compose. Ver D18. Conferir com:
+> `docker exec rc_backend env | grep ASAAS_API_KEY` → deve mostrar **um** `$`.
+
 ## Banco de dados — estado atual
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001–037 (exceto 033 — ver nota abaixo) |
-| Próxima migration | `038_...` |
-| Tenants no banco | ver tabela completa abaixo |
+| Migrations aplicadas | 001–040 (exceto 033 — ver nota abaixo) |
+| Próxima migration | `041_...` |
+| Tenants no banco | **1** (`santos-car`) — ver tabela completa abaixo |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
 
@@ -79,8 +97,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 60 (FC001–FC059, FC061) |
-| Próxima FC | **FC062** |
+| Total documentadas | 63 arquivos (FC001–FC059, FC061–FC065 — não existe arquivo FC060) |
+| Próxima FC | **FC066** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -268,18 +286,26 @@ has_white_label          → Scale only
 
 > Nunca confundir: WhatsApp da Loja é configurado em Configurações → Contato Público. Central de Atendimento é contratada separadamente em Add-ons.
 
-## Tenants — estado completo (06/06/2026)
+## Tenants — estado completo (06/08/2026 — sessão 64)
 
 | Tenant | Plano | Status | tenant_id | Notas |
 |---|---|---|---|---|
-| `santos-car` | **Pro** | active | `fd1172f6-11e7-4555-8fe3-082fd1849587` | Tenant do owner — homologação; restaurado para Pro/active (sessão 44) após ficar past_due/starter durante testes E2E |
-| `sandbox-revendaclick` | **Pro** | active | `e72eb104-98b7-4a71-946d-15e680496fc3` | Tenant de testes isolado — asaas_subscription_id=NULL (manual) |
-| `devecar` | Pro | is_active=false | — | Removido como tenant operacional (2026-05-30); não usar |
-| `auditoria-rc-s42` | Pro | active | — | Criado durante E2E sessão 42 — tenant de teste temporário |
-| `finalcar` | Pro | canceled | — | Usuário real (metodolimpezas@gmail.com) — assinou e cancelou (2026-06-05) |
-| `revenda-click` | Starter | trialing | — | Usuário real (app.revendaclick@gmail.com) — trial ativo (2026-06-06) |
+| `santos-car` | **Pro** | canceled | `fd1172f6-11e7-4555-8fe3-082fd1849587` | **Único tenant do banco.** Tenant do owner — homologação. `cpf_cnpj` preenchido na sessão 64 para permitir teste de assinatura na conta Asaas nova |
 
-> **Atenção:** `finalcar` e `revenda-click` são usuários reais da plataforma em produção — não são tenants de teste.
+> **Sessão 64 (06/08/2026):** todos os demais tenants foram **excluídos definitivamente** do
+> Supabase por decisão do usuário — eram todos de teste. Removidos: `devecar`, `finalcar`,
+> `auditoria-rc-s42`, `revenda-click`. Junto foram removidos os respectivos `auth.users`,
+> os dados em cascata e os objetos órfãos de storage. `sandbox-revendaclick`, documentado
+> aqui até então, **já não existia no banco** — a linha era divergência documental.
+> Backup pré-operação: `/opt/revendaclick/backups/backup-2026-08-06T11-24-57Z.sql.gz`.
+
+## Usuários (auth.users) — 06/08/2026
+
+| E-mail | Papel | Tenant |
+|---|---|---|
+| `dilneysantos@gmail.com` | owner | santos-car |
+| `dilneysantos.developer@gmail.com` | super_admin | — (tenant_id NULL) |
+| `desconto.do.dono@gmail.com` | seller | santos-car |
 
 ## super_admin
 

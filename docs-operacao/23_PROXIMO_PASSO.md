@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 01/08/2026 (sessão 63 — D36: paths-ignore no CI/CD implementado e validado — ver seção "Estado Atual" abaixo)
+> Atualizado em: 06/08/2026 (sessão 64 — troca da conta Asaas + reset de IDs órfãos (D37) e limpeza de tenants — ver "Estado Atual" abaixo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,12 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 63 — 01/08/2026)
+## Estado Atual do Projeto (sessão 64 — 06/08/2026)
 
 | Componente | Status |
 |---|---|
+| **Conta Asaas nova + reset de IDs órfãos (sessão 64, D37)** | ✓ **EM PRODUÇÃO** — a conta anterior foi encerrada. Chaves novas em `/opt/revendaclick/.env` no VPS com escape `$$` (D18); validado que o container recebe `$aact_prod_...` com um único `$`. Chave testada direto contra a API a partir do VPS: HTTP 200 (IP `2.24.67.84` liberado). Migration 040 zerou `tenants.asaas_customer_id`, `subscriptions.asaas_subscription_id`/`asaas_payment_link`, `subscription_addons.asaas_addon_id` e esvaziou `billing_customers`; `billing_invoices` (26) e `billing_events` (128) preservados. Webhook validado: token errado/ausente → 401, correto → 400. **PENDENTE: teste ponta a ponta de assinatura real.** |
+| **Limpeza de tenants (sessão 64)** | ✓ **EXECUTADA** — banco reduzido a **1 tenant** (`santos-car`). Excluídos `devecar`, `finalcar`, `auditoria-rc-s42` e `revenda-click`, com `auth.users` correspondentes, dados em cascata, 1 auth órfão de teste e 5 objetos órfãos de storage. Backup pré-operação: `/opt/revendaclick/backups/backup-2026-08-06T11-24-57Z.sql.gz`. |
 | **CI/CD — paths-ignore (sessão 63, D36)** | ✓ **IMPLEMENTADO E VALIDADO EM PRODUÇÃO** — `.github/workflows/ci.yml` ignora `**.md`, `docs-operacao/**`, `docs-produto/**`, `prompts/**`, `templates/**`, `.claude/**` no gatilho `push`. Commits só de documentação não redeployam mais o backend. Validado nos dois sentidos: commit de código (`d7eb90f`) disparou o pipeline normalmente; commit de docs (`10f2123`) não apareceu em `gh run list`. Autorizado explicitamente pelo usuário antes da implementação. Pendência fechada em `20_PENDENCIAS.md`; decisão em D36 (`21_DECISOES_TECNICAS.md`). |
 | **Comandos `/` e agentes (sessão 62)** | ✓ **EM PRODUÇÃO NO REPO** — 7 comandos (`.claude/commands/`) e 5 agentes (`.claude/agents/`) migrados do repositório de planejamento `RevendaClick` (descontinuado). Reescritos, não copiados: a governança de origem (máquina de 8 estados, `PROCESSOS.md`, `PERMISSOES.md`) foi **descartada** para não conflitar com a vigente; cada comando aponta para os documentos reais deste repo. Comandos: `/abrir-sessao`, `/encerrar-sessao`, `/checklist-dia`, `/auditoria`, `/novo-modulo`, `/registrar-decisao`, `/registrar-pendencia`. Substituem a cópia manual de `prompts/`, que seguem válidos como referência. Commit `7f544ec`. |
 | **`.gitignore` — `.claude/*` escondia commands/agents (sessão 62)** | ✓ **CORRIGIDO** — a regra `.claude/*` (linha 80) excluía tudo em `.claude/` exceto os 4 `.md` nomeados; `commands/` e `agents/` seriam invisíveis ao git. **Mesma classe do FC057** (regra de `.gitignore` escondendo código real → decisão D35). Exceções adicionadas para os dois diretórios; `settings.local.json` segue ignorado. Validado com `git check-ignore` e com arquivo de teste real. Commit `7f544ec`. |
@@ -59,8 +61,8 @@
 | **FC042 — E2E Playwright selectors + skip guards (sessão 48)** | ✓ **CONCLUÍDA** — 7 arquivos corrigidos; `getByLabel` → `locator('#email')`; `isCredentialReady()`; spec 01 skip guard; tabs `a[href]`; display_names reais do DB; 9/9 aprovados em produção |
 | **FC041 — Saneamento documental final (sessão 48)** | ✓ **CONCLUÍDA** — 4 arquivos corrigidos; count FC 38→40; próximo FC039→FC041; seções obsoletas removidas |
 | **Auditoria comercial E2E** | ✓ **PRONTO PARA OPERAÇÃO COMERCIAL** — fluxo completo 12 etapas aprovadas |
-| **santos-car billing** | ✓ **RESTAURADO** — estava `past_due`/`starter`; corrigido para `active`/`pro` via SQL (sessão 44) |
-| **Tenants reais em produção** | ⚠️ `finalcar` (canceled) + `revenda-click` (trialing) — usuários reais identificados |
+| **santos-car billing** | ⚠️ `canceled` — `cpf_cnpj` preenchido na sessão 64 (`022.668.269-21`) para viabilizar o teste de assinatura na conta Asaas nova |
+| **Tenants no banco (sessão 64)** | ✓ **APENAS `santos-car`** — `devecar`, `finalcar`, `auditoria-rc-s42` e `revenda-click` excluídos definitivamente (todos de teste, confirmado pelo usuário). Nenhum cliente real na plataforma hoje |
 | **Landing lead real** | ⚠️ "Joaõ" — São José/SC, 48998232010 — status `novo` — não atendido |
 | **Super Admin — 8 páginas (sessão 45)** | ✓ **COMPLETO** — /users /subscriptions /billing /features /whatsapps /analytics /logs /settings — dados reais — commit `ad87d37` |
 | **FC038 — Auditoria ESLint (sessão 46)** | ✓ **CONCLUÍDA** — 13 erros → 0; 5x `<a>→<Link>`; entities; eslint-disable; comentário obsoleto — commit `4ff2d3e` |
@@ -220,7 +222,6 @@ santos-car está em plano Pro. Testar:
 | Perfil | Esperado |
 |---|---|
 | **santos-car (Pro)** | Dashboard/Veículos/Interessados/Clientes/Financeiro + seção Pro (Atendimento/Analytics) + Assinatura/Configurações |
-| **sandbox-revendaclick (Pro)** | Mesmo comportamento — tenant isolado para testes agressivos |
 
 Verificar:
 - Financeiro → sub-nav mostrando Resumo/Vendas/Comissões
@@ -232,7 +233,9 @@ Verificar:
 Template criado em `frontend/.env.e2e`. Preencher `PREENCHER` com senhas reais:
 - `E2E_PRO_PASSWORD` — senha do dilneysantos@gmail.com (santos-car)
 - `E2E_SUPER_ADMIN_PASSWORD` — senha do dilneysantos.developer@gmail.com
-- `E2E_SANDBOX_PASSWORD` — criar usuário para sandbox-revendaclick via /register
+
+> As variáveis `E2E_SANDBOX_*` foram removidas na sessão 64 junto com `TEST_USERS.sandbox`
+> em `frontend/e2e/helpers/auth.ts` — nenhum spec as usava e o tenant nunca existiu.
 
 Ver `frontend/e2e/README.md`.
 
@@ -270,7 +273,7 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **64 falhas documentadas (FC001–FC059, FC061–FC065)** + bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Pasta `docs-operacao/FalhasCorrigidas/` — **63 arquivos (FC001–FC059, FC061–FC065)**; não existe arquivo FC060. Além deles, o bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
 Próximo número disponível: **FC066**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).

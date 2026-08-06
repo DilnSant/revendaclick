@@ -21,7 +21,10 @@
 | 2026-05-30 | `performance` como `plan.name` no banco | migration 026 renomeou definitivamente para `premium` | `premium` — DB e nome comercial agora coincidem |
 | 2026-05-30 | "Enterprise" como nome de plano | Nunca foi plan.name no banco; era apenas label de CTA no grid de planos | CTA "Enterprise" = grade pública; plan.name real = `scale` (oculto) |
 | 2026-05-29 | super_admin com tenant_id preenchido | migration 025 tornou nullable para super_admin | `super_admin` tem `tenant_id = NULL` |
-| 2026-05-30 | devecar como tenant operacional de referência | Evolution desconectado 28/05 (device_removed); não é loja real | Histórico apenas; novo tenant de ref.: `sandbox-revendaclick` (a criar) |
+| 2026-05-30 | devecar como tenant operacional de referência | Evolution desconectado 28/05 (device_removed); não é loja real | Excluído do banco em 06/08/2026 (sessão 64) |
+| 2026-08-06 | `sandbox-revendaclick` como tenant de testes | Documentado em REFERENCE/ENVIRONMENTS, mas nunca existiu de fato no banco — era divergência documental | Nenhum; criar um novo via `/register` quando for preciso |
+| 2026-08-06 | `finalcar` e `revenda-click` como "usuários reais em produção" | Confirmado pelo usuário na sessão 64: eram tenants de teste. Excluídos do banco | Nenhum tenant real na plataforma; só `santos-car` (owner) |
+| 2026-08-06 | Conta Asaas anterior | Encerrada; substituída por conta nova (D37). IDs de customer/subscription zerados pela migration 040 | Conta Asaas nova — chaves em `/opt/revendaclick/.env` no VPS |
 | 2026-05-30 | Central de Atendimento como item de menu principal | Removida da sidebar; WhatsApp é add-on separado | Aba "WhatsApp" em Configurações + `/whatsapp` via add-on |
 | 2026-05-30 | Sidebar com Vendas/Comissões/Vendedores no nav | Sidebar refatorada | FinancialSubNav (sub-nav em /financial, /sales, /financial/commissions) |
 | 2026-05-30 | "Compradores" como label de módulo | Renomeado para alinhamento com linguagem do domínio | "Clientes" — rota `/customers` |

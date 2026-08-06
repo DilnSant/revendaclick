@@ -1,6 +1,6 @@
 # 20 — PENDÊNCIAS
 
-> Atualizado em: 01/08/2026 (sessão 62 — migração de comandos/agentes; pendências de CI/CD registradas: `paths-ignore` e actions em Node 20)
+> Atualizado em: 06/08/2026 (sessão 64 — troca da conta Asaas (D37), reset dos IDs órfãos e limpeza de tenants)
 > Atualizar este arquivo ao iniciar ou concluir cada tarefa.
 
 ---
@@ -48,6 +48,8 @@
 | CONCLUÍDA | Endpoint receptor webhook landing lead | — | `POST /api/webhooks/landing-lead` — deployado e operacional; Evolution/WA opcionais (sessão 31) |
 | CONCLUÍDA | Fix nil slice → null em respostas | — | `response.normalizeSlice()` + remove omitempty de Data; listas vazias retornam `[]` (commit 43c65ee) |
 | CONCLUÍDA | Endpoint upgrade de plano | — | `PUT /api/billing/subscription` — troca plano de assinatura ativa via Asaas PUT; frontend detecta `is_active && !isCurrent` e usa modo upgrade (sessão 16) |
+| PENDENTE | Teste ponta a ponta de assinatura na conta Asaas nova | **Alta** | Sessão 64: chaves trocadas, migration 040 aplicada e webhook validado, mas nenhuma assinatura real foi criada ainda na conta nova. Exige clique do owner em `/billing/plans` — `POST /api/billing/subscribe` pede JWT de owner/admin (`server.go:167`). Verificar depois: customer e subscription criados na conta nova, webhook gravando em `billing_events`, `subscriptions.status` → `active` |
+| PENDENTE | Fallback de customer inválido cobre só HTTP 404 | Média | `billing/service.go:101` testa `strings.Contains(err.Error(), "404")`, mas o Asaas responde **HTTP 400 `invalid_customer`** quando o customer pertence a outra conta. Hoje não há impacto (migration 040 zerou os IDs órfãos), mas o fallback é ineficaz se o caso voltar a ocorrer. Ampliar para cobrir `invalid_customer` e 400. Ver D37 |
 
 ---
 
@@ -186,7 +188,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | FC041 — Saneamento documental final (sessão 48) | — | 4 arquivos corrigidos: count FC 38→40 (e depois 41), próximo FC039→FC042, seção duplicada em memory removida — exclusivamente documental |
 | CONCLUÍDA | FC033 — CancelSubscription cancela subscription_addons em cascata | — | Opção A implementada (sessão 30): cancelTenantAddons + ListActiveAddonIDs + CancelAllAddonsByTenantID — commit `529efb2` |
 | CONCLUÍDA | Saneamento documental (sessão 26) | — | 4 divergências corrigidas; Coolify→Vercel em 03_FRONTEND + 06_AUTH + 10_INFRA + 02_MAPA; middleware.ts→proxy.ts; docs-operacao/prompts/ removido; MEMORY/PRODUCT_ARCH plan.name corrigidos |
-| CONCLUÍDA | Tenant sandbox-revendaclick | — | Criado via SQL: slug `sandbox-revendaclick`, plano Pro active, period_end 2026-06-30. tenant_id: `e72eb104-98b7-4a71-946d-15e680496fc3` |
+| ~~CONCLUÍDA~~ **INVÁLIDA** | Tenant sandbox-revendaclick | — | Registrado como criado via SQL (`e72eb104-98b7-4a71-946d-15e680496fc3`), mas a auditoria da sessão 64 mostrou que **nunca existiu no banco**. Referências removidas de `REFERENCE.md`, `ENVIRONMENTS.md`, `E2E_TEST_PLAN.md`, `frontend/e2e/helpers/auth.ts` e `frontend/.env.e2e` |
 | CONCLUÍDA | E2E .env.e2e template | — | `frontend/.env.e2e` criado com variáveis para santos-car, sandbox e super_admin; `.env.e2e` adicionado ao .gitignore |
 | CONCLUÍDA | METRICS_TOKEN confirmado | — | Token presente no VPS .env e no container; /metrics retorna 200 via localhost com Bearer token; nginx bloqueia acesso externo (correto) |
 | CONCLUÍDA | FC044 — Reclassificação de pendências não prioritárias (sessão 50) | — | Backup S3 config, BetterStack Alerts, Leaked Password Protection movidos para Backlog de Infraestrutura — decisão de negócio: foco em comercialização |

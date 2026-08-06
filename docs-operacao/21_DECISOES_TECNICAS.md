@@ -449,3 +449,39 @@ supabase gen types typescript --project-id ibgaywezfcbbiiziaoac > frontend/lib/d
 
 **Auditoria recomendada:** Validado em duas etapas: (1) o próprio commit `d7eb90f` (código, `.github/workflows/ci.yml`) disparou o pipeline normalmente; (2) o commit seguinte, exclusivamente de `.md` (este registro + `20_PENDENCIAS.md`), serve de segunda validação — não deve disparar rebuild/redeploy do backend.
 
+
+---
+
+## D37 — Troca da conta Asaas e reset dos IDs órfãos (06/08/2026 — sessão 64)
+
+**Decisão:** A conta Asaas anterior foi encerrada e substituída por outra. Todos os `customer` e
+`subscription` IDs gravados no banco foram zerados (migration 040), deixando o fluxo normal de
+`Subscribe` recriá-los na conta nova.
+
+**Por quê:** IDs do Asaas são escopados por conta. Com a conta antiga encerrada não há migração
+possível — os IDs simplesmente não existem na conta nova.
+
+**Por que zerar, e não confiar na auto-recuperação do código:**
+
+1. `billing/service.go:66-71` — o guard de `Subscribe` devolve a assinatura existente **sem chamar
+   o Asaas** quando `asaas_subscription_id != ''` e status é `active`/`trialing`. Com o ID órfão
+   preenchido, o botão "Assinar" não fazia nada: nenhum erro, nenhum log, nenhuma cobrança.
+2. `billing/service.go:101` — existe um fallback que recria o customer, mas ele testa
+   `strings.Contains(err.Error(), "404")`. O Asaas responde **HTTP 400 `invalid_customer`** quando o
+   customer é de outra conta, e o erro é formatado como `"asaas HTTP %d: %s"` (`asaas.go:60`).
+   O `404` não casa e o fallback nunca dispara.
+
+**Onde as chaves vivem:** `ASAAS_API_KEY` e `ASAAS_WEBHOOK_TOKEN` são lidas **apenas pelo backend Go**
+(`config.go:58-60`), a partir de `/opt/revendaclick/.env` no VPS, injetadas via
+`docker-compose.production.yml:27-29`. **Não existe nenhuma referência a `ASAAS_*` no frontend** —
+colocá-las na Vercel não tem efeito e só amplia a superfície de exposição.
+
+**Preservado:** `billing_invoices` e `billing_events` não foram tocados — mantêm o rastro contábil e
+de auditoria da conta antiga e não são usados para chamar a API.
+
+**Impacto ao alterar:** Reintroduzir um ID de conta antiga em qualquer uma das colunas zeradas
+(`tenants.asaas_customer_id`, `subscriptions.asaas_subscription_id`,
+`subscription_addons.asaas_addon_id`) recria exatamente o bug do item 1 — falha silenciosa.
+
+**Melhoria pendente (não implementada):** ampliar o fallback de `service.go:101` para cobrir também
+`invalid_customer` e HTTP 400, em vez de depender da substring `"404"`.

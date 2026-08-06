@@ -73,8 +73,12 @@ O tenant `santos-car` no banco de produção funciona como tenant de homologaç�
 
 | Tenant | Plano | Finalidade |
 |---|---|---|
-| `santos-car` | **Pro** (active) | Tenant principal do owner; testes Pro; Evolution `open` (554888482877) |
-| `sandbox-revendaclick` | **Pro** (active) | Testes isolados; substitui devecar; sem dados reais |
+| `santos-car` | **Pro** | Tenant principal do owner; testes Pro; Evolution `open` (554888482877) |
+
+> **Sessão 64 (06/08/2026):** `santos-car` é o **único tenant do banco**. Todos os outros
+> (`devecar`, `finalcar`, `auditoria-rc-s42`, `revenda-click`) foram excluídos definitivamente
+> — eram todos de teste. `sandbox-revendaclick`, citado aqui até então, nunca chegou a existir
+> no banco. Ao precisar de um tenant isolado, criar um novo via `/register` e registrá-lo aqui.
 
 **Para simular eventos Asaas sem pagamento real:**
 ```

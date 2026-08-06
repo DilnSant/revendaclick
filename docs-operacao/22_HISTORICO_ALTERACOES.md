@@ -21,24 +21,24 @@
 | **Analytics** | ✓ Produção (Pro+, `has_analytics`) | — |
 | **Assinatura** | ✓ Produção + sub-nav | Tabs: Assinatura / Add-ons / Cobranças / Planos |
 | **Add-ons** | ✓ Produção | user_extra / whatsapp_automation / ia_recovery; acessível via sub-nav Billing |
-| **Central de Atendimento** | ✓ Produção (`has_central_atendimento`) | Acessível via Configurações → WhatsApp; devecar desconectado |
+| **Central de Atendimento** | ✓ Produção (`has_central_atendimento`) | Acessível via Configurações → WhatsApp |
 | **Automações** | ✓ Placeholder produção (`has_automation`) | Gated; CTA WhatsApp add-on condicional — BUG-02 corrigido sessão 29 |
 | **Campanhas** | ✓ Placeholder produção (`has_campaigns`) | Gated; "Em breve" com links Analytics/CRM — BUG-02 corrigido sessão 29 |
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
-| **Sandbox tenant** | ✓ `sandbox-revendaclick` (sessão 26) | Pro active, `tenant_id = e72eb104-98b7-4a71-946d-15e680496fc3`, substitui devecar |
+| **Tenants no banco** | ✓ **Apenas `santos-car`** (sessão 64) | `devecar`, `finalcar`, `auditoria-rc-s42` e `revenda-click` excluídos definitivamente — todos de teste. `sandbox-revendaclick`, documentado desde a sessão 26, nunca existiu de fato no banco |
 | **Admin Panel** | ✓ Produção (super_admin) | 8 sub-rotas CRUD; quarentena + exclusão lógica/física; audit logging; CRUD tenants/users/subs/plans/whatsapp; /admin/logs definitivamente funcional pós FC057 |
-| **Billing Asaas** | ✓ Produção | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035) — gate no frontend, lê do DB, valida antes de Asaas |
+| **Billing Asaas** | ✓ Produção — **conta nova desde 06/08/2026** (sessão 64, D37) | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035). Conta anterior encerrada: migration 040 zerou todos os customer/subscription IDs órfãos; chaves novas no `.env` do VPS com escape `$$` (D18). **Teste ponta a ponta de assinatura ainda pendente** |
 | **Trial / Carência / Lembrete de vencimento** | ✓ Produção (sessão 61) | Trial 30 dias, carência 7 dias (migration 038); worker diário de lembrete por e-mail via Resend 7 dias antes do vencimento (migration 039, FC064 corrigiu env var ausente) |
 | **Convite de vendedor por e-mail** | ✓ Produção (sessão 61) | Antes só gerava link manual (rate limit Supabase, FC021); agora envia automaticamente via Resend; redirect corrigido (FC063) |
 | **SSL — api/evolution.revendaclick.com.br** | ✓ Renovado até 2026-10-30 (sessão 61) | FC065: certbot usava `standalone` (conflito com Nginx na porta 80), trocado para `webroot`; `--dry-run` validado |
 | **Configurações** | ✓ Produção + Suporte card | Tabs: Loja / Contato Público / Usuários / Plano / WhatsApp; card "Suporte RevendaClick" ao final com email + botão mailto |
 | **DevActivate** | ✓ Staging only | `POST /api/billing/dev/activate` — não registrado em produção |
-| **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open; devecar desconectado |
+| **Evolution API** | ✓ Produção v2.3.7 | Webhook 401 corrigido (sessão 23); santos-car open |
 | **OpenRouter AI** | ✓ Produção | classify-lead, suggest-reply |
 | **Observabilidade** | ✓ Produção | Prometheus `/metrics`; METRICS_TOKEN confirmado no VPS (sessão 26) |
 | **CI/CD** | ✓ Automático | GitHub Actions → GHCR → self-hosted runner VPS; Vercel auto-deploy; `paths-ignore` (sessão 63, D36) evita redeploy do backend por commits só de documentação |
 | **RLS / Segurança** | ✓ Migrations 011–025 | Leaked password protection **bloqueada** — requer Supabase Pro (Free plan não suporta HaveIBeenPwned.org) |
-| **Billing Asaas — santos-car** | ✓ **Restaurado** (sessão 44) | Ficou `past_due`/`starter` durante testes E2E sessão 42; restaurado para `active`/`pro` via SQL (sessão 44). `sub_b3y3xwo9s18g50xc` no campo asaas_subscription_id |
+| **Billing Asaas — santos-car** | ⚠️ `canceled`, sem IDs Asaas (sessão 64) | `sub_b3y3xwo9s18g50xc` pertencia à conta encerrada e foi zerado pela migration 040. `cpf_cnpj` preenchido (`022.668.269-21`) para viabilizar nova assinatura na conta nova |
 | **FC031 — ActivateByAsaasSubID** | ✓ **Corrigido** (sessão 28) | `canceled_at = NULL` adicionado ao UPDATE; evita tenant ativo com canceled_at stale |
 | **BUG-01/02/03 — Feature flags Premium** | ✓ **Corrigido** (sessão 29) | Sidebar Premium gateada por `has_automation`; /whatsapp copy correto; flags mapeadas no frontend |
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
@@ -92,6 +92,67 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-08-06 (sessão 64) — Troca da conta Asaas (D37), reset dos IDs órfãos e limpeza de tenants
+
+### Contexto
+
+A conta Asaas anterior foi encerrada e substituída. O usuário havia cadastrado as duas chaves novas
+na **Vercel**, marcadas como production/sensitive — lugar errado: `grep` no repositório confirma que
+não existe nenhuma referência a `ASAAS_*` no frontend. As chaves são lidas apenas pelo backend Go
+(`config.go:58-60`), a partir de `/opt/revendaclick/.env` no VPS.
+
+### Dois bugs que a troca de conta exporia
+
+1. **Guard de `Subscribe` travava a re-assinatura** — `billing/service.go:66-71` devolve a assinatura
+   existente **sem chamar o Asaas** quando `asaas_subscription_id != ''` e status é `active`/`trialing`.
+   Com IDs da conta morta no banco, o botão "Assinar" não faria nada: sem erro, sem log, sem cobrança.
+2. **Fallback de recuperação não dispararia** — `service.go:101` testa `strings.Contains(err, "404")`,
+   mas o Asaas responde **HTTP 400 `invalid_customer`** para customer de outra conta, e o erro é
+   formatado como `"asaas HTTP %d: %s"` (`asaas.go:60`). Registrado como melhoria pendente em D37.
+
+### O que foi feito
+
+| Etapa | Resultado |
+|---|---|
+| Chave nova validada contra a API a partir do VPS, antes de qualquer alteração | HTTP 200 — key válida, produção, IP `2.24.67.84` liberado |
+| `.env` do VPS atualizado (backup `.env.bak-20260806-101336-asaas`) | 35 linhas antes e depois |
+| Escape `$$` (D18) conferido no container | `$aact_prod_...` com **um** `$`, `len=166` vs 167 no arquivo |
+| Migration 040 aplicada | `tenants.asaas_customer_id`, `subscriptions.asaas_subscription_id`/`asaas_payment_link`, `subscription_addons.asaas_addon_id` zerados; `billing_customers` esvaziada (`asaas_id` é NOT NULL — tabela é write-only, único uso em `repository.go:71`) |
+| Histórico preservado | `billing_invoices` 26 · `billing_events` 128 (FK `SET NULL`) |
+| Autenticação do webhook validada | token errado → 401 · sem token → 401 · token correto → 400 `empty body` |
+
+### Limpeza de tenants
+
+Decisão do usuário: manter apenas `santos-car`; todos os outros eram de teste. Backup completo antes
+da operação: `/opt/revendaclick/backups/backup-2026-08-06T11-24-57Z.sql.gz` (2,5M).
+
+Excluídos com CASCADE: `devecar`, `finalcar`, `auditoria-rc-s42`, `revenda-click` — junto com os
+`auth.users` correspondentes, 1 auth órfão de teste (`teste.fix.convite+...`, resíduo do FC063) e
+5 objetos órfãos de storage (a exclusão direta em `storage.objects` é bloqueada pelo Supabase —
+foi preciso usar a Storage API com a service role key).
+
+Nenhum tenant tinha `tenant_whatsapp_sessions`, então não houve instância Evolution a desconectar
+(FC051 não se aplicou).
+
+Restaram 1 tenant, 3 `auth.users` (owner, super_admin, seller) e 2 objetos de storage.
+
+### Divergências documentais encontradas e corrigidas
+
+- `REFERENCE.md` dizia migrations 001–037 (real: 001–040) e 60 FCs / próxima FC062 (real: 63 arquivos / FC066)
+- `sandbox-revendaclick` estava documentado em `REFERENCE.md`, `ENVIRONMENTS.md` e no plano de E2E,
+  mas **nunca existiu no banco**. Helper `TEST_USERS.sandbox` removido de `frontend/e2e/helpers/auth.ts`
+  (nenhum spec o usava) e vars `E2E_SANDBOX_*` removidas de `frontend/.env.e2e`
+- `finalcar` e `revenda-click` estavam marcados como "usuários reais em produção" — confirmado pelo
+  usuário que eram testes
+
+### Pendente
+
+- **Teste ponta a ponta de assinatura** na conta nova (exige clique do owner em `/billing/plans`;
+  o endpoint `POST /api/billing/subscribe` pede JWT de owner/admin — `server.go:167`)
+- Melhoria do fallback de `service.go:101` para cobrir `invalid_customer`/400 (ver D37)
 
 ---
 

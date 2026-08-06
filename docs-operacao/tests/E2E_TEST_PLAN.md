@@ -298,6 +298,9 @@ add-on ativo → has_lead_recovery = true
 ## Próximos Passos para E2E
 
 1. Criar `.env.e2e` com credenciais do `santos-car`
-2. Criar tenant `sandbox-revendaclick` Pro para testes de upgrade
+2. Criar um tenant Pro isolado para testes de upgrade — desde a sessão 64 o banco tem
+   apenas `santos-car`; o antigo `sandbox-revendaclick` nunca existiu de fato. O helper
+   `TEST_USERS.sandbox` foi removido de `frontend/e2e/helpers/auth.ts` (não era usado por
+   nenhum spec); recriar quando houver tenant real para apontar
 3. Adicionar step de E2E no CI/CD (staging apenas)
 4. Implementar fixtures de banco para Fluxo 1 (onboarding)
