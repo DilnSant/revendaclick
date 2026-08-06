@@ -9,11 +9,6 @@ export const TEST_USERS = {
   },
   /** Alias retrocompatível — usar proOwner para novos testes */
   get starter() { return this.proOwner },
-  /** Tenant sandbox-revendaclick — plano Pro (testes isolados) */
-  sandbox: {
-    email: process.env.E2E_SANDBOX_EMAIL ?? '',
-    password: process.env.E2E_SANDBOX_PASSWORD ?? '',
-  },
   /** super_admin sem tenant */
   superAdmin: {
     email: process.env.E2E_SUPER_ADMIN_EMAIL ?? 'dilneysantos.developer@gmail.com',
