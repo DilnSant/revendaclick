@@ -25,14 +25,41 @@ var (
 	emailRe = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
 )
 
+// slugsReservados são slugs que colidem com rotas estáticas do frontend.
+// A vitrine da loja é servida por app/(public)/[slug]; no Next.js a rota
+// estática vence a dinâmica, então uma loja com um destes slugs ficaria
+// inacessível — o cliente veria a landing page no lugar da vitrine.
+//
+// Manter em sincronia com:
+//   - frontend/components/landing/segments/data.ts (SLUGS_RESERVADOS)
+//   - os diretórios de primeiro nível em frontend/app/
+var slugsReservados = map[string]bool{
+	// Landings segmentadas (sessão 64)
+	"revendas-pequenas":  true,
+	"multimarcas":        true,
+	"premium":            true,
+	"crm-automotivo":     true,
+	"erp-automotivo":     true,
+	"site-para-revendas": true,
+	// Rotas da aplicação
+	"admin": true, "api": true, "auth": true, "login": true, "register": true,
+	"onboarding": true, "dashboard": true, "settings": true, "billing": true,
+	"vehicles": true, "leads": true, "customers": true, "financial": true,
+	"sales": true, "vendors": true, "whatsapp": true, "crm": true, "store": true,
+	"analytics": true, "automations": true, "campaigns": true, "obrigado": true,
+	"privacidade": true, "privacy": true, "terms": true, "logout": true,
+	"reset-password": true, "forgot-password": true, "conta-suspensa": true,
+	"robots": true, "sitemap": true, "not-found": true, "error": true,
+}
+
 type Checklist struct {
-	TenantID           string     `json:"tenant_id"`
+	TenantID string `json:"tenant_id"`
 	// v2 steps (required for completion)
-	AddedVehicle       bool       `json:"added_vehicle"`
-	PublishedStore     bool       `json:"published_store"`
-	ReceivedFirstLead  bool       `json:"received_first_lead"`
+	AddedVehicle      bool `json:"added_vehicle"`
+	PublishedStore    bool `json:"published_store"`
+	ReceivedFirstLead bool `json:"received_first_lead"`
 	// v2 optional step
-	WhatsAppConnected  bool       `json:"whatsapp_connected"`
+	WhatsAppConnected bool `json:"whatsapp_connected"`
 	// legacy fields (kept for backwards compat)
 	ConfiguredWhatsApp bool       `json:"configured_whatsapp"`
 	AddedSeller        bool       `json:"added_seller"`
@@ -68,6 +95,8 @@ func (r *SetupRequest) validate() error {
 		return errors.New("tenant_slug is required")
 	case !slugRe.MatchString(slug):
 		return errors.New("tenant_slug: use apenas letras minúsculas, números e hífens (mínimo 3 caracteres)")
+	case slugsReservados[strings.ToLower(slug)]:
+		return errors.New("tenant_slug: este endereço é reservado pelo sistema — escolha outro para a sua loja")
 	case strings.TrimSpace(r.TenantName) == "":
 		return errors.New("tenant_name is required")
 	case len(strings.TrimSpace(r.TenantName)) > 120:
