@@ -215,11 +215,19 @@ Os 7 commits da sessão 64 foram enviados por autorização explícita do usuár
 **Ainda não verificado:** as rotas responderam 200, mas **nenhuma foi vista em browser**. A
 conferência visual continua pendente.
 
-### 0-B. ~~DECISÃO PENDENTE~~ — RESOLVIDO em D39, aguardando deploy
+### 0-B. ~~DECISÃO PENDENTE~~ — RESOLVIDO e EM PRODUÇÃO (D39)
 
 **Decidido pelo usuário (07/08/2026): canonizar em `app.revendaclick.com.br`.** Ver **D39** em
-`21_DECISOES_TECNICAS.md`. Corrigido e commitado — **falta enviar**. Até o deploy, produção segue
-com o defeito.
+`21_DECISOES_TECNICAS.md`. Deployado — `origin/main` = `6a23bd6`, CI/CD run `31140613457` ✓.
+
+Verificado ao vivo após o deploy:
+
+| Verificação | Resultado |
+|---|---|
+| 8 URLs canônicas (`/`, as 6 segmentadas, `/privacidade`) | ✓ HTTP 200, **0 redirects** |
+| Canonical × sitemap | ✓ concordam em todas as rotas |
+| Sitemap | ✓ contém as 6 landings segmentadas |
+| `robots.txt` | ✓ aponta para `https://app.revendaclick.com.br/sitemap.xml` |
 
 O que foi feito:
 
