@@ -150,10 +150,54 @@ mão**. Pendência aberta em `20_PENDENCIAS.md` para cobrir isso com teste.
 2e62a78 docs(sessão 64): troca da conta Asaas, reset de IDs órfãos e limpeza de tenants
 ```
 
+### FC066 — Migration 040 aplicada em produção sem nunca ter sido commitada
+
+`git status` acusava `database/migrations/040_reset_asaas_ids_conta_nova.sql` como **untracked**,
+enquanto a documentação afirmava que ela já estava aplicada em produção. O repositório não
+descrevia o estado real do banco, e as ~29 linhas de justificativa dentro do SQL existiam só no
+disco local. Mesma classe do **FC057** (arquivo real existindo apenas numa máquina). Corrigido
+adicionando o arquivo ao git, sem alterar conteúdo nem banco. Ver `FalhasCorrigidas/FC066`.
+
+### Defeitos de SEO encontrados nas landings novas (não corrigidos — decisão pendente)
+
+Verificados ao vivo em 06/08/2026, contra produção:
+
+1. As 6 rotas segmentadas **não entram no sitemap** — `frontend/app/sitemap.ts:9-13` tem lista
+   estática com apenas `/`, `/privacidade`, `/terms` + vitrines dos tenants.
+2. **Canonical e sitemap declaram hosts diferentes**: as páginas fixam
+   `SITE = 'https://revendaclick.com.br'` (`SegmentPage.tsx:20`, `page.tsx:23`), enquanto o sitemap
+   usa `NEXT_PUBLIC_APP_URL` = `https://app.revendaclick.com.br`.
+3. **O canonical aponta para URL que nunca responde 200**: `revendaclick.com.br/privacidade` → 307 →
+   `www.revendaclick.com.br/privacidade` → → `app.` (redirect canônico do FC058).
+
+Como as páginas existem para ranquear, isso anula boa parte do objetivo. **Não corrigido** por
+depender de decisão de produto sobre qual host é o canônico do marketing — ver item 0-B em
+`23_PROXIMO_PASSO.md`.
+
+### Variáveis Asaas na Vercel
+
+Confirmado por leitura de código que **o frontend nunca lê `ASAAS_*`**: zero ocorrências de
+`process.env.*ASAAS*` em `frontend/`, nenhuma chamada à API do Asaas (só um link para o painel em
+`/admin/settings`), e as 5 rotas `app/api/billing/*` encaminham para o backend Go via
+`INTERNAL_API_URL`. O único leitor é `backend/internal/config/config.go:58-60`, a partir do
+`.env` do VPS.
+
+O usuário optou por **manter** as três variáveis na Vercel (`Production` + `Sensitive`). Sem
+`NEXT_PUBLIC_`, elas permanecem server-only — **não houve vazamento e não é necessário rotacionar**.
+Elas simplesmente não têm efeito. Registrado aqui para que ninguém conclua no futuro que o billing
+depende da Vercel: **depende do `/opt/revendaclick/.env` no VPS**.
+
+### Chaves Asaas antigas removidas dos `.env` locais
+
+`backend/.env` e `.env.staging` guardavam a `ASAAS_API_KEY` da conta encerrada. Valor apagado,
+variável mantida vazia com comentário apontando para o VPS e D37. Ambos são gitignorados e não
+rastreados. **Ressalva:** os dois seguem com `ASAAS_ENV=production` — pendência registrada.
+
 ### Estado
 
-**Commitado localmente, NÃO deployado.** Falta o push (que dispara o deploy da Vercel) e a
-conferência visual das 7 rotas em produção.
+**Commitado localmente, NÃO deployado.** `main` local está 6 commits à frente de `origin/main`;
+produção roda `d512494`. O push dispara **dois** deploys (Vercel + VPS, este por causa de
+`onboarding.go`) e está bloqueado pela decisão do host canônico.
 
 ---
 

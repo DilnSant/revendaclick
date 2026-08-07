@@ -197,7 +197,46 @@ Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / 
 
 ## Próximos Passos (por prioridade)
 
-### 0. AÇÃO COMERCIAL IMEDIATA — Landing lead real não atendido
+### 0-A. BLOQUEIO — 6 commits locais aguardando push (decidir primeiro)
+
+A sessão 64 (continuação) terminou com **6 commits em `main` local, não enviados**. Produção roda o
+código anterior (`d512494`). Nada foi deployado.
+
+```
+ea7cb36 docs(D38): revogar congelamento da landing e documentar landings segmentadas
+2e62a78 docs(sessão 64): troca da conta Asaas, reset de IDs órfãos e limpeza de tenants
+6075e99 test(e2e): remover TEST_USERS.sandbox — o tenant nunca existiu
+068df1e fix(onboarding): rejeitar slugs que colidem com rotas estáticas do frontend
+525e5ad feat(landing): reformular landing page e adicionar landings segmentadas
+4fa4f84 chore(billing): versionar migration 040 e ignorar anotações com credenciais
+```
+
+O push dispara **dois** deploys: Vercel (frontend) e o pipeline do VPS (por causa do
+`onboarding.go`). **Não enviar antes de decidir o item 0-B** — as landings novas iriam ao ar com o
+defeito de SEO descrito abaixo.
+
+### 0-B. DECISÃO PENDENTE — host canônico do marketing
+
+As 6 landings segmentadas foram criadas para ranquear, mas nascem mal indexadas do jeito que estão.
+Três defeitos, todos verificados ao vivo em 06/08/2026:
+
+1. **As 6 rotas novas não estão no sitemap.** `frontend/app/sitemap.ts:9-13` tem lista estática com
+   apenas `/`, `/privacidade`, `/terms` + vitrines dos tenants.
+2. **Canonical e sitemap declaram hosts diferentes.** `SegmentPage.tsx:20` e `app/page.tsx:23` fixam
+   `SITE = 'https://revendaclick.com.br'`; `sitemap.ts:7` usa `NEXT_PUBLIC_APP_URL`, que em produção
+   é `https://app.revendaclick.com.br`.
+3. **O canonical aponta para URL que nunca responde 200.** Testado:
+   `revendaclick.com.br/privacidade` → 307 → `www.revendaclick.com.br/privacidade` → →
+   `app.revendaclick.com.br/...` (redirect canônico do FC058).
+
+**Decisão necessária do usuário — dois caminhos:**
+
+| Opção | O que envolve |
+|---|---|
+| **(a) Canonizar em `app.`** | Só código: trocar `SITE` em `page.tsx` e `SegmentPage.tsx` para `NEXT_PUBLIC_APP_URL` e incluir as 6 rotas no `sitemap.ts` |
+| **(b) Servir a landing no apex** | Mexe em domínio/Vercel: parar de redirecionar `revendaclick.com.br` → `app.` — exige autorização e cuidado com o FC058 (sessão entre subdomínios) |
+
+### 0-C. AÇÃO COMERCIAL IMEDIATA — Landing lead real não atendido
 
 Lead "Joaõ" (48998232010, São José/SC) em `landing_leads` com status `novo` desde 2026-06-04.
 Acessar `/admin/leads` e atualizar status para `contatado` após primeiro contato.
@@ -274,8 +313,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **63 arquivos (FC001–FC059, FC061–FC065)**; não existe arquivo FC060. Além deles, o bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC066**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **64 arquivos (FC001–FC059, FC061–FC066)**; não existe arquivo FC060. Além deles, o bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC067**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
@@ -354,6 +393,14 @@ Ao iniciar uma nova sessão:
 5. Se for alterar infra: ver `10_INFRA_VPS.md` e `11_DOCKER.md`
 6. Se for alterar backend: ver `04_BACKEND.md` e `08_API_ROTAS_REAIS.md`
 7. Se for fazer deploy: executar `prompts/04_PROMPT_DEPLOY.md`
+
+**ATENÇÃO push pendente:** `main` local está **6 commits à frente de `origin/main`**. Produção roda
+`d512494`. Ler o item 0-A/0-B acima antes de enviar.
+
+**ATENÇÃO chaves Asaas:** o billing depende **exclusivamente** de `/opt/revendaclick/.env` no VPS,
+lido por `backend/internal/config/config.go:58-60`. O frontend **não lê `ASAAS_*`** (verificado:
+zero `process.env.*ASAAS*` em `frontend/`). As variáveis existentes na Vercel não têm efeito — não
+concluir que o billing depende delas. Ver D37.
 
 **ATENÇÃO .env VPS:** Variáveis com `$` literal devem usar `$$`. Ver D18 em `21_DECISOES_TECNICAS.md`.
 
