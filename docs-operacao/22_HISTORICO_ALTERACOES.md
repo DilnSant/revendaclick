@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 06/08/2026 (sessão 64 — D37 conta Asaas nova + D38 landing reformulada e descongelada)
+> Última atualização: 07/08/2026 (sessão 64 — D37 conta Asaas nova, D38 landing descongelada, D39 canonical em `app.`; FC066 e FC067)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -44,7 +44,8 @@
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
 | **FC033 — Cancel sub não cancela add-ons** | ✓ **Corrigido** (sessão 30) | Opção A: cancelTenantAddons em cascata; 7/7 smoke tests — commit `529efb2` |
 | **Etapa 5 — Billing real add-ons** | ✓ **Implementado** (sessão 30) | Asaas subscription por add-on; status lifecycle; webhook routing; is_redundant |
-| **Landing Page** | ✓ **Reformulada + 6 landings segmentadas** (sessão 64 — D38) | Congelamento da sessão 31 revogado pelo usuário. `components/marketing/` → `components/landing/`; `app/page.tsx` reescrita; rotas `/revendas-pequenas` `/multimarcas` `/premium` `/crm-automotivo` `/erp-automotivo` `/site-para-revendas`, todas estáticas. Fluxo de leads backend: **INALTERADO (segue congelado)** |
+| **Landing Page** | ✓ **EM PRODUÇÃO** — reformulada + 6 landings segmentadas (sessão 64 — D38/D39) | Congelamento da sessão 31 revogado pelo usuário. `components/marketing/` → `components/landing/`; `app/page.tsx` reescrita; rotas `/revendas-pequenas` `/multimarcas` `/premium` `/crm-automotivo` `/erp-automotivo` `/site-para-revendas`, todas estáticas e respondendo 200. Canonical em `app.revendaclick.com.br` via `lib/site.ts` (D39/FC067). Fluxo de leads backend: **INALTERADO (segue congelado)**. **Não conferida visualmente em browser** |
+| **Host canônico do site público** | ✓ `app.revendaclick.com.br` (sessão 64 — D39) | Fonte única em `frontend/lib/site.ts` (`SITE_URL` ← `NEXT_PUBLIC_APP_URL`). Apex e `www` redirecionam para `app.`; canonizar em outro host faria o canonical apontar para redirect — ver FC067 |
 | **Admin Leads** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação 25/pág, alerta leads sem contato 4h |
 | **Admin Lead Detalhe** | ✓ Produção (sessão 31) | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
 | **Pipeline Comercial Leads** | ✓ Produção (migrations 030-031) | 5 status: novo → contatado → em_negociacao → convertido / perdido |
@@ -92,6 +93,39 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-08-07 (sessão 64, encerramento) — Deploy da landing + FC067: canonical corrigido (D39)
+
+### Deploy
+
+Push autorizado explicitamente. Dois deploys: `2ff7a96` (landing + backend) e `6a23bd6` (correção
+de SEO). CI/CD runs `31139702588` e `31140613457`, ambos ✓ com smoke test aprovado.
+
+### FC067 — Canonical apontando para host que responde 307
+
+As páginas de marketing declaravam canonical em `https://revendaclick.com.br/<rota>`, URL que nunca
+responde 200 (307 → `www` → 308 → `app`), enquanto o sitemap declarava `app.revendaclick.com.br`.
+As 6 landings segmentadas também estavam ausentes do sitemap.
+
+**Causa raiz:** o host estava escrito à mão em **6 arquivos com 2 valores diferentes** — três com
+literal do apex, três lendo `NEXT_PUBLIC_APP_URL` (que em produção é `app.`). O defeito era
+**anterior às landings novas**: `privacidade/page.tsx` já tinha canonical literal para o apex.
+
+**Correção:** fonte única em `frontend/lib/site.ts` (`SITE_URL`), consumida por `page.tsx`,
+`SegmentPage.tsx`, `sitemap.ts`, `robots.ts`, `layout.tsx` e `privacidade/page.tsx`. Sitemap passou
+a derivar as rotas de `Object.values(SEGMENTOS)`, eliminando a lista paralela. Ver `FC067` e **D39**.
+
+**Verificado em produção:** as 8 URLs canônicas respondem HTTP 200 com **0 redirects**; canonical e
+sitemap concordam; `robots.txt` aponta para o sitemap no host correto.
+
+### Achado sobre o CI/CD (não corrigido)
+
+O `paths-ignore` do D36 só cobre documentação. Um commit que altera **apenas `frontend/`** dispara
+o pipeline completo e **redeploya o backend sem necessidade** — confirmado no run `31140613457`,
+que reconstruiu e redeployou código Go inalterado. Não quebra nada; é desperdício de ciclo.
+Registrado como pendência — a correção mexe em CI/CD e exige autorização.
 
 ---
 

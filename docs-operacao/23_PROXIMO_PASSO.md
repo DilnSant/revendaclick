@@ -257,7 +257,19 @@ Três defeitos, todos verificados ao vivo em 06/08/2026:
 | **(a) Canonizar em `app.`** | Só código: trocar `SITE` em `page.tsx` e `SegmentPage.tsx` para `NEXT_PUBLIC_APP_URL` e incluir as 6 rotas no `sitemap.ts` |
 | **(b) Servir a landing no apex** | Mexe em domínio/Vercel: parar de redirecionar `revendaclick.com.br` → `app.` — exige autorização e cuidado com o FC058 (sessão entre subdomínios) |
 
-### 0-C. AÇÃO COMERCIAL IMEDIATA — Landing lead real não atendido
+### 0-C. PRÓXIMO PASSO DA PRÓXIMA SESSÃO — duas verificações que faltam
+
+Ambas de prioridade **Alta**, ambas dependem de ação do usuário:
+
+1. **Conferência visual das 7 rotas da landing em browser.** Elas respondem HTTP 200 e o SEO está
+   correto, mas **ninguém olhou o layout**. Um erro de estilo ou de copy está visível ao público
+   agora. Abrir `app.revendaclick.com.br` e as 6 segmentadas.
+2. **Teste ponta a ponta de assinatura na conta Asaas nova.** Pendência aberta desde a sessão 64,
+   nunca executada. Exige clique do owner em `/billing/plans` (`POST /api/billing/subscribe` pede
+   JWT de owner/admin — `server.go:167`). Verificar depois: customer e subscription criados na conta
+   nova, webhook gravando em `billing_events`, `subscriptions.status` → `active`.
+
+### 0-D. AÇÃO COMERCIAL IMEDIATA — Landing lead real não atendido
 
 Lead "Joaõ" (48998232010, São José/SC) em `landing_leads` com status `novo` desde 2026-06-04.
 Acessar `/admin/leads` e atualizar status para `contatado` após primeiro contato.
@@ -334,8 +346,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **64 arquivos (FC001–FC059, FC061–FC066)**; não existe arquivo FC060. Além deles, o bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC067**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **65 arquivos (FC001–FC059, FC061–FC067)**; não existe arquivo FC060. Além deles, o bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC068**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 

@@ -28,10 +28,17 @@
 
 | Serviço | URL |
 |---|---|
-| Frontend | `https://app.revendaclick.com.br` (Vercel) |
+| Frontend + site público | `https://app.revendaclick.com.br` (Vercel) — **host canônico**, ver D39 |
 | API Backend | `https://api.revendaclick.com.br` |
 | Evolution API | `https://evolution.revendaclick.com.br` |
-| Site público | `https://revendaclick.com.br` |
+| Apex (redireciona) | `https://revendaclick.com.br` → 307 → `www` → 308 → `app` |
+
+> **Host canônico = `app.revendaclick.com.br`** (D39). Marketing e dashboard vivem no mesmo app
+> Next.js; o apex e o `www` só redirecionam. O redirect do apex está no **painel da Vercel**; o do
+> `www` está em `frontend/next.config.ts:41-48` (fix do FC058).
+>
+> **Nunca escrever o host literalmente** em canonical, `metadataBase`, sitemap ou robots — importar
+> `SITE_URL` de `frontend/lib/site.ts`, que é a fonte única. Ver FC067.
 
 ## Endpoints úteis
 
@@ -97,8 +104,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | Item | Valor |
 |---|---|
 | Pasta | `docs-operacao/FalhasCorrigidas/` |
-| Total documentadas | 64 arquivos (FC001–FC059, FC061–FC066 — não existe arquivo FC060) |
-| Próxima FC | **FC067** |
+| Total documentadas | 65 arquivos (FC001–FC059, FC061–FC067 — não existe arquivo FC060) |
+| Próxima FC | **FC068** |
 | FC039 | FC039 — Hardening final: 500 ListTenants enum cast, NavItem Link, proxy.ts, sitemap, REVOKE triggers, RLS landing_leads — sessão 47 |
 | FC040 | FC040 — Supabase: SET search_path = public em 8 funções + REVOKE FROM PUBLIC em 6 trigger functions — sessão 47 |
 | FC041 | FC041 — Saneamento documental final: 4 arquivos corrigidos (count FC 38→40, próximo FC039→FC041, seção obsoleta memory) — sessão 48 |
@@ -120,6 +127,7 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 | FC057 | FC057 — /admin/logs 404 definitivo: `.gitignore` `logs/` recursivo bloqueava rota Next.js; page.tsx commitada pela 1ª vez; login.tsx router.push→window.location.href — commit 0e3538c — sessão 57 |
 | FC058 | FC058 — Super Admin redirecionado para `/onboarding` ao logar: layout.tsx não distinguia role (sem tenant → /onboarding em vez de /admin); subdomínio `www.` sem redirect canônico para `app.` quebrava sessão entre subdomínios — sessão 58 |
 | FC059 | FC059 — Super Admin defense-in-depth: `app_metadata.user_role` ausente no JWT (promoção SQL não sincroniza Auth server); `resolveUserRole()` com DB-fallback via service-role cobre o gap — sessão 59 |
+| FC067 | FC067 — Canonical apontando para host que responde 307, divergente do sitemap; host literal em 6 arquivos; 6 landings fora do sitemap; corrigido com fonte única `lib/site.ts` (D39) — sessão 64 |
 | FC066 | FC066 — Migration 040 aplicada em produção mas nunca commitada; repositório não descrevia o estado real do banco; mesma classe do FC057 — sessão 64 |
 | FC061 | FC061 — "Página da Loja" sem destaque: nova rota dedicada `/store` + item na sidebar + `StoreCard` no dashboard + CTA âmbar quando não publicada + métricas; `CopyStoreLink` removido (bug de domínio `revendaclick.com.br` → `app.revendaclick.com.br` corrigido) — sessão 60 |
 

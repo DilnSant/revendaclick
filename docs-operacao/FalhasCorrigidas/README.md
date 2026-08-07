@@ -194,12 +194,13 @@
 | [FC064](FC064_RESEND_ENV_AUSENTE_COMPOSE.md) | RESEND_API_KEY não chegava ao container — ausente da allowlist environment: do docker-compose, perdida a cada redeploy | Billing / Infra / Deploy | MÉDIA | 01/08/2026 |
 | [FC065](FC065_CERTBOT_STANDALONE_PORTA80_NGINX.md) | Certbot não renovava — plugin standalone conflitando com Nginx na porta 80; certificado a 10 dias de expirar | Infra / VPS / SSL | CRÍTICA | 01/08/2026 |
 | [FC066](FC066_MIGRATION_APLICADA_SEM_VERSIONAMENTO.md) | Migration 040 aplicada em produção mas nunca commitada — repositório não descrevia o estado real do banco; mesma classe do FC057 | Banco / Governança | ALTA | 06/08/2026 |
+| [FC067](FC067_CANONICAL_HOST_DIVERGENTE_SITEMAP.md) | Canonical apontando para host que responde 307, divergente do sitemap; host escrito à mão em 6 arquivos com 2 valores; 6 landings ausentes do sitemap | Frontend / SEO | MÉDIA | 07/08/2026 |
 
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC067
-# Nome do arquivo: FC067_DESCRICAO_CURTA.md
+# Próximo número: FC068
+# Nome do arquivo: FC068_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
