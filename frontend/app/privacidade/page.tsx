@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { SITE_URL } from '@/lib/site'
 
 export const metadata: Metadata = {
   title: 'Política de Privacidade | RevendaClick',
   description:
     'Saiba como o RevendaClick coleta, utiliza e protege seus dados pessoais em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018).',
   robots: { index: true, follow: true },
-  alternates: { canonical: 'https://revendaclick.com.br/privacidade' },
+  alternates: { canonical: `${SITE_URL}/privacidade` },
 }
 
 export default function PrivacidadePage() {

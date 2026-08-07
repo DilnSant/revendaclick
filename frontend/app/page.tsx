@@ -19,8 +19,9 @@ import AISection      from '@/components/landing/AISection'
 import Faq, { FAQ_ITENS } from '@/components/landing/Faq'
 import FinalCta       from '@/components/landing/FinalCta'
 import LandingFooter  from '@/components/landing/LandingFooter'
+import { SITE_URL }   from '@/lib/site'
 
-const SITE = 'https://revendaclick.com.br'
+const SITE = SITE_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

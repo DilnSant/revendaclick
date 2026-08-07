@@ -1,13 +1,25 @@
 import type { MetadataRoute } from 'next'
 import { createServiceClient } from '@/lib/supabaseServer'
+import { SITE_URL } from '@/lib/site'
+import { SEGMENTOS } from '@/components/landing/segments/data'
 
 export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.com.br'
+  const base = SITE_URL
+
+  // Derivado de SEGMENTOS: adicionar uma landing segmentada em data.ts já a coloca
+  // no sitemap, sem lista paralela para esquecer de atualizar.
+  const segmentRoutes: MetadataRoute.Sitemap = Object.values(SEGMENTOS).map((s) => ({
+    url: `${base}/${s.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly' as const,
+    priority: 0.9,
+  }))
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
+    ...segmentRoutes,
     { url: `${base}/privacidade`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
     { url: `${base}/terms`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.3 },
   ]

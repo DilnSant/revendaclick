@@ -215,14 +215,22 @@ Os 7 commits da sessão 64 foram enviados por autorização explícita do usuár
 **Ainda não verificado:** as rotas responderam 200, mas **nenhuma foi vista em browser**. A
 conferência visual continua pendente.
 
-### 0-B. DECISÃO PENDENTE — host canônico do marketing (agora EM PRODUÇÃO com o defeito)
+### 0-B. ~~DECISÃO PENDENTE~~ — RESOLVIDO em D39, aguardando deploy
 
-> ⚠️ O push foi feito antes desta decisão. As 6 landings segmentadas **já estão no ar** com o
-> problema descrito abaixo. Não há perda de dados nem risco operacional — é custo de SEO, e a
-> correção é um deploy novo. Quanto antes decidir, menos tempo os buscadores passam rastreando o
-> estado errado.
+**Decidido pelo usuário (07/08/2026): canonizar em `app.revendaclick.com.br`.** Ver **D39** em
+`21_DECISOES_TECNICAS.md`. Corrigido e commitado — **falta enviar**. Até o deploy, produção segue
+com o defeito.
 
-As 6 landings segmentadas foram criadas para ranquear, mas nascem mal indexadas do jeito que estão.
+O que foi feito:
+
+- Fonte única do host em `frontend/lib/site.ts` (`SITE_URL`, de `NEXT_PUBLIC_APP_URL`)
+- `page.tsx`, `SegmentPage.tsx`, `sitemap.ts`, `robots.ts`, `layout.tsx` e `privacidade/page.tsx`
+  passaram a consumir `SITE_URL` — nenhum host literal restou nos metadados
+- Sitemap gera as 6 rotas de `Object.values(SEGMENTOS)`, sem lista paralela
+- Achado extra: `privacidade/page.tsx` tinha o **mesmo defeito** de canonical, independente das
+  landings novas
+
+Registro do problema original (para contexto histórico):
 Três defeitos, todos verificados ao vivo em 06/08/2026:
 
 1. **As 6 rotas novas não estão no sitemap.** `frontend/app/sitemap.ts:9-13` tem lista estática com

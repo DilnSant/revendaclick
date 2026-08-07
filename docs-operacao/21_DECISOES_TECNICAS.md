@@ -529,3 +529,50 @@ correspondente em `20_PENDENCIAS.md`.
 **Validação:** `npx tsc --noEmit` exit 0; `npx next build` exit 0 com as 6 rotas prerenderizadas como
 estáticas; `eslint` sem erros no código novo; `go build`/`go vet`/`go test ./internal/onboarding/`
 limpos.
+
+---
+
+## D39 — `app.revendaclick.com.br` é o host canônico do site público (07/08/2026 — sessão 64)
+
+**Decisão:** O canonical, o `metadataBase`, o sitemap e o robots passam a declarar
+**`app.revendaclick.com.br`**, resolvido por `NEXT_PUBLIC_APP_URL`. O host deixa de ser escrito
+à mão em cada arquivo e passa a vir de `frontend/lib/site.ts` (`SITE_URL`).
+
+**Problema que originou:** as 6 landings segmentadas do D38 declaravam canonical em
+`https://revendaclick.com.br/<slug>`, enquanto o sitemap declarava
+`https://app.revendaclick.com.br/<slug>`. Duas URLs diferentes para a mesma página — e a do
+canonical **nunca responde 200**:
+
+```
+revendaclick.com.br --307--> www.revendaclick.com.br --308--> app.revendaclick.com.br --> 200
+       (redirect no painel da Vercel)      (next.config.ts:41-48, fix do FC058)
+```
+
+Páginas criadas para ranquear apontavam o buscador para uma cadeia de redirects que termina noutro
+host. Além disso, as 6 rotas **não estavam no sitemap**, que tinha lista estática.
+
+**Por que `app.` e não o apex:** marketing e dashboard vivem no **mesmo app Next.js**. Servir o
+marketing no apex significaria servir o dashboard lá também, desfazendo o redirect que corrigiu o
+FC058 (sessão quebrando entre subdomínios). O caminho de menor risco é canonizar onde o conteúdo
+de fato responde 200.
+
+**Custo aceito conscientemente:** o domínio raiz da marca nunca aparecerá nos resultados de busca —
+quem busca encontra `app.revendaclick.com.br`. É incomum para um site institucional, mas funcional,
+e reversível se um dia o marketing for separado do app.
+
+**Causa raiz real — host duplicado:** o host estava definido em **4 lugares** com **2 valores
+diferentes** (`page.tsx`, `SegmentPage.tsx`, `sitemap.ts`, `robots.ts`), mais `layout.tsx` e
+`privacidade/page.tsx`. Divergir era questão de tempo. Agora existe uma fonte única em
+`lib/site.ts`; nenhum arquivo redefine o host.
+
+**Sitemap derivado dos dados:** as rotas segmentadas passaram a ser geradas de
+`Object.values(SEGMENTOS)`, em vez de uma lista paralela. Adicionar um segmento em `data.ts` já o
+coloca no sitemap — o mesmo tipo de sincronia manual que ainda existe (e é pendência) entre
+`frontend/app/` e `slugsReservados` no backend.
+
+**Impacto ao alterar:** reintroduzir host literal em qualquer arquivo de metadata recria a
+divergência. Se `NEXT_PUBLIC_APP_URL` for removida da Vercel, o fallback de `lib/site.ts` mantém
+`app.revendaclick.com.br` — o valor correto, não mais o apex.
+
+**Validação:** `tsc --noEmit` exit 0; `next build` exit 0; `eslint` sem erros novos; sitemap gerado
+no build contendo as 6 rotas segmentadas.

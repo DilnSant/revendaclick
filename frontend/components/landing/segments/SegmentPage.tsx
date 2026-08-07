@@ -16,8 +16,9 @@ import {
   IconAlert, IconCheck, IconArrow,
 } from '../ui'
 import type { Segmento } from './data'
+import { SITE_URL }      from '@/lib/site'
 
-const SITE = 'https://revendaclick.com.br'
+const SITE = SITE_URL
 const GARANTIAS = ['30 dias grátis', 'Sem cartão de crédito', 'Cancele quando quiser']
 
 /** Metadata + canonical por segmento. Cada página é indexável por conta própria. */

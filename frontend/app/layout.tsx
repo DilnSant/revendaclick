@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Poppins } from 'next/font/google'
 import Analytics from '@/components/Analytics'
+import { SITE_URL } from '@/lib/site'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -13,7 +14,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: { default: 'RevendaClick', template: '%s | RevendaClick' },
   description: 'A plataforma que acelera sua revenda. CRM, estoque e leads em um só lugar.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://revendaclick.com.br'),
+  metadataBase: new URL(SITE_URL),
   icons: {
     icon: [{ url: '/favicon.png', type: 'image/png' }],
     shortcut: '/favicon.png',
