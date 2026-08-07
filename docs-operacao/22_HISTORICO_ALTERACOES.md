@@ -193,11 +193,23 @@ depende da Vercel: **depende do `/opt/revendaclick/.env` no VPS**.
 variável mantida vazia com comentário apontando para o VPS e D37. Ambos são gitignorados e não
 rastreados. **Ressalva:** os dois seguem com `ASAAS_ENV=production` — pendência registrada.
 
-### Estado
+### Estado — DEPLOYADO em 07/08/2026
 
-**Commitado localmente, NÃO deployado.** `main` local está 6 commits à frente de `origin/main`;
-produção roda `d512494`. O push dispara **dois** deploys (Vercel + VPS, este por causa de
-`onboarding.go`) e está bloqueado pela decisão do host canônico.
+Push autorizado explicitamente pelo usuário e executado: `d512494..2ff7a96`, fast-forward.
+`origin/main` = `2ff7a96a8e3c2feccce5a17ef4db1fdd47152f96`.
+
+| Verificação pós-deploy | Resultado |
+|---|---|
+| CI/CD run `31139702588` (VPS/backend) | ✓ test, build, deploy, containers healthy, smoke test |
+| Vercel / frontend | ✓ no ar |
+| `api.revendaclick.com.br/health` | ✓ `{"db":"ok","status":"ok"}` |
+| 7 rotas da landing | ✓ todas HTTP 200 |
+
+**Ressalva:** o push aconteceu **antes** da decisão sobre o host canônico, então as 6 landings
+segmentadas estão em produção com o defeito de SEO descrito acima. Sem risco operacional — a
+correção é um deploy novo — mas o custo de indexação corre enquanto não for resolvido.
+
+**Não verificado:** conferência visual em browser das 7 rotas.
 
 ---
 

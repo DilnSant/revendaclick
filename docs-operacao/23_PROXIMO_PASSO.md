@@ -197,25 +197,30 @@ Configurações         ← sub-nav tabs: Loja / Contato Público / Usuários / 
 
 ## Próximos Passos (por prioridade)
 
-### 0-A. BLOQUEIO — 6 commits locais aguardando push (decidir primeiro)
+### 0-A. ~~Push pendente~~ — DEPLOYADO em 07/08/2026
 
-A sessão 64 (continuação) terminou com **6 commits em `main` local, não enviados**. Produção roda o
-código anterior (`d512494`). Nada foi deployado.
+Os 7 commits da sessão 64 foram enviados por autorização explícita do usuário.
+`origin/main` = **`2ff7a96a8e3c2feccce5a17ef4db1fdd47152f96`**.
 
-```
-ea7cb36 docs(D38): revogar congelamento da landing e documentar landings segmentadas
-2e62a78 docs(sessão 64): troca da conta Asaas, reset de IDs órfãos e limpeza de tenants
-6075e99 test(e2e): remover TEST_USERS.sandbox — o tenant nunca existiu
-068df1e fix(onboarding): rejeitar slugs que colidem com rotas estáticas do frontend
-525e5ad feat(landing): reformular landing page e adicionar landings segmentadas
-4fa4f84 chore(billing): versionar migration 040 e ignorar anotações com credenciais
-```
+| Deploy | Resultado |
+|---|---|
+| **VPS / backend** (CI/CD run `31139702588`) | ✓ sucesso — test, build, deploy, containers healthy e smoke test aprovados |
+| **Vercel / frontend** | ✓ no ar |
+| `api.revendaclick.com.br/health` | ✓ `{"db":"ok","status":"ok"}` |
+| 7 rotas da landing | ✓ todas HTTP 200 (`/`, `/revendas-pequenas`, `/multimarcas`, `/premium`, `/crm-automotivo`, `/erp-automotivo`, `/site-para-revendas`) |
 
-O push dispara **dois** deploys: Vercel (frontend) e o pipeline do VPS (por causa do
-`onboarding.go`). **Não enviar antes de decidir o item 0-B** — as landings novas iriam ao ar com o
-defeito de SEO descrito abaixo.
+> Anotação do pipeline (já conhecida, não bloqueia): actions com target Node.js 20 sendo forçadas
+> para Node.js 24 — pendência registrada em `20_PENDENCIAS.md`.
 
-### 0-B. DECISÃO PENDENTE — host canônico do marketing
+**Ainda não verificado:** as rotas responderam 200, mas **nenhuma foi vista em browser**. A
+conferência visual continua pendente.
+
+### 0-B. DECISÃO PENDENTE — host canônico do marketing (agora EM PRODUÇÃO com o defeito)
+
+> ⚠️ O push foi feito antes desta decisão. As 6 landings segmentadas **já estão no ar** com o
+> problema descrito abaixo. Não há perda de dados nem risco operacional — é custo de SEO, e a
+> correção é um deploy novo. Quanto antes decidir, menos tempo os buscadores passam rastreando o
+> estado errado.
 
 As 6 landings segmentadas foram criadas para ranquear, mas nascem mal indexadas do jeito que estão.
 Três defeitos, todos verificados ao vivo em 06/08/2026:
@@ -394,8 +399,9 @@ Ao iniciar uma nova sessão:
 6. Se for alterar backend: ver `04_BACKEND.md` e `08_API_ROTAS_REAIS.md`
 7. Se for fazer deploy: executar `prompts/04_PROMPT_DEPLOY.md`
 
-**ATENÇÃO push pendente:** `main` local está **6 commits à frente de `origin/main`**. Produção roda
-`d512494`. Ler o item 0-A/0-B acima antes de enviar.
+**ATENÇÃO landing em produção:** deploy feito em 07/08/2026 (`2ff7a96`). As 6 landings segmentadas
+estão no ar, porém com o canonical apontando para um host que responde 307 e ausentes do sitemap.
+Ver item 0-B acima — é a primeira coisa a resolver.
 
 **ATENÇÃO chaves Asaas:** o billing depende **exclusivamente** de `/opt/revendaclick/.env` no VPS,
 lido por `backend/internal/config/config.go:58-60`. O frontend **não lê `ASAAS_*`** (verificado:
