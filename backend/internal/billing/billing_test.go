@@ -2,9 +2,45 @@ package billing
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
+
+func TestWebhookFailsClosedWhenTokenNotConfigured(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := &Handler{asaasToken: ""}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/billing/webhook", strings.NewReader(`{}`))
+
+	h.Webhook(c)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("expected 500 when ASAAS_WEBHOOK_TOKEN is unset (fail closed), got %d", w.Code)
+	}
+}
+
+func TestWebhookRejectsInvalidToken(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	h := &Handler{asaasToken: "correct-token"}
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodPost, "/api/billing/webhook", strings.NewReader(`{}`))
+	c.Request.Header.Set("asaas-access-token", "wrong-token")
+
+	h.Webhook(c)
+
+	if w.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 for invalid token, got %d", w.Code)
+	}
+}
 
 func TestComputeFlags(t *testing.T) {
 	t.Run("active subscription", func(t *testing.T) {

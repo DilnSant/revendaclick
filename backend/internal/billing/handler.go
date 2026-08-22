@@ -297,11 +297,13 @@ func (h *Handler) AdminSimulateEvent(c *gin.Context) {
 
 // POST /api/webhooks/asaas — public, validated by access-token header
 func (h *Handler) Webhook(c *gin.Context) {
-	if h.asaasToken != "" {
-		if c.GetHeader("asaas-access-token") != h.asaasToken {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
-			return
-		}
+	if h.asaasToken == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "webhook not configured"})
+		return
+	}
+	if c.GetHeader("asaas-access-token") != h.asaasToken {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+		return
 	}
 
 	rawBody, err := io.ReadAll(c.Request.Body)
