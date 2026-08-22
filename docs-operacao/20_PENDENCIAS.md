@@ -51,6 +51,7 @@
 | CONCLUÍDA | Endpoint upgrade de plano | — | `PUT /api/billing/subscription` — troca plano de assinatura ativa via Asaas PUT; frontend detecta `is_active && !isCurrent` e usa modo upgrade (sessão 16) |
 | PENDENTE | Teste ponta a ponta de assinatura na conta Asaas nova | **Alta** | Sessão 64: chaves trocadas, migration 040 aplicada e webhook validado, mas nenhuma assinatura real foi criada ainda na conta nova. Exige clique do owner em `/billing/plans` — `POST /api/billing/subscribe` pede JWT de owner/admin (`server.go:167`). Verificar depois: customer e subscription criados na conta nova, webhook gravando em `billing_events`, `subscriptions.status` → `active` |
 | PENDENTE | Fallback de customer inválido cobre só HTTP 404 | Média | `billing/service.go:101` testa `strings.Contains(err.Error(), "404")`, mas o Asaas responde **HTTP 400 `invalid_customer`** quando o customer pertence a outra conta. Hoje não há impacto (migration 040 zerou os IDs órfãos), mas o fallback é ineficaz se o caso voltar a ocorrer. Ampliar para cobrir `invalid_customer` e 400. Ver D37 |
+| CONCLUÍDA | FC068 — `GET /api/usage` 500 para assinatura cancelada (sessão 65) | — | Query filtrava por status, excluindo `canceled` (único tenant real); `pgx.ErrNoRows` virava 500. Corrigido para buscar a assinatura mais recente independente do status; `ErrNoRows` genuíno agora responde 404 — commit `5470998` |
 
 ---
 
@@ -178,6 +179,7 @@ Frontend Next.js continua como stack oficial.
 | CONCLUÍDA | Supabase advisor warnings (WARN) | — | Todos 3 advisors: migration 011 (RLS), 012 (functions), 013 (leads insert + storage) |
 | BACKLOG | Leaked password protection | — | FC044: reclassificado — não bloqueia operação. Requer Supabase Pro (HaveIBeenPwned.org). Retomar quando upgrade Supabase for justificado comercialmente. |
 | PENDENTE | Rotação de secrets | Baixa | Política semestral: ASAAS_API_KEY, EVOLUTION_API_KEY, METRICS_TOKEN — atualizar no .env do VPS + no Asaas Dashboard + reiniciar containers |
+| CONCLUÍDA | FC069 — Webhook Asaas fail-open sem token (sessão 65) | — | Achado pela auditoria técnica completa (21/08), resolvido mediante autorização explícita (22/08): endpoint aceitava requisição não autenticada se `ASAAS_WEBHOOK_TOKEN` estivesse vazio. Corrigido para fail-closed (500 em vez de aceitar tudo) — commit `43f7d0d` |
 
 ---
 

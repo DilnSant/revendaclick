@@ -195,12 +195,14 @@
 | [FC065](FC065_CERTBOT_STANDALONE_PORTA80_NGINX.md) | Certbot não renovava — plugin standalone conflitando com Nginx na porta 80; certificado a 10 dias de expirar | Infra / VPS / SSL | CRÍTICA | 01/08/2026 |
 | [FC066](FC066_MIGRATION_APLICADA_SEM_VERSIONAMENTO.md) | Migration 040 aplicada em produção mas nunca commitada — repositório não descrevia o estado real do banco; mesma classe do FC057 | Banco / Governança | ALTA | 06/08/2026 |
 | [FC067](FC067_CANONICAL_HOST_DIVERGENTE_SITEMAP.md) | Canonical apontando para host que responde 307, divergente do sitemap; host escrito à mão em 6 arquivos com 2 valores; 6 landings ausentes do sitemap | Frontend / SEO | MÉDIA | 07/08/2026 |
+| [FC068](FC068_GET_USAGE_500_ASSINATURA_CANCELADA.md) | `GET /api/usage` retornava 500 para tenant com assinatura `canceled` — dashboard (KPIs, PlanAlertBanner) ficava mudo silenciosamente | Backend / Billing | ALTA | 21/08/2026 |
+| [FC069](FC069_WEBHOOK_ASAAS_FAIL_OPEN.md) | Webhook Asaas aceitava requisição não autenticada se `ASAAS_WEBHOOK_TOKEN` estivesse vazio (fail-open) — corrigido para fail-closed | Backend / Billing / Segurança | MÉDIA | 22/08/2026 |
 
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC068
-# Nome do arquivo: FC068_DESCRICAO_CURTA.md
+# Próximo número: FC070
+# Nome do arquivo: FC070_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 

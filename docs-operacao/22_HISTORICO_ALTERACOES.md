@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 07/08/2026 (sessão 64 — D37 conta Asaas nova, D38 landing descongelada, D39 canonical em `app.`; FC066 e FC067)
+> Última atualização: 22/08/2026 (sessão 65 — auditoria técnica completa; FC068 `GET /api/usage` 500 para assinatura cancelada, FC069 webhook Asaas fail-open corrigido para fail-closed)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -27,7 +27,7 @@
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
 | **Tenants no banco** | ✓ **Apenas `santos-car`** (sessão 64) | `devecar`, `finalcar`, `auditoria-rc-s42` e `revenda-click` excluídos definitivamente — todos de teste. `sandbox-revendaclick`, documentado desde a sessão 26, nunca existiu de fato no banco |
 | **Admin Panel** | ✓ Produção (super_admin) | 8 sub-rotas CRUD; quarentena + exclusão lógica/física; audit logging; CRUD tenants/users/subs/plans/whatsapp; /admin/logs definitivamente funcional pós FC057 |
-| **Billing Asaas** | ✓ Produção — **conta nova desde 06/08/2026** (sessão 64, D37) | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035). Conta anterior encerrada: migration 040 zerou todos os customer/subscription IDs órfãos; chaves novas no `.env` do VPS com escape `$$` (D18). **Teste ponta a ponta de assinatura ainda pendente** |
+| **Billing Asaas** | ✓ Produção — **conta nova desde 06/08/2026** (sessão 64, D37) | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035). Conta anterior encerrada: migration 040 zerou todos os customer/subscription IDs órfãos; chaves novas no `.env` do VPS com escape `$$` (D18). **Teste ponta a ponta de assinatura ainda pendente**. `GET /api/usage` 500 para assinatura `canceled` corrigido (FC068, sessão 65); webhook agora fail-closed sem token (FC069, sessão 65) |
 | **Trial / Carência / Lembrete de vencimento** | ✓ Produção (sessão 61) | Trial 30 dias, carência 7 dias (migration 038); worker diário de lembrete por e-mail via Resend 7 dias antes do vencimento (migration 039, FC064 corrigiu env var ausente) |
 | **Convite de vendedor por e-mail** | ✓ Produção (sessão 61) | Antes só gerava link manual (rate limit Supabase, FC021); agora envia automaticamente via Resend; redirect corrigido (FC063) |
 | **SSL — api/evolution.revendaclick.com.br** | ✓ Renovado até 2026-10-30 (sessão 61) | FC065: certbot usava `standalone` (conflito com Nginx na porta 80), trocado para `webroot`; `--dry-run` validado |
@@ -93,6 +93,56 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-08-21/22 (sessão 65) — Auditoria técnica completa + E2E + correção: FC068, FC069
+
+### Contexto
+
+Parte de um `/goal` de auditoria completa cobrindo os 3 projetos do usuário (RevendaClick,
+BeautyNow, AcademiaPRO). Este projeto foi auditado por um agente autônomo dedicado, isolado neste
+repositório, com checkpoint git prévio (tag `checkpoint-pre-auditoria-20260821-220722`). Metodologia:
+inventário → auditoria estática → execução real contra produção (leitura) → E2E → fluxos de
+negócio → segurança → correção → regressão. Relatório completo em `AUDITORIA_COMPLETA.md` (raiz).
+
+### FC068 — `GET /api/usage` retornava 500 para assinatura cancelada
+
+A query de `GetUsage` filtrava `subscriptions.status IN ('active', 'trialing', 'past_due')`. O
+único tenant real de produção hoje (`santos-car`) está com assinatura `canceled` — não batia
+nenhuma linha, `pgx.ErrNoRows` virava 500, e o dashboard (KPIs de uso, `PlanAlertBanner`) ficava
+mudo silenciosamente (frontend trata `!res.ok` como `null`).
+
+**Correção:** a query passou a buscar a assinatura mais recente do tenant independente do status;
+`ErrNoRows` genuíno (tenant sem nenhuma subscription) agora responde 404 `no_subscription` em vez
+de 500. Validado contra produção com JWT real: antes 500, depois 200 com `subscription_status`
+correto. Ver **FC068**. Commit `5470998`.
+
+### FC069 — Webhook Asaas fail-open sem token configurado
+
+Achado de risco na Fase 6 (segurança) da auditoria: `Handler.Webhook` só validava o header
+`asaas-access-token` se `h.asaasToken != ""` — token vazio pulava a validação inteira, aceitando
+qualquer payload não autenticado como evento de billing real. Sem impacto ativo (token está
+configurado corretamente em produção), mas é a mesma classe de risco do FC064 (env perdida num
+redeploy).
+
+**Correção**, feita numa continuação da sessão mediante autorização explícita do usuário para os
+riscos documentados na auditoria: invertida a lógica para fail-closed — token vazio agora responde
+500 e rejeita, em vez de aceitar tudo. Dois testes novos cobrindo os dois casos. Ver **FC069**.
+Commit `43f7d0d`.
+
+### E2E contra produção
+
+Suíte Playwright existente rodada contra produção real (exceto o teste que mutaria dados reais via
+`simulate-event`). 8/9 falharam — não por bug de código: o único tenant real está com assinatura
+`canceled`, e o `SubscriptionGate` bloqueia corretamente o acesso, confirmado via logs. Limitação de
+ambiente de teste (sem tenant ativo para validar o "caminho feliz"), não um defeito.
+
+### Não corrigido nesta sessão
+
+Nada além do já citado — auditoria estática (`tsc`, `eslint`, `next build`, `go vet/build/test`)
+não encontrou nenhum erro pré-existente. RLS não inspecionado via SQL direto (só comportamento
+observado).
 
 ---
 
