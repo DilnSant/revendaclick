@@ -104,7 +104,8 @@ func (r *Repository) GetUsage(ctx context.Context, tenantID string) (*Usage, err
 		FROM subscriptions s
 		JOIN plans pl ON pl.id = s.plan_id
 		WHERE s.tenant_id = $1
-		  AND s.status IN ('active', 'trialing', 'past_due')`, tenantID,
+		ORDER BY s.updated_at DESC
+		LIMIT 1`, tenantID,
 	).Scan(
 		&u.VehiclesCount, &u.UsersCount, &u.LeadsCount,
 		&u.MaxVehicles, &u.MaxUsers, &u.MaxLeads,
