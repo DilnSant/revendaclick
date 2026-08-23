@@ -110,6 +110,75 @@ Este projeto usa:
 
 ---
 
+## Comandos de desenvolvimento
+
+Local sem Docker:
+
+- `make dev-backend` — `go run ./cmd/api` (backend)
+- `make dev-frontend` — `cd frontend && npm run dev` (Next.js + Turbopack)
+
+Local com Docker (stack completa: backend + frontend + nginx):
+
+- `make up` / `make down` / `make logs` / `make logs-backend` / `make logs-frontend`
+- `make restart-backend` / `make restart-frontend`
+
+Lint e type-check:
+
+- `make lint` — `go vet ./...` (backend)
+- `cd frontend && npm run lint` — ESLint
+- `cd frontend && npm run type-check` — `tsc --noEmit`
+
+Testes:
+
+- `make test` — todos os testes do backend (`go test ./... -v -count=1`)
+- Um pacote/teste específico: `cd backend && go test ./internal/<modulo>/... -run <TestName> -v`
+- `cd frontend && npm run test:e2e` — Playwright (todos)
+- Um arquivo específico: `cd frontend && npx playwright test e2e/<arquivo>.spec.ts`
+- `cd frontend && npm run test:e2e:ui` — Playwright em modo interativo
+
+Build:
+
+- `make build-backend` — compila `backend/bin/api`
+- `cd frontend && npm run build` — build de produção do Next.js
+
+Banco (requer `DATABASE_URL` no ambiente):
+
+- `make migrate` — aplica `database/schema.sql`
+- `make seed` — aplica `database/seed.sql`
+- Migrations incrementais ficam em `database/migrations/NNN_descricao.sql`, aplicadas manualmente na ordem numérica
+
+Verificação de saúde:
+
+- `make health` — testa `/health` e `/api/v1/health` locais
+- `make smoke BASE=<url>` — smoke test contra ambiente real (default: produção)
+
+---
+
+## Arquitetura (visão rápida)
+
+**Multi-tenant real** — Postgres via Supabase, RLS obrigatório, `tenant_id` em toda tabela de negócio. Nunca tratar isolamento de tenant como opcional.
+
+**Backend** (`backend/internal/`) — um módulo por domínio (`vehicles`, `leads`, `customers`, `billing`, `financial`, `plans`, `tenant`, `users`, `evolution`, `admin`, `ai`, `analytics`, `audit`, `onboarding`, `storecontact`, `landinglead`, `observability`), cada um com `handler.go` / `service.go` / `repository.go`. Composição de rotas e middlewares centralizada em `backend/internal/server/server.go`.
+
+Camadas de rota em `server.go` (do menos ao mais restrito):
+
+| Grupo | Middleware | Uso |
+|---|---|---|
+| `/api/public/:slug/*` | `SlugTenantResolver` (sem JWT) | vitrine pública da loja |
+| `/api/webhooks/*` | validação por token no header | Evolution, Asaas, landing-lead |
+| `setup` | `jwtAuth` (sem tenant) | `/onboarding/setup` — cria o tenant |
+| `free` | `jwtAuth + resolveTenant` | billing, onboarding, usage — **sempre acessível**, mesmo com assinatura vencida, para não bloquear o pagamento |
+| `gated` | `jwtAuth + resolveTenant + subGate` | vehicles, leads, sales, financial etc. — bloqueado se `past_due`/`canceled` |
+| `adminGroup` | `jwtAuth + RequireRole(super_admin)` | `/api/admin/*`, sem tenant (cross-tenant) |
+
+Dentro de `gated`, alguns endpoints têm `planGate(pool, "<feature>")` adicional (ex.: `central_atendimento`, `analytics`) — checa feature flag do plano, não o nome do plano.
+
+**Frontend** (`frontend/app/`, App Router) — route groups: `(public)` (marketing + `/[slug]` vitrine), `(dashboard)` (app autenticado do tenant), `(admin)` (console super_admin). Não existe `middleware.ts`: sessão/refresh e redirect de rota protegida vivem em `frontend/proxy.ts` (convenção "proxy" do Next, não confundir com `frontend/lib/proxy.ts`). Toda chamada ao backend passa por `apiCall`/`publicFetch` em `frontend/lib/proxy.ts`, que injeta o JWT do Supabase e resolve a URL do backend via `INTERNAL_API_URL` (rede Docker) ou `NEXT_PUBLIC_API_URL` (fallback).
+
+**Auth/role** — `resolveUserRole()` em `frontend/lib/tenant.ts`: usa a claim JWT quando presente, com fallback a uma query direta (`createServiceClient()`) quando ausente — `React.cache()` dedupe por request.
+
+---
+
 ## Proibido sem autorização
 
 Não fazer sem autorização explícita:
