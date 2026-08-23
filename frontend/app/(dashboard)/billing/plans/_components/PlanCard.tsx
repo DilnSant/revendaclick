@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/billing-utils'
 import type { Plan, Subscription } from '@/lib/billing-utils'
@@ -61,6 +62,7 @@ const PLAN_BADGE: Record<string, { label: string; className: string } | undefine
 }
 
 export default function PlanCard({ plan, cycle, currentPlanName, subscription, cpfCnpj }: Props) {
+  const router = useRouter()
   const [billingType, setBillingType] = useState<'BOLETO' | 'PIX' | 'CREDIT_CARD'>('BOLETO')
   const [loading, setLoading]         = useState(false)
   const [error, setError]             = useState<string | null>(null)
@@ -123,6 +125,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription, c
       } else {
         setSuccess('Assinatura solicitada! Você receberá o link de pagamento por e-mail.')
       }
+      router.refresh()
     } catch { setError('Erro de conexão. Tente novamente.') }
     finally { setLoading(false) }
   }
@@ -145,6 +148,7 @@ export default function PlanCard({ plan, cycle, currentPlanName, subscription, c
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Erro ao alterar plano. Tente novamente.'); return }
       setSuccess('Plano alterado! A nova cobrança será aplicada no próximo ciclo.')
+      router.refresh()
     } catch { setError('Erro de conexão. Tente novamente.') }
     finally { setLoading(false) }
   }

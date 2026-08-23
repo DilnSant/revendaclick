@@ -30,7 +30,7 @@ type Subscription struct {
 
 func (s *Subscription) ComputeFlags() {
 	s.IsTrialing = s.Status == "trialing"
-	s.IsActive   = s.Status == "active"
+	s.IsActive   = s.Status == "active" || s.Status == "trialing"
 	s.IsPastDue  = s.Status == "past_due"
 	s.IsCanceled = s.Status == "canceled" || s.Status == "paused"
 	s.IsBlocked  = s.IsCanceled || (s.IsPastDue && (s.GraceUntil == nil || time.Now().After(*s.GraceUntil)))

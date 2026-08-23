@@ -61,13 +61,18 @@ func (s *Service) Subscribe(ctx context.Context, tenantID string, req *Subscribe
 		cycle = "YEARLY"
 	}
 
-	// Guard: if tenant already has an active or trialing Asaas subscription, return it as-is.
-	// Prevents duplicate subscriptions and accidental status reset on repeated POST /subscribe.
+	// Guard: if tenant already has an active or trialing Asaas subscription, do not create
+	// a second one. Same plan requested → idempotent no-op (repeated click/retry).
+	// Different plan requested → the caller must use the upgrade flow or cancel first;
+	// silently returning the old subscription would open the wrong payment link.
 	if existing, gerr := s.repo.GetSubscription(ctx, tenantID); gerr == nil &&
 		existing != nil && existing.AsaasSubscriptionID != "" &&
 		(existing.Status == "active" || existing.Status == "trialing") {
 		existing.ComputeFlags()
-		return existing, nil
+		if strings.EqualFold(existing.PlanName, req.PlanName) {
+			return existing, nil
+		}
+		return nil, fmt.Errorf("você já possui uma assinatura em %s (%s). Para trocar de plano, use a opção de upgrade; para recomeçar do zero, cancele a assinatura atual primeiro", existing.Status, existing.PlanDisplay)
 	}
 
 	name, email, asaasCustomerID, cpfCnpj, err := s.repo.GetAsaasCustomerID(ctx, tenantID)
