@@ -89,8 +89,8 @@ GET  /metrics               → Prometheus (requer METRICS_TOKEN)
 
 | Item | Valor |
 |---|---|
-| Migrations aplicadas | 001–040 (exceto 033 — ver nota abaixo) |
-| Próxima migration | `041_...` |
+| Migrations aplicadas | 001–041 (exceto 033 — ver nota abaixo) |
+| Próxima migration | `042_...` |
 | Tenants no banco | **1** (`santos-car`) — ver tabela completa abaixo |
 | Pasta de migrations | `database/migrations/` |
 | Pasta de seeds | `database/seeds/` |
@@ -282,14 +282,16 @@ has_white_label          → Scale only
 
 ## Planos (nomes exatos no banco)
 
-| name | display_name comercial | Posição |
-|---|---|---|
-| `starter` | Starter | 1 |
-| `pro` | Pro | 2 |
-| `premium` | **Premium** | 3 — `plan.name = 'premium'` (migration 026); nome comercial = "Premium" |
-| `scale` | Scale | 4 — oculto do grid público; CTA "Enterprise" é apenas label de grid |
+> Preços/limites atualizados na migration 041 (D40, sessão 66 — "Atratividade Máxima").
 
-> **CRÍTICO:** `plan.name` no banco é `premium` (migration 026 — definitivo). Nome comercial e nome interno agora coincidem.
+| name | display_name comercial | mensal | anual (total) | veículos | usuários | leads/mês | Posição |
+|---|---|---|---|---|---|---|---|
+| `starter` | Starter | R$ 97 | R$ 970 | 20 | 2 | 200 | 1 |
+| `pro` | Pro | R$ 197 | R$ 1.970 | 60 | 5 | 1.000 | 2 |
+| `premium` | **Premium** | R$ 397 | R$ 3.970 | 150 | 15 | 3.000 | 3 — `plan.name = 'premium'` (migration 026); nome comercial = "Premium" |
+| `scale` | **Enterprise** | R$ 597 | R$ 5.964 | -1 | -1 | -1 | 4 — oculto do grid público (`p.name !== 'scale'`); revelado por link discreto + modal em `/billing/plans` e na landing (D40). `name` continua `scale` — só o `display_name` virou "Enterprise" |
+
+> **CRÍTICO:** `plan.name` no banco é `premium` (migration 026 — definitivo). Nome comercial e nome interno agora coincidem — **exceto `scale`**, cujo `display_name` é "Enterprise" por decisão de negócio (D40), mantendo `name='scale'` porque 4 arquivos de código comparam essa string.
 
 ## Add-ons (nomes exatos no banco)
 

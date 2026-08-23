@@ -54,6 +54,18 @@ const PLAN_HIGHLIGHTS: Record<string, FeatureSection[]> = {
       ],
     },
   ],
+  scale: [
+    {
+      section: 'Tudo do Premium, mais:',
+      items: [
+        'Veículos, usuários e leads ilimitados',
+        'Múltiplas lojas na mesma conta',
+        'Acesso à API para integrações próprias',
+        'White-label com sua marca',
+        'Suporte prioritário',
+      ],
+    },
+  ],
 }
 
 const PLAN_BADGE: Record<string, { label: string; className: string } | undefined> = {

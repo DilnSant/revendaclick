@@ -16,6 +16,7 @@ import Testimonials   from '@/components/landing/Testimonials'
 import Metrics        from '@/components/landing/Metrics'
 import Comparison     from '@/components/landing/Comparison'
 import AISection      from '@/components/landing/AISection'
+import PricingSection from '@/components/landing/PricingSection'
 import Faq, { FAQ_ITENS } from '@/components/landing/Faq'
 import FinalCta       from '@/components/landing/FinalCta'
 import LandingFooter  from '@/components/landing/LandingFooter'
@@ -135,7 +136,7 @@ const SCHEMA = {
   ],
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
   return (
     <>
       {/* Marca o documento antes da primeira pintura. Sem isso, .reveal
@@ -200,10 +201,13 @@ export default function LandingPage() {
           {/* 12 — Diferencial de IA */}
           <AISection />
 
-          {/* 13 — Objeções */}
+          {/* 13 — Planos e preços */}
+          <PricingSection />
+
+          {/* 14 — Objeções */}
           <Faq />
 
-          {/* 14 — Fechamento */}
+          {/* 15 — Fechamento */}
           <FinalCta />
         </main>
 

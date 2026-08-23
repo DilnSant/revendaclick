@@ -576,3 +576,61 @@ divergência. Se `NEXT_PUBLIC_APP_URL` for removida da Vercel, o fallback de `li
 
 **Validação:** `tsc --noEmit` exit 0; `next build` exit 0; `eslint` sem erros novos; sitemap gerado
 no build contendo as 6 rotas segmentadas.
+
+---
+
+## D40 — Estratégia "Atratividade Máxima": novos preços/limites e Enterprise a partir do `scale` (23/08/2026 — sessão 66)
+
+**Decisão:** Nova grade comercial definida pelo usuário — limites bem maiores nos planos
+Starter/Pro/Premium para diferenciação competitiva, e o 4º plano — que já existia com o nome
+interno `scale`, já com limites `-1/-1/-1` (ilimitado) e já oculto do grid público — reaproveitado
+como "Enterprise" em vez de criar um plano novo. Só o `display_name` muda; `plans.name` continua
+`scale` (é o valor comparado em 4 lugares do código: `SubscriptionsTable.tsx`,
+`billing/plans/page.tsx`, `PlansGrid.tsx`, `PricingCards.tsx`).
+
+| Plano | mensal | anual (total) | veículos | usuários | leads/mês |
+|---|---|---|---|---|---|
+| Starter | R$ 97 | R$ 970 | 20 | 2 | 200 |
+| Pro | R$ 197 | R$ 1.970 | 60 | 5 | 1.000 |
+| Premium | R$ 397 | R$ 3.970 | 150 | 15 | 3.000 |
+| Enterprise (`name='scale'`) | R$ 597 | R$ 5.964 | -1 | -1 | -1 |
+
+**Por que quase nenhum código mudou:** `plans` já era a fonte única de verdade — nenhuma constante
+de limite hardcoded no Go (`backend/internal/plans/repository.go` lê tudo ao vivo da tabela), e
+`billing/service.go` já manda `price_monthly`/`price_yearly` da tabela direto pro Asaas na criação
+da subscription. A migration 041 é só `UPDATE`, sem `ALTER TABLE` — não exige regenerar
+`database.types.ts` (FC029 é só para mudança de schema).
+
+**Painel admin já resolvia isso sem código:** `/admin/plans` (`PUT /api/admin/plans/:id`) já edita
+todos esses campos ao vivo, sem deploy. Usei migration versionada em vez disso por decisão do
+usuário — preço é decisão de negócio que merece registro auditável, não só uma edição na UI.
+
+**Código novo — só UI de revelação do Enterprise + landing:**
+- `frontend/app/(dashboard)/billing/plans/_components/PlansGrid.tsx` — link discreto
+  "Precisa de um plano ilimitado..." + modal reaproveitando `PlanCard` (o `scale` já vinha na
+  lista de `getPlans()`, só estava sendo filtrado do grid).
+- `frontend/app/(dashboard)/billing/plans/_components/PlanCard.tsx` — entrada `scale` em
+  `PLAN_HIGHLIGHTS` (senão o card do Enterprise ficava sem bullets de feature).
+- `frontend/components/landing/PricingSection.tsx` (novo, Server Component) — busca
+  `GET /api/plans` via `publicFetch` (já era público, comentário `// Plans are public (pricing
+  page)` em `server.go:130` já previa esse uso — nenhum endpoint novo precisou ser criado).
+- `frontend/components/landing/PricingCards.tsx` (novo, Client Component) — grade de preços +
+  toggle mensal/anual + o mesmo link/modal discreto do Enterprise, estilo dark consistente com o
+  resto da landing (`Section`/`SectionHead`/`Reveal`/`IconCheck` de `components/landing/ui.tsx`).
+- `frontend/app/page.tsx` — `LandingPage` virou `async` (precisa esperar o fetch); a home deixa
+  de ser 100% estática e passa a revalidar a cada 60s (`publicFetch` já usa
+  `next: { revalidate: 60 }`) — ISR, não SSR total.
+
+**Preço da landing nunca diverge do cobrado:** decisão explícita do usuário de buscar ao vivo em
+vez de copiar texto fixo — evita o padrão de bug já visto neste projeto (FC067: mesmo dado com 2
+valores em arquivos diferentes). Mudar preço só no admin já propaga para dashboard, Asaas e
+landing sem precisar lembrar de editar a landing à mão.
+
+**Impacto ao alterar:** a assinatura trialing já existente antes desta migration
+(`sub_uz29bjmjf136znwx`, santos-car, Premium) **não muda de valor retroativamente** — o preço novo
+vale só para assinaturas/upgrades futuros. Trocar o `display_name` de `scale` de volta para
+"Scale" quebra a copy do link/modal ("plano ilimitado"), não o código.
+
+**Validação:** `go build`/`go vet`/`go test` do backend (sem mudança de código Go, deve continuar
+limpo); revisão manual do TypeScript (sem `node_modules` local — instalar dependência exige pedido
+explícito à parte); conferência visual da landing e do `/billing/plans` após o deploy.

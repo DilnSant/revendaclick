@@ -15,8 +15,11 @@ export default function PlansGrid({ plans, subscription, cpfCnpj }: Props) {
     (subscription?.billing_cycle as 'monthly' | 'yearly') ?? 'monthly'
   )
 
-  // Only show public plans: starter, pro, premium — hide scale from grid
+  const [enterpriseOpen, setEnterpriseOpen] = useState(false)
+
+  // Only show public plans: starter, pro, premium — hide scale (Enterprise) from grid
   const publicPlans = plans.filter((p) => p.name !== 'scale')
+  const enterprisePlan = plans.find((p) => p.name === 'scale') ?? null
   const hasYearlyDiscount = publicPlans.some((p) => p.price_yearly < p.price_monthly * 12)
 
   return (
@@ -70,24 +73,42 @@ export default function PlansGrid({ plans, subscription, cpfCnpj }: Props) {
         ))}
       </div>
 
-      {/* Enterprise CTA */}
-      <div className="mt-10 rounded-2xl border border-gray-200 bg-gray-50 px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div>
-          <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-1">Enterprise</p>
-          <h3 className="text-xl font-bold text-gray-900">Precisa de uma solução corporativa?</h3>
-          <p className="mt-1 text-sm text-gray-500">
-            Volumes ilimitados, white-label, multi-loja, API REST, SLA dedicado e atendimento exclusivo.
-          </p>
+      {/* Enterprise — discreet reveal link */}
+      {enterprisePlan && (
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => setEnterpriseOpen(true)}
+            className="text-sm text-gray-400 underline decoration-dotted underline-offset-4 hover:text-gray-600 transition-colors"
+          >
+            Precisa de um plano ilimitado para sua rede? Clique aqui
+          </button>
         </div>
-        <a
-          href={`https://wa.me/5548988482877?text=${encodeURIComponent('Olá! Gostaria de entender melhor qual plano do RevendaClick é mais indicado para minha loja.')}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="shrink-0 rounded-xl border-2 border-gray-900 px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-900 hover:text-white transition-all"
+      )}
+
+      {enterpriseOpen && enterprisePlan && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-8 overflow-y-auto"
+          onClick={(e) => { if (e.target === e.currentTarget) setEnterpriseOpen(false) }}
         >
-          Falar com especialista →
-        </a>
-      </div>
+          <div className="w-full max-w-sm">
+            <div className="mb-3 flex justify-end">
+              <button
+                onClick={() => setEnterpriseOpen(false)}
+                className="rounded-full bg-white/90 px-3 py-1.5 text-xs font-medium text-gray-600 shadow hover:bg-white"
+              >
+                Fechar ✕
+              </button>
+            </div>
+            <PlanCard
+              plan={enterprisePlan}
+              cycle={cycle}
+              currentPlanName={subscription?.plan_name}
+              subscription={subscription}
+              cpfCnpj={cpfCnpj}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
