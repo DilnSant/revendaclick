@@ -25,6 +25,8 @@
 | 2026-08-06 | `sandbox-revendaclick` como tenant de testes | Documentado em REFERENCE/ENVIRONMENTS, mas nunca existiu de fato no banco — era divergência documental | Nenhum; criar um novo via `/register` quando for preciso |
 | 2026-08-06 | `finalcar` e `revenda-click` como "usuários reais em produção" | Confirmado pelo usuário na sessão 64: eram tenants de teste. Excluídos do banco | Nenhum tenant real na plataforma; só `santos-car` (owner) |
 | 2026-08-06 | Conta Asaas anterior | Encerrada; substituída por conta nova (D37). IDs de customer/subscription zerados pela migration 040 | Conta Asaas nova — chaves em `/opt/revendaclick/.env` no VPS |
+| 2026-08-23 | "Scale" como `display_name` do plano `scale` | migration 041 (D40) renomeou o `display_name` para "Enterprise" — `plan.name` continua `scale` | `display_name = 'Enterprise'`, `plan.name` inalterado |
+| 2026-08-23 | ""Enterprise" nunca é `display_name`, só label de CTA" | Desde 23/08/2026 (D40) "Enterprise" **é** o `display_name` real do plano `scale` no banco, não mais só texto de CTA solto | Ver linha `scale` na tabela de planos abaixo |
 | 2026-05-30 | Central de Atendimento como item de menu principal | Removida da sidebar; WhatsApp é add-on separado | Aba "WhatsApp" em Configurações + `/whatsapp` via add-on |
 | 2026-05-30 | Sidebar com Vendas/Comissões/Vendedores no nav | Sidebar refatorada | FinancialSubNav (sub-nav em /financial, /sales, /financial/commissions) |
 | 2026-05-30 | "Compradores" como label de módulo | Renomeado para alinhamento com linguagem do domínio | "Clientes" — rota `/customers` |
@@ -40,10 +42,9 @@
 | `starter` | Starter | — (base) | Funcionalidades básicas |
 | `pro` | Pro | `has_crm` | Seção Pro na sidebar |
 | `premium` | **Premium** | `has_automation` | `plan.name = 'premium'` (migration 026 — definitivo) |
-| `scale` | Scale | `has_api_access` | Oculto do grid; CTA "Enterprise" é label de grade, não plan.name |
+| `scale` | **Enterprise** (desde 23/08/2026, D40/migration 041) | `has_api_access` | Oculto do grid principal; revelado via link/modal discreto em `/billing/plans` e na landing. `plan.name` continua `scale` |
 
-> **CRÍTICO:** `plan.name` no banco é `premium` (migration 026 — definitivo). Nome comercial e nome interno coincidem.
-> "Enterprise" nunca foi e nunca deve ser usado como `plan.name` — é apenas texto de CTA no grid público para o plano `scale`.
+> **CRÍTICO:** `plan.name` no banco é `premium` (migration 026 — definitivo) e `scale` (nunca renomeado — só o `display_name` mudou para "Enterprise" em 23/08/2026, D40). Nome comercial e nome interno de `premium` coincidem; os de `scale`/"Enterprise" **não** — o código sempre compara contra `'scale'`.
 
 ### Feature Flags (nomes exatos)
 

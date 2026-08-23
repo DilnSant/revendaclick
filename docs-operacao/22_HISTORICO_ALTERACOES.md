@@ -2,7 +2,7 @@
 
 ## ESTADO ATUAL POR FEATURE (snapshot — atualizar a cada sessão)
 
-> Última atualização: 22/08/2026 (sessão 65 — auditoria técnica completa; FC068 `GET /api/usage` 500 para assinatura cancelada, FC069 webhook Asaas fail-open corrigido para fail-closed)
+> Última atualização: 23/08/2026 (sessão 66 — teste ponta a ponta de assinatura concluído + FC070 corrigido; estratégia de preços "Atratividade Máxima" (D40) e plano Enterprise revelado via modal; landing ganhou seção de preços ao vivo)
 > Este bloco é um snapshot do estado de cada módulo/feature em produção.
 > Para histórico cronológico, ver as entradas abaixo.
 
@@ -25,9 +25,12 @@
 | **Automações** | ✓ Placeholder produção (`has_automation`) | Gated; CTA WhatsApp add-on condicional — BUG-02 corrigido sessão 29 |
 | **Campanhas** | ✓ Placeholder produção (`has_campaigns`) | Gated; "Em breve" com links Analytics/CRM — BUG-02 corrigido sessão 29 |
 | **Plano Premium** | ✓ `plan.name = 'premium'` (migration 026) | DB e nome comercial unificados; FC030 corrigido |
+| **Preços/limites dos planos** | ✓ "Atratividade Máxima" (sessão 66, D40, migration 041) | Starter R$97/970 (20 veíc./2 usu./200 leads); Pro R$197/1970 (60/5/1000); Premium R$397/3970 (150/15/3000). Só `UPDATE` na tabela `plans` — sem mudança de schema |
+| **Plano Enterprise** | ✓ Revelado via modal em `/billing/plans` (sessão 66, D40) | `plan.name` continua `scale` (já existia, já ilimitado, já oculto do grid) — só `display_name` virou "Enterprise". R$597/5964. Link discreto "Precisa de um plano ilimitado..." abre modal reaproveitando `PlanCard` |
 | **Tenants no banco** | ✓ **Apenas `santos-car`** (sessão 64) | `devecar`, `finalcar`, `auditoria-rc-s42` e `revenda-click` excluídos definitivamente — todos de teste. `sandbox-revendaclick`, documentado desde a sessão 26, nunca existiu de fato no banco |
 | **Admin Panel** | ✓ Produção (super_admin) | 8 sub-rotas CRUD; quarentena + exclusão lógica/física; audit logging; CRUD tenants/users/subs/plans/whatsapp; /admin/logs definitivamente funcional pós FC057 |
-| **Billing Asaas** | ✓ Produção — **conta nova desde 06/08/2026** (sessão 64, D37) | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035). Conta anterior encerrada: migration 040 zerou todos os customer/subscription IDs órfãos; chaves novas no `.env` do VPS com escape `$$` (D18). **Teste ponta a ponta de assinatura ainda pendente**. `GET /api/usage` 500 para assinatura `canceled` corrigido (FC068, sessão 65); webhook agora fail-closed sem token (FC069, sessão 65) |
+| **Billing Asaas** | ✓ Produção — **conta nova desde 06/08/2026** (sessão 64, D37) | Subscribe, upgrade, webhook, idempotência; AdminSimulateEvent; FC037: CPF/CNPJ do tenant (migration 035). Conta anterior encerrada: migration 040 zerou todos os customer/subscription IDs órfãos; chaves novas no `.env` do VPS com escape `$$` (D18). `GET /api/usage` 500 para assinatura `canceled` corrigido (FC068, sessão 65); webhook agora fail-closed sem token (FC069, sessão 65). **Teste ponta a ponta CONCLUÍDO** (sessão 66): `sub_uz29bjmjf136znwx`, santos-car, Premium, `trialing` — revelou e corrigiu FC070 (trialing travava troca de plano) |
+| **Landing — seção de preços** | ✓ Produção (sessão 66, D40) | `PricingSection.tsx` (Server Component) busca `GET /api/plans` ao vivo via `publicFetch`; `PricingCards.tsx` (Client) renderiza grade + toggle mensal/anual + modal Enterprise. `app/page.tsx` virou `async`/ISR (revalidate 60s). Preço da landing nunca diverge do cobrado (mesma fonte que dashboard e Asaas) |
 | **Trial / Carência / Lembrete de vencimento** | ✓ Produção (sessão 61) | Trial 30 dias, carência 7 dias (migration 038); worker diário de lembrete por e-mail via Resend 7 dias antes do vencimento (migration 039, FC064 corrigiu env var ausente) |
 | **Convite de vendedor por e-mail** | ✓ Produção (sessão 61) | Antes só gerava link manual (rate limit Supabase, FC021); agora envia automaticamente via Resend; redirect corrigido (FC063) |
 | **SSL — api/evolution.revendaclick.com.br** | ✓ Renovado até 2026-10-30 (sessão 61) | FC065: certbot usava `standalone` (conflito com Nginx na porta 80), trocado para `webroot`; `--dry-run` validado |
@@ -93,6 +96,59 @@
 | **FC057 — /admin/logs 404 definitivo — .gitignore recursivo (sessão 57)** | ✓ **Corrigido** | `.gitignore` `logs/` → `/logs/`; page.tsx commitada pela 1ª vez; login.tsx `router.push` → `window.location.href` — commit 0e3538c |
 | **FC058 — Super Admin redirecionado para /onboarding + subdomínio www. sem redirect (sessão 58)** | ⚠ **PARCIAL** | (dashboard)/layout.tsx: super_admin → /admin antes de getTenantStatusForUser; next.config.ts: redirect 308 www.→app. preservando path+query. **PARCIAL** porque a checagem de role ainda dependia do JWT claim que estava ausente — só completamente coberto por FC059 |
 | **FC059 — Super Admin defense-in-depth — DB-fallback para JWT sem claim (sessão 59)** | ✓ **Implementado** | `resolveUserRole()` em `frontend/lib/tenant.ts` (JWT-first + DB-fallback via service-role); 4 call sites atualizados (`(dashboard)/layout.tsx`, `(admin)/layout.tsx`, `api/admin/[...path]/route.ts`, `login/page.tsx`); novo endpoint `app/api/me/role/route.ts`. Causa raiz: `dilneysantos.developer@gmail.com` tem `public.users.role='super_admin'` mas `auth.users.app_metadata.user_role` undefined (promoção SQL não propaga via Auth Admin API). |
+
+---
+
+## 2026-08-23 (sessão 66) — D40 "Atratividade Máxima" + Enterprise, FC070, teste ponta a ponta de assinatura concluído
+
+### Contexto
+
+Continuação do teste ponta a ponta de assinatura na conta Asaas nova, pendência aberta desde a
+sessão 64. Sessão começou por engano em `/home/dilneysantos/Projetos/revendaclick` (clone local
+duplicado — o diretório correto do projeto é `/home/dilneysantos/00-Projetos/01-revendaclick`);
+os 4 commits abaixo foram feitos no clone errado, mas como ambos apontam para o mesmo `origin`
+(`github.com/DilnSant/revendaclick`) e já estavam em `origin/main`, a reconciliação foi só
+`git fetch` + `git merge --ff-only` no diretório correto — **sem push**, sem risco. Os dois
+diretórios ficaram idênticos ao final. Ver `MEMORY.md` (auto-memória) `dir-reclone-2026-08-23`.
+
+### Teste ponta a ponta de assinatura — CONCLUÍDO
+
+Assinatura real criada na conta Asaas nova: `santos-car`, plano Premium, `sub_uz29bjmjf136znwx`,
+status `trialing`. Pendência aberta desde a sessão 64 (D37), fechada nesta sessão.
+
+### FC070 — Assinatura `trialing` travava troca de plano e status desatualizado
+
+O teste acima revelou: clicar em qualquer plano em `/billing/plans` reabria o link de pagamento
+da assinatura já existente em vez de iniciar upgrade, e o banner de status continuava mostrando
+"Assinatura cancelada" mesmo após a assinatura já estar `trialing`. Causa raiz em 3 pontos:
+`Subscription.IsActive` não incluía `trialing` (divergente do `SubscriptionGate`, que já tratava
+os dois iguais); a guarda anti-duplicata de `Subscribe()` devolvia a assinatura antiga em silêncio
+mesmo para plano diferente do pedido; `PlanCard` não chamava `router.refresh()` após sucesso. Ver
+**FC070**. Commit `915576e`.
+
+### D40 — Estratégia "Atratividade Máxima": novos preços/limites e plano Enterprise
+
+Decisão de negócio do usuário: limites bem maiores em Starter/Pro/Premium para diferenciação
+competitiva, e o plano `scale` (já existente, já ilimitado, já oculto do grid) revelado como
+"Enterprise" via um link/modal discreto em vez de virar um plano novo — só `display_name` muda,
+`plan.name` continua `scale`. Migration 041 é só `UPDATE` na tabela `plans` (sem `ALTER TABLE`,
+sem regenerar `database.types.ts`). Landing ganhou `PricingSection`/`PricingCards` buscando
+`GET /api/plans` ao vivo (endpoint já era público) — preço da landing nunca diverge do cobrado.
+Ver **D40** em `21_DECISOES_TECNICAS.md`. Commit `df329e8`.
+
+### Fix — modal do Enterprise vazava o card de trás
+
+Achado na conferência visual pós-deploy do D40 (screenshot Playwright contra produção): overlay do
+modal + fundo semitransparente do card não davam opacidade suficiente, números do Pro apareciam
+sobrepostos aos do Enterprise. Corrigido com overlay mais escuro + `backdrop-blur` e um wrapper de
+fundo sólido atrás do card. Confirmado por novo screenshot. Commit `ca7a0ce`.
+
+### Não corrigido / pendente nesta sessão
+
+As 6 landings segmentadas (`/revendas-pequenas` etc.) ainda não foram vistas em browser — só a
+home (`/`) foi conferida via screenshot como parte da validação do D40. `CLAUDE.md` recebeu duas
+seções novas (comandos de desenvolvimento, arquitetura) via `/init` nesta sessão, commitadas junto
+com o encerramento.
 
 ---
 

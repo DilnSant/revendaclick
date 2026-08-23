@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 22/08/2026 (sessão 65 — auditoria técnica completa: FC068 `GET /api/usage` 500 para assinatura cancelada, FC069 webhook Asaas fail-open corrigido para fail-closed — ver "Estado Atual" abaixo)
+> Atualizado em: 23/08/2026 (sessão 66 — teste ponta a ponta de assinatura CONCLUÍDO + FC070 corrigido; D40 "Atratividade Máxima" (novos preços/limites + plano Enterprise); **diretório correto do projeto agora é `/home/dilneysantos/00-Projetos/01-revendaclick`** — ver ATENÇÃO abaixo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -23,10 +23,14 @@
 
 ---
 
-## Estado Atual do Projeto (sessão 65 — 22/08/2026)
+## Estado Atual do Projeto (sessão 66 — 23/08/2026)
 
 | Componente | Status |
 |---|---|
+| **Diretório local correto do projeto** | ⚠️ **`/home/dilneysantos/00-Projetos/01-revendaclick`** — não `/home/dilneysantos/Projetos/revendaclick` (clone duplicado, ver ATENÇÃO abaixo) |
+| **Teste ponta a ponta de assinatura Asaas (sessão 66)** | ✓ **CONCLUÍDO** — pendência aberta desde a sessão 64. Assinatura real criada: santos-car, Premium, `sub_uz29bjmjf136znwx`, `trialing` |
+| **FC070 — trialing travava troca de plano (sessão 66)** | ✓ **CORRIGIDO** — o teste acima revelou que qualquer clique em outro plano reabria o link antigo em vez de iniciar upgrade, e o banner de status ficava desatualizado. 3 causas: `IsActive` sem `trialing`, guarda de `Subscribe()` reabria link para plano diferente, `PlanCard` sem `router.refresh()`. Commit `915576e` |
+| **D40 — "Atratividade Máxima": novos preços/limites + Enterprise (sessão 66)** | ✓ **EM PRODUÇÃO** — Starter R$97/970 (20 veíc./2 usu./200 leads), Pro R$197/1970 (60/5/1000), Premium R$397/3970 (150/15/3000); plano `scale` (já existente, ilimitado) revelado como "Enterprise" via modal — só `display_name` mudou. Migration 041 (`UPDATE` puro). Landing ganhou `PricingSection`/`PricingCards` buscando `GET /api/plans` ao vivo. Fix de vazamento visual do modal Enterprise (commit `ca7a0ce`), achado em conferência real por screenshot. Commits `df329e8`, `ca7a0ce`; docs em D40 (`21_DECISOES_TECNICAS.md`) |
 | **Auditoria técnica completa + E2E + correção (sessão 65)** | ✓ **CONCLUÍDA** — auditoria de ponta a ponta (inventário → estática → execução real contra produção → E2E → fluxos de negócio → segurança → correção → regressão), parte de um `/goal` cobrindo os 3 projetos do usuário. `tsc`, `eslint`, `next build`, `go vet`, `go build`, `go test` — todos limpos antes e depois. E2E (Playwright existente) rodado contra produção real; 8/9 falharam por limitação de dado de ambiente (único tenant real com assinatura `canceled`, `SubscriptionGate` bloqueando corretamente — não é bug de código). Relatório completo em `AUDITORIA_COMPLETA.md` (raiz do repo). Checkpoint de segurança criado antes de qualquer alteração: tag git `checkpoint-pre-auditoria-20260821-220722`. |
 | **FC068 — `GET /api/usage` 500 para assinatura cancelada (sessão 65)** | ✓ **CORRIGIDO E VALIDADO EM PRODUÇÃO** — query excluía `subscriptions.status = 'canceled'`, único estado do tenant real (`santos-car`); `pgx.ErrNoRows` virava 500, dashboard (KPIs, `PlanAlertBanner`) ficava mudo silenciosamente. Corrigido para buscar a assinatura mais recente independente do status. Commit `5470998`. |
 | **FC069 — Webhook Asaas fail-open sem token (sessão 65)** | ✓ **CORRIGIDO** — endpoint aceitava qualquer payload não autenticado como evento de billing real se `ASAAS_WEBHOOK_TOKEN` estivesse vazio. Risco de configuração (token está correto em produção hoje), resolvido mediante autorização explícita do usuário para os riscos pendentes da auditoria. Corrigido para fail-closed (500 em vez de aceitar tudo). Commit `43f7d0d`. |
@@ -260,17 +264,15 @@ Três defeitos, todos verificados ao vivo em 06/08/2026:
 | **(a) Canonizar em `app.`** | Só código: trocar `SITE` em `page.tsx` e `SegmentPage.tsx` para `NEXT_PUBLIC_APP_URL` e incluir as 6 rotas no `sitemap.ts` |
 | **(b) Servir a landing no apex** | Mexe em domínio/Vercel: parar de redirecionar `revendaclick.com.br` → `app.` — exige autorização e cuidado com o FC058 (sessão entre subdomínios) |
 
-### 0-C. PRÓXIMO PASSO DA PRÓXIMA SESSÃO — duas verificações que faltam
+### 0-C. PRÓXIMO PASSO DA PRÓXIMA SESSÃO
 
-Ambas de prioridade **Alta**, ambas dependem de ação do usuário:
-
-1. **Conferência visual das 7 rotas da landing em browser.** Elas respondem HTTP 200 e o SEO está
-   correto, mas **ninguém olhou o layout**. Um erro de estilo ou de copy está visível ao público
-   agora. Abrir `app.revendaclick.com.br` e as 6 segmentadas.
-2. **Teste ponta a ponta de assinatura na conta Asaas nova.** Pendência aberta desde a sessão 64,
-   nunca executada. Exige clique do owner em `/billing/plans` (`POST /api/billing/subscribe` pede
-   JWT de owner/admin — `server.go:167`). Verificar depois: customer e subscription criados na conta
-   nova, webhook gravando em `billing_events`, `subscriptions.status` → `active`.
+1. **Conferência visual das 6 landings segmentadas em browser.** A home (`/`) já foi conferida via
+   screenshot Playwright contra produção na sessão 66 (achou e corrigiu o vazamento visual do modal
+   Enterprise — commit `ca7a0ce`). Faltam as 6 rotas segmentadas: `/revendas-pequenas`,
+   `/multimarcas`, `/premium`, `/crm-automotivo`, `/erp-automotivo`, `/site-para-revendas`. Prioridade Alta.
+2. ~~Teste ponta a ponta de assinatura na conta Asaas nova~~ — **CONCLUÍDO na sessão 66.**
+   Assinatura real criada (santos-car, Premium, `sub_uz29bjmjf136znwx`, `trialing`), revelou e
+   corrigiu FC070.
 
 ### 0-D. AÇÃO COMERCIAL IMEDIATA — Landing lead real não atendido
 
@@ -349,8 +351,8 @@ Configurar `DATABASE_SCHEMA=evolution` no docker-compose da Evolution. Ver D19 e
 
 ## Documentação de Falhas
 
-Pasta `docs-operacao/FalhasCorrigidas/` — **65 arquivos (FC001–FC059, FC061–FC067)**; não existe arquivo FC060. Além deles, o bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
-Próximo número disponível: **FC068**.
+Pasta `docs-operacao/FalhasCorrigidas/` — **67 arquivos (FC001–FC059, FC061–FC070)**; não existe arquivo FC060. Além deles, o bug published_store (sem número FC — corrigido via migration 036, não foi incidente de produção).
+Próximo número disponível: **FC071**.
 
 Antes de diagnosticar qualquer problema: consultar primeiro o [README de FalhasCorrigidas](FalhasCorrigidas/README.md).
 
@@ -404,6 +406,14 @@ Se algo deixou de ser válido (plano renomeado, serviço trocado, rota removida)
 - Algum arquivo diz "Coolify" quando deveria dizer "Vercel"?
 
 ---
+
+**ATENÇÃO diretório local:** o projeto correto é `/home/dilneysantos/00-Projetos/01-revendaclick`.
+Em 23/08/2026 (sessão 66) uma sessão abriu por engano em `/home/dilneysantos/Projetos/revendaclick`
+(clone duplicado do mesmo `origin`) e trabalhou lá por boa parte da sessão antes do usuário notar.
+Já reconciliado (fast-forward local, sem push) — os dois diretórios ficaram idênticos. Se uma
+sessão futura abrir em `Projetos/revendaclick`, tratar como diretório errado e confirmar com o
+usuário antes de continuar ali (não presumir que é o projeto principal só por ter `.git` e
+histórico). Ver pendência em `20_PENDENCIAS.md` (decidir se apaga o clone duplicado).
 
 ## Contexto para a Próxima Sessão
 

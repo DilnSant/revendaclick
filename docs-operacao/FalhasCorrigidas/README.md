@@ -197,12 +197,13 @@
 | [FC067](FC067_CANONICAL_HOST_DIVERGENTE_SITEMAP.md) | Canonical apontando para host que responde 307, divergente do sitemap; host escrito à mão em 6 arquivos com 2 valores; 6 landings ausentes do sitemap | Frontend / SEO | MÉDIA | 07/08/2026 |
 | [FC068](FC068_GET_USAGE_500_ASSINATURA_CANCELADA.md) | `GET /api/usage` retornava 500 para tenant com assinatura `canceled` — dashboard (KPIs, PlanAlertBanner) ficava mudo silenciosamente | Backend / Billing | ALTA | 21/08/2026 |
 | [FC069](FC069_WEBHOOK_ASAAS_FAIL_OPEN.md) | Webhook Asaas aceitava requisição não autenticada se `ASAAS_WEBHOOK_TOKEN` estivesse vazio (fail-open) — corrigido para fail-closed | Backend / Billing / Segurança | MÉDIA | 22/08/2026 |
+| [FC070](FC070_TRIALING_BLOQUEAVA_TROCA_PLANO.md) | Assinatura `trialing` travava troca de plano (reabria link antigo) e banner de status ficava desatualizado após assinar/upgradar | Backend / Frontend / Billing | ALTA | 23/08/2026 |
 
 ## Template para novo FC
 
 ```bash
-# Próximo número: FC070
-# Nome do arquivo: FC070_DESCRICAO_CURTA.md
+# Próximo número: FC071
+# Nome do arquivo: FC071_DESCRICAO_CURTA.md
 # Copiar o template de qualquer FC existente e preencher todas as seções
 ```
 
