@@ -264,12 +264,14 @@ Três defeitos, todos verificados ao vivo em 06/08/2026:
 | **(a) Canonizar em `app.`** | Só código: trocar `SITE` em `page.tsx` e `SegmentPage.tsx` para `NEXT_PUBLIC_APP_URL` e incluir as 6 rotas no `sitemap.ts` |
 | **(b) Servir a landing no apex** | Mexe em domínio/Vercel: parar de redirecionar `revendaclick.com.br` → `app.` — exige autorização e cuidado com o FC058 (sessão entre subdomínios) |
 
-### 0-C. PRÓXIMO PASSO DA PRÓXIMA SESSÃO
+### 0-C. Itens concluídos na sessão 66
 
-1. **Conferência visual das 6 landings segmentadas em browser.** A home (`/`) já foi conferida via
-   screenshot Playwright contra produção na sessão 66 (achou e corrigiu o vazamento visual do modal
-   Enterprise — commit `ca7a0ce`). Faltam as 6 rotas segmentadas: `/revendas-pequenas`,
-   `/multimarcas`, `/premium`, `/crm-automotivo`, `/erp-automotivo`, `/site-para-revendas`. Prioridade Alta.
+1. ~~Conferência visual das 6 landings segmentadas em browser~~ — **CONCLUÍDA na sessão 66.** As 7
+   rotas (`/` + 6 segmentadas) conferidas via Playwright contra produção, desktop e mobile, com
+   scroll completo aguardando as animações `.reveal` terminarem (full-page screenshot sem esperar
+   isso mostra seções em branco — artefato do método de captura, não bug real, achado e descartado
+   nesta sessão). Resultado: 0 erros de console, 0 overflow horizontal no mobile, copy de cada
+   segmento correta, modal Enterprise legível nos dois formatos. Nenhum bug novo.
 2. ~~Teste ponta a ponta de assinatura na conta Asaas nova~~ — **CONCLUÍDO na sessão 66.**
    Assinatura real criada (santos-car, Premium, `sub_uz29bjmjf136znwx`, `trialing`), revelou e
    corrigiu FC070.

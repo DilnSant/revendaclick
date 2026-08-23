@@ -47,7 +47,7 @@
 | **FC032 — Add-ons sem billing Asaas** | ✓ **Corrigido** (sessão 30 — Etapa 5) | Migration 027 + billing real via Asaas; pending_payment → active via webhook |
 | **FC033 — Cancel sub não cancela add-ons** | ✓ **Corrigido** (sessão 30) | Opção A: cancelTenantAddons em cascata; 7/7 smoke tests — commit `529efb2` |
 | **Etapa 5 — Billing real add-ons** | ✓ **Implementado** (sessão 30) | Asaas subscription por add-on; status lifecycle; webhook routing; is_redundant |
-| **Landing Page** | ✓ **EM PRODUÇÃO** — reformulada + 6 landings segmentadas (sessão 64 — D38/D39) | Congelamento da sessão 31 revogado pelo usuário. `components/marketing/` → `components/landing/`; `app/page.tsx` reescrita; rotas `/revendas-pequenas` `/multimarcas` `/premium` `/crm-automotivo` `/erp-automotivo` `/site-para-revendas`, todas estáticas e respondendo 200. Canonical em `app.revendaclick.com.br` via `lib/site.ts` (D39/FC067). Fluxo de leads backend: **INALTERADO (segue congelado)**. **Não conferida visualmente em browser** |
+| **Landing Page** | ✓ **EM PRODUÇÃO** — reformulada + 6 landings segmentadas (sessão 64 — D38/D39), conferida visualmente (sessão 66) | Congelamento da sessão 31 revogado pelo usuário. `components/marketing/` → `components/landing/`; `app/page.tsx` reescrita; rotas `/revendas-pequenas` `/multimarcas` `/premium` `/crm-automotivo` `/erp-automotivo` `/site-para-revendas`, todas estáticas e respondendo 200. Canonical em `app.revendaclick.com.br` via `lib/site.ts` (D39/FC067). Fluxo de leads backend: **INALTERADO (segue congelado)**. Conferência visual completa (desktop+mobile, todas as 7 rotas) concluída na sessão 66 — 0 bugs encontrados |
 | **Host canônico do site público** | ✓ `app.revendaclick.com.br` (sessão 64 — D39) | Fonte única em `frontend/lib/site.ts` (`SITE_URL` ← `NEXT_PUBLIC_APP_URL`). Apex e `www` redirecionam para `app.`; canonizar em outro host faria o canonical apontar para redirect — ver FC067 |
 | **Admin Leads** | ✓ Produção (sessão 31) | `/admin/leads` — filtros, paginação 25/pág, alerta leads sem contato 4h |
 | **Admin Lead Detalhe** | ✓ Produção (sessão 31) | `/admin/leads/[id]` — status, notas, próxima ação, último contato |
@@ -143,12 +143,19 @@ modal + fundo semitransparente do card não davam opacidade suficiente, números
 sobrepostos aos do Enterprise. Corrigido com overlay mais escuro + `backdrop-blur` e um wrapper de
 fundo sólido atrás do card. Confirmado por novo screenshot. Commit `ca7a0ce`.
 
-### Não corrigido / pendente nesta sessão
+### Conferência visual das 6 landings segmentadas — CONCLUÍDA (continuação da sessão)
 
-As 6 landings segmentadas (`/revendas-pequenas` etc.) ainda não foram vistas em browser — só a
-home (`/`) foi conferida via screenshot como parte da validação do D40. `CLAUDE.md` recebeu duas
-seções novas (comandos de desenvolvimento, arquitetura) via `/init` nesta sessão, commitadas junto
-com o encerramento.
+As 6 rotas (`/revendas-pequenas`, `/multimarcas`, `/premium`, `/crm-automotivo`,
+`/erp-automotivo`, `/site-para-revendas`) conferidas via Playwright contra produção, desktop
+(1440px) e mobile (390px), com scroll completo aguardando as animações `.reveal` terminarem —
+um full-page screenshot sem esperar essas transições mostra as seções em `opacity:0` e parece
+"vazio" (artefato do método, não bug; identificado e descartado nesta sessão antes de reportar
+qualquer coisa como defeito). Resultado: 0 erros de console, 0 overflow horizontal no mobile, HTTP
+200 em todas, copy específica de cada segmento renderizando corretamente, modal do Enterprise
+legível nos dois formatos (confirma o fix do commit `ca7a0ce`). Nenhum bug novo encontrado.
+
+`CLAUDE.md` recebeu duas seções novas (comandos de desenvolvimento, arquitetura) via `/init` nesta
+sessão, commitadas junto com o encerramento.
 
 ---
 
