@@ -209,7 +209,7 @@ export default function PricingCards({ plans }: { plans: Plan[] }) {
 
       {enterpriseOpen && enterprisePlan && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-8 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md px-4 py-8 overflow-y-auto"
           onClick={(e) => { if (e.target === e.currentTarget) setEnterpriseOpen(false) }}
         >
           <div className="w-full max-w-sm">
@@ -221,7 +221,9 @@ export default function PricingCards({ plans }: { plans: Plan[] }) {
                 Fechar ✕
               </button>
             </div>
-            <PricingCard plan={enterprisePlan} cycle={cycle} />
+            <div className="rounded-2xl bg-[#07080B]">
+              <PricingCard plan={enterprisePlan} cycle={cycle} />
+            </div>
           </div>
         </div>
       )}
