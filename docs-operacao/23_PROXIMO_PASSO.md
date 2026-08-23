@@ -1,6 +1,6 @@
 # 23 — PRÓXIMO PASSO
 
-> Atualizado em: 23/08/2026 (sessão 66 — teste ponta a ponta de assinatura CONCLUÍDO + FC070 corrigido; D40 "Atratividade Máxima" (novos preços/limites + plano Enterprise); **diretório correto do projeto agora é `/home/dilneysantos/00-Projetos/01-revendaclick`** — ver ATENÇÃO abaixo)
+> Atualizado em: 23/08/2026 (sessão 66 — teste ponta a ponta de assinatura CONCLUÍDO + FC070 corrigido; D40 "Atratividade Máxima" (novos preços/limites + plano Enterprise); conferência visual das 7 rotas da landing CONCLUÍDA, 0 bugs; push feito, `origin/main` = `d3d1377`; **diretório correto do projeto agora é `/home/dilneysantos/00-Projetos/01-revendaclick`** — ver ATENÇÃO abaixo)
 > Atualizar este arquivo ao final de cada sessão com o que deve ser feito na próxima.
 
 ---
@@ -412,10 +412,12 @@ Se algo deixou de ser válido (plano renomeado, serviço trocado, rota removida)
 **ATENÇÃO diretório local:** o projeto correto é `/home/dilneysantos/00-Projetos/01-revendaclick`.
 Em 23/08/2026 (sessão 66) uma sessão abriu por engano em `/home/dilneysantos/Projetos/revendaclick`
 (clone duplicado do mesmo `origin`) e trabalhou lá por boa parte da sessão antes do usuário notar.
-Já reconciliado (fast-forward local, sem push) — os dois diretórios ficaram idênticos. Se uma
-sessão futura abrir em `Projetos/revendaclick`, tratar como diretório errado e confirmar com o
-usuário antes de continuar ali (não presumir que é o projeto principal só por ter `.git` e
-histórico). Ver pendência em `20_PENDENCIAS.md` (decidir se apaga o clone duplicado).
+Já reconciliado (fast-forward local, sem push) — os dois diretórios ficaram idênticos. **O usuário
+decidiu manter o clone duplicado** (não apagar) — ele continua existindo em
+`/home/dilneysantos/Projetos/revendaclick`. Se uma sessão futura abrir lá, tratar como diretório
+errado e confirmar com o usuário antes de continuar ali (não presumir que é o projeto principal só
+por ter `.git` e histórico); se divergir de novo, reconciliar do mesmo jeito (fetch + merge
+--ff-only, sem push). Ver `20_PENDENCIAS.md`.
 
 ## Contexto para a Próxima Sessão
 
