@@ -631,6 +631,12 @@ landing sem precisar lembrar de editar a landing à mão.
 vale só para assinaturas/upgrades futuros. Trocar o `display_name` de `scale` de volta para
 "Scale" quebra a copy do link/modal ("plano ilimitado"), não o código.
 
-**Validação:** `go build`/`go vet`/`go test` do backend (sem mudança de código Go, deve continuar
+**Validação:** `go build`/`go vet`/`go test` do backend (sem mudança de código Go, continuou
 limpo); revisão manual do TypeScript (sem `node_modules` local — instalar dependência exige pedido
-explícito à parte); conferência visual da landing e do `/billing/plans` após o deploy.
+explícito à parte); conferência visual real contra produção via screenshot (Playwright).
+
+**Achado na conferência visual (commit `ca7a0ce`):** o modal do Enterprise vazava o card do plano
+de trás — `bg-white/[0.03]` (pensado pra compor sobre o fundo liso da seção) mais `bg-black/60` de
+overlay não davam opacidade suficiente, números do Pro apareciam sobrepostos aos do Enterprise.
+Corrigido com overlay `bg-black/90 backdrop-blur-md` + wrapper de fundo sólido atrás do card
+dentro do modal. Confirmado por novo screenshot: legível, sem sobreposição.
